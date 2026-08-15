@@ -156,6 +156,7 @@ pnpm build
 | `src/install.ts` | zip 下载、解压、安装 / 卸载 |
 | `src/skill-detail.ts` | 版本历史与 TRACE 评测 |
 | `src/unzip.ts` | zip 解压（含 data descriptor） |
+| `src/self-update.ts` | 查询并安装 GitHub 最新 release |
 | `src/config-store.ts` | 默认值与 `skillhub.json` |
 
 修改 Host（`src/*.ts`）后需要重启 `dsh web`。修改 Client（`src/client.js`）后复制到 `lib/client.js` 并强制刷新即可。
@@ -170,6 +171,7 @@ pnpm build
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
+| 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 在 profile 的 `pnpm-workspace.yaml` 写入 `allowBuilds.skillhub: true` |
 
 ## 安全
