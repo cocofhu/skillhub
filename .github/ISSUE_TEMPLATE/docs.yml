@@ -1,0 +1,46 @@
+name: 文档
+description: README、贡献指南或安全说明的问题与改进
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈文档问题。安全漏洞请走 Security Advisory，不要写在这里。
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 文档位置
+      options:
+        - README.md
+        - CONTRIBUTING.md
+        - SECURITY.md
+        - CHANGELOG.md
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 当前问题
+      description: 哪一段不清楚、过时或缺失。
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 建议改成什么
+      description: 可选。直接写期望文案也可以。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索现有 Issue
+          required: true
+        - label: 本反馈不包含凭证、个人数据或私有网络信息
+          required: true

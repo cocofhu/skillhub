@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞
+    url: https://github.com/cocofhu/skillhub/security/advisories/new
+    about: 请通过 GitHub Security Advisory 私下报告漏洞
+  - name: 贡献指南
+    url: https://github.com/cocofhu/skillhub/blob/main/CONTRIBUTING.md
+    about: 本地开发、代码约定与 Pull Request 流程
+  - name: SkillHub 官网
+    url: https://skillhub.cn
+    about: 技能内容与账号问题请到 SkillHub，本仓库只维护非官方插件

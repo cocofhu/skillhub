@@ -1,2 +1,185 @@
 # skillhub
-skillhub of deepseek-harness
+
+[![CI](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml?query=branch%3Amain)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
+
+DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
+
+本仓库是独立开源项目，**不是** SkillHub 或 DeepSeek 的官方产品。SkillHub 上的技能由第三方发布，安装前请自行判断来源与风险。
+
+## 目录
+
+- [功能](#功能)
+- [环境要求](#环境要求)
+- [安装](#安装)
+- [使用](#使用)
+- [配置](#配置)
+- [数据与网络](#数据与网络)
+- [开发](#开发)
+- [故障排查](#故障排查)
+- [安全](#安全)
+- [参与贡献](#参与贡献)
+- [许可证](#许可证)
+
+## 功能
+
+- 用公开接口搜索或按分类浏览技能
+- 在对话流中展示可点击卡片（名称、分类、下载量、简介）
+- 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
+- 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
+- 设置页可查看已安装技能；界面跟随 Harness 中英文
+
+## 环境要求
+
+- Node.js 22 或更高版本
+- pnpm 11（见 `packageManager` 字段）
+- DeepSeek Harness Web
+
+## 安装
+
+从 GitHub 安装：
+
+```sh
+dsh plugin --profile web add github:cocofhu/skillhub
+```
+
+pnpm ≥10 首次从 git 安装时会拒绝运行 `prepare`。按 `dsh` 提示把包名写入 profile 的 `pnpm-workspace.yaml`：
+
+```yaml
+allowBuilds:
+  skillhub: true
+```
+
+然后重新执行 `dsh plugin add`。只允许你信任的来源；建议钉到具体 commit：
+
+```sh
+dsh plugin --profile web add github:cocofhu/skillhub#<sha>
+```
+
+本地开发安装：
+
+```sh
+dsh plugin --profile web add /absolute/path/to/skillhub
+```
+
+安装后重启 `dsh web`，并强制刷新浏览器。`dsh web` 请绑定 `127.0.0.1`，不要监听 `0.0.0.0`。
+
+## 使用
+
+可以直接对 Agent 说：
+
+> 找个能处理 PDF 的 skill
+>
+> SkillHub 上搜一下周报
+>
+> 我装了哪些技能
+>
+> 把刚才那个卸载掉
+
+搜索完成后对话中会显示可点击卡片；点开详情后再安装。不要让 Agent 打印安装命令或 curl。
+
+### Agent 工具
+
+| 工具 | 作用 |
+| --- | --- |
+| `skillhub_search` | 搜索或浏览技能，并展示卡片 |
+| `skillhub_install` | 按 slug 安装；可传 `version` |
+| `skillhub_list` | 列出已安装技能 |
+| `skillhub_uninstall` | 卸载本地技能目录 |
+
+## 配置
+
+打开 **设置 → 插件 → 插件配置 → SkillHub**：
+
+| 项 | 说明 |
+| --- | --- |
+| API 地址 | 默认 `https://api.skillhub.cn` |
+| 安装目录 | 默认 `$DSH_HOME/skills`（通常是 `~/.dsh/skills`） |
+| 搜索结果上限 | 每批返回的卡片数量，默认 12 |
+
+保存后立即生效。配置写入 Harness 用户目录下的 `skillhub.json`，不会进入 git。
+
+也可通过 `cordis.patch.yml` 设置默认值：
+
+```yaml
+- id: skillhub
+  config:
+    skillsDir: ~/.dsh/skills
+    maxResults: 12
+```
+
+安装完成后，新对话即可被 `dsh-skill-filesystem` 发现。该目录有文件监视，多数情况无需重启 Harness。
+
+## 数据与网络
+
+插件只请求 SkillHub 公开 HTTP API，并把技能包写到配置的 skills 目录。图标经本机插件服务转发。自定义 API 地址应只指向你信任的服务。
+
+| 用途 | 请求 |
+| --- | --- |
+| 搜索 / 浏览 | `GET /api/skills` |
+| 技能详情 | `GET /api/v1/skills/{slug}` |
+| 版本历史 | `GET /api/v1/skills/{slug}/versions` |
+| TRACE 评测 | `GET /api/v1/skills/{slug}/evaluation` |
+| 内容签名 | `GET /api/v1/open/skills/{slug}/versions/{version}/signature` |
+| 安装包 | `GET /api/v1/download?slug={slug}&source=dsh` |
+
+上游请求有超时；安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。
+
+## 开发
+
+```sh
+git clone https://github.com/cocofhu/skillhub.git
+cd skillhub
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+源码在 `src/`，构建输出到 `lib/`。`lib/` 不进版本库，安装或发布时由 `prepare` 生成。
+
+| 文件 | 作用 |
+| --- | --- |
+| `src/host.ts` | 工具注册与本机 `/skillhub` API |
+| `src/client.js` | 搜索卡片、详情弹窗、设置页 |
+| `src/api.ts` | 搜索与技能卡片映射 |
+| `src/install.ts` | zip 下载、解压、安装 / 卸载 |
+| `src/skill-detail.ts` | 版本历史与 TRACE 评测 |
+| `src/unzip.ts` | zip 解压（含 data descriptor） |
+| `src/config-store.ts` | 默认值与 `skillhub.json` |
+
+修改 Host（`src/*.ts`）后需要重启 `dsh web`。修改 Client（`src/client.js`）后复制到 `lib/client.js` 并强制刷新即可。
+
+更完整的约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## 故障排查
+
+| 现象 | 处理 |
+| --- | --- |
+| 页面停在 Loading plugins | 确认 `pnpm build` 成功，重启 `dsh web` 后强制刷新 |
+| 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
+| 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
+| 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
+| pnpm 拒绝 `prepare` | 在 profile 的 `pnpm-workspace.yaml` 写入 `allowBuilds.skillhub: true` |
+
+## 安全
+
+安装第三方技能等于在本机落下可被 Agent 读取的文件。请只安装你信任的来源，并留意详情页的安全标记与评测。
+
+漏洞请按 [SECURITY.md](SECURITY.md) 私下报告，不要发公开 Issue。
+
+## 参与贡献
+
+Bug 修复、测试、文档和交互优化都欢迎。提交前请阅读：
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SECURITY.md](SECURITY.md)
+- [CHANGELOG.md](CHANGELOG.md)
+
+## 许可证
+
+[MIT](LICENSE)
+
+SkillHub、DeepSeek 等名称归其各自所有者。本项目与它们没有从属或背书关系。
