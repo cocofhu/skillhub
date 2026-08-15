@@ -4,11 +4,6 @@
 
 ## [Unreleased]
 
-### Added
-
-- 补充 http / unzip / 安装安全、配置 overlay、搜索回退与 Host 渲染测试
-- CI 增加核心模块覆盖率门槛，以及独立的打包检查 job
-
 ## [0.1.0] - 2026-08-16
 
 ### Added
@@ -18,3 +13,5 @@
 - zip 安装（兼容 data descriptor / 中央目录）
 - 设置页配置 API 地址、安装目录与搜索数量
 - 中英文界面跟随 Harness 语言
+- http / unzip / 安装安全、配置 overlay、搜索回退与 Host 渲染测试
+- CI 核心模块覆盖率门槛，以及独立的打包检查 job
