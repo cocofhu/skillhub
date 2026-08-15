@@ -1,12 +1,15 @@
 # skillhub
 
 [![CI](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml?query=branch%3Amain)
+[![Release](https://img.shields.io/github/v/release/cocofhu/skillhub?display_name=tag)](https://github.com/cocofhu/skillhub/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
 本仓库是独立开源项目，**不是** SkillHub 或 DeepSeek 的官方产品。SkillHub 上的技能由第三方发布，安装前请自行判断来源与风险。
+
+最新正式版：[v0.1.0](https://github.com/cocofhu/skillhub/releases/tag/v0.1.0) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -28,7 +31,8 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 - 在对话流中展示可点击卡片（名称、分类、下载量、简介）
 - 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
-- 设置页可查看已安装技能；界面跟随 Harness 中英文
+- 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
+- 界面跟随 Harness 中英文
 
 ## 环境要求
 
@@ -38,7 +42,13 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-从 GitHub 安装：
+推荐安装已发布的 **v0.1.0**：
+
+```sh
+dsh plugin --profile web add github:cocofhu/skillhub#v0.1.0
+```
+
+也可以跟踪默认分支（可能含未发布改动）：
 
 ```sh
 dsh plugin --profile web add github:cocofhu/skillhub
@@ -51,11 +61,7 @@ allowBuilds:
   skillhub: true
 ```
 
-然后重新执行 `dsh plugin add`。只允许你信任的来源；建议钉到具体 commit：
-
-```sh
-dsh plugin --profile web add github:cocofhu/skillhub#<sha>
-```
+然后重新执行 `dsh plugin add`。只允许你信任的来源。
 
 本地开发安装：
 
@@ -97,6 +103,8 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | API 地址 | 默认 `https://api.skillhub.cn` |
 | 安装目录 | 默认 `$DSH_HOME/skills`（通常是 `~/.dsh/skills`） |
 | 搜索结果上限 | 每批返回的卡片数量，默认 12 |
+
+标题栏有 **更新** 按钮：会查询 GitHub 最新 release，并用 `dsh plugin add github:cocofhu/skillhub#vX.Y.Z` 安装。更新后请重启 `dsh web` 并强制刷新。若当前是本地 `link:` 开发安装，更新会改成 GitHub release 安装。
 
 保存后立即生效。配置写入 Harness 用户目录下的 `skillhub.json`，不会进入 git。
 
@@ -178,6 +186,8 @@ Bug 修复、测试、文档和交互优化都欢迎。提交前请阅读：
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - [SECURITY.md](SECURITY.md)
 - [CHANGELOG.md](CHANGELOG.md)
+
+发布说明见 [Releases](https://github.com/cocofhu/skillhub/releases)。
 
 ## 许可证
 

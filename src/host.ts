@@ -8,6 +8,7 @@ import { assignConfig, publicConfig, readOverlay, sanitizePatch, sanitizeSortBy,
 import { fetchBytes } from './http.js'
 import { installSkill, listInstalled, uninstallSkill } from './install.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
+import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
 
 export const name = 'skillhub'
@@ -293,6 +294,17 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginC
         writeOverlay(cfg)
       }
       return sendJson(res, 200, { ok: true, ...publicConfig(cfg) })
+    }
+    if (method === 'updateCheck') {
+      const status = await getUpdateStatus({ timeoutMs: Math.min(cfg.timeoutMs, 20000), userAgent: cfg.userAgent })
+      return sendJson(res, 200, { ok: true, ...status })
+    }
+    if (method === 'update') {
+      const result = await updateToLatestRelease({
+        timeoutMs: Math.max(cfg.timeoutMs, 120000),
+        userAgent: cfg.userAgent,
+      })
+      return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))

@@ -31,6 +31,7 @@ must=(
   lib/unzip.js
   lib/config-store.js
   lib/skill-detail.js
+  lib/self-update.js
   lib/categories.js
 )
 

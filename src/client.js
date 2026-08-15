@@ -179,6 +179,11 @@ window.__ModuleLoader__.load({
       locale: "zh",
       "cfg.desc": "搜索 API、安装目录与结果数量。默认装到 ~/.dsh/skills。",
       "cfg.installed": "查看已安装",
+      "cfg.update": "更新",
+      "cfg.updating": "更新中",
+      "cfg.updateHint": "当前 {cur} · 最新 {latest}",
+      "cfg.updateOk": "已更新到 {tag}，请重启 dsh web 并强制刷新",
+      "cfg.updateLatest": "已是最新 {tag}",
       "cfg.unsaved": "未保存",
       "cfg.collapse": "收起",
       "cfg.expand": "展开",
@@ -256,6 +261,11 @@ window.__ModuleLoader__.load({
       locale: "en",
       "cfg.desc": "Search API, install directory, and result count. Defaults to ~/.dsh/skills.",
       "cfg.installed": "View installed",
+      "cfg.update": "Update",
+      "cfg.updating": "Updating",
+      "cfg.updateHint": "Current {cur} · Latest {latest}",
+      "cfg.updateOk": "Updated to {tag}. Restart dsh web and hard-refresh.",
+      "cfg.updateLatest": "Already on latest {tag}",
       "cfg.unsaved": "Unsaved",
       "cfg.collapse": "Collapse",
       "cfg.expand": "Expand",
@@ -1072,6 +1082,9 @@ window.__ModuleLoader__.load({
       const [saved, setSaved] = useState(emptyDraft);
       const [draft, setDraft] = useState(emptyDraft);
       const [saving, setSaving] = useState(false);
+      const [updating, setUpdating] = useState(false);
+      const [toast, setToast] = useState("");
+      const [updateInfo, setUpdateInfo] = useState(null);
       const [err, setErr] = useState("");
       useEffect(() => {
         let live = true;
@@ -1089,6 +1102,9 @@ window.__ModuleLoader__.load({
             setDraft(next);
           })
           .catch((e) => { if (live) setErr(e.message || String(e)); });
+        api("updateCheck", {})
+          .then((d) => { if (live) setUpdateInfo(d); })
+          .catch(() => {});
         return () => { live = false; };
       }, []);
       const dirty = !!(draft && saved && JSON.stringify(draft) !== JSON.stringify(saved));
@@ -1113,6 +1129,23 @@ window.__ModuleLoader__.load({
           setSaving(false);
         }
       };
+      const updatePlugin = async () => {
+        setUpdating(true);
+        setErr("");
+        try {
+          const d = await api("update", {});
+          setUpdateInfo(d);
+          if (d.updated) setToast(tr("cfg.updateOk", { tag: d.latest?.tag || d.currentVersion }));
+          else setToast(d.message || tr("cfg.updateLatest", { tag: d.latest?.tag || d.currentVersion }));
+        } catch (e) {
+          setErr(e.message || String(e));
+        } finally {
+          setUpdating(false);
+        }
+      };
+      const versionHint = updateInfo?.latest
+        ? tr("cfg.updateHint", { cur: updateInfo.currentVersion || "-", latest: updateInfo.latest.version || "-" })
+        : "";
       return h(I18nProvider, { t: tr },
         h("li", { className: "sh-cfg-item" },
         h("div", { className: "sh-cfg" + (open ? " open" : "") },
@@ -1125,10 +1158,17 @@ window.__ModuleLoader__.load({
             },
               h("span", { className: "sh-cfg-t" },
                 h("span", { className: "sh-cfg-n" }, "SkillHub"),
-                h("span", { className: "sh-cfg-d" }, tr("cfg.desc")),
+                h("span", { className: "sh-cfg-d" }, versionHint || tr("cfg.desc")),
               ),
               dirty ? h("span", { className: "sh-tag orange" }, tr("cfg.unsaved")) : null,
             ),
+            h("button", {
+              type: "button",
+              className: "sh-mini",
+              disabled: updating,
+              title: versionHint || undefined,
+              onClick: updatePlugin,
+            }, updating ? tr("cfg.updating") : tr("cfg.update")),
             h("button", {
               type: "button",
               className: "sh-mini",
@@ -1180,6 +1220,7 @@ window.__ModuleLoader__.load({
           ) : null,
         ),
         showInstalled ? h(InstalledModal, { onClose: () => setShowInstalled(false) }) : null,
+        toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
       ));
     }
 

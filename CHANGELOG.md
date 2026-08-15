@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- 设置页「更新」按钮：安装 GitHub 最新 release，并提示重启 Harness
+
 ## [0.1.0] - 2026-08-16
 
 ### Added
