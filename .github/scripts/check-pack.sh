@@ -25,8 +25,13 @@ must=(
   cordis.patch.yml
   lib/host.js
   lib/client.js
+  lib/api.js
+  lib/http.js
   lib/install.js
   lib/unzip.js
+  lib/config-store.js
+  lib/skill-detail.js
+  lib/categories.js
 )
 
 missing=0

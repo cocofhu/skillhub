@@ -15,6 +15,10 @@ test('TRACE scores average item scores', () => {
   assert.equal(evalGrade(4.6), '优秀')
   assert.equal(evalGrade(4.2), '良好')
   assert.equal(evalGrade(3.1), '一般')
+  assert.equal(evalGrade(2.2), '待提升')
+  assert.equal(evalGrade(undefined), '')
+  assert.equal(dimScore(null), null)
+  assert.equal(overallScore(undefined), null)
 })
 
 test('fetchSkillTab versions sanitize payload', async () => {
@@ -60,6 +64,51 @@ test('fetchSkillTab evaluation missing becomes null', async () => {
     },
   })
   assert.equal(result.evaluation, null)
+})
+
+test('fetchSkillTab evaluation sanitizes and truncates text', async () => {
+  const result = await fetchSkillTab('demo', 'evaluation', testCfg(), {
+    fetchJson: async <T>() => ({
+      userSummary: 's'.repeat(2000),
+      dimensions: {
+        trust: {
+          userReason: 'r'.repeat(2000),
+          items: { a: { score: 4, userReason: 'i'.repeat(800) } },
+        },
+      },
+    }) as T,
+  })
+  const ev = result.evaluation as {
+    userSummary: string
+    score: number
+    dimensions: { trust: { userReason: string; items: { a: { userReason: string } } } }
+  }
+  assert.equal(ev.userSummary.length, 1200)
+  assert.equal(ev.dimensions.trust.userReason.length, 1200)
+  assert.equal(ev.dimensions.trust.items.a.userReason.length, 400)
+  assert.equal(ev.score, 4)
+})
+
+test('fetchSkillTab evaluation rethrows non-404 errors', async () => {
+  await assert.rejects(
+    () => fetchSkillTab('demo', 'evaluation', testCfg(), {
+      fetchJson: async <T>(): Promise<T> => {
+        throw new HttpError('HTTP 500', 500)
+      },
+    }),
+    /HTTP 500/,
+  )
+})
+
+test('fetchSkillTab versions cap changelog length', async () => {
+  const versions = await fetchSkillTab('demo', 'versions', testCfg(), {
+    fetchJson: async <T>() => ({
+      versions: [{ version: '2.0.0', changelog: 'c'.repeat(800), createdAt: 'bad' }],
+    }) as T,
+  })
+  const first = (versions.versions as Array<{ changelog: string; createdAt: number }>)[0]
+  assert.equal(first.changelog.length, 500)
+  assert.equal(first.createdAt, 0)
 })
 
 test('fetchSkillTab rejects unknown tab', async () => {

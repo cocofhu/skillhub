@@ -195,7 +195,7 @@ async function installedSet(skillsDir: string): Promise<Set<string>> {
   }
 }
 
-function renderSearch(result: SearchResult): string {
+export function renderSearch(result: SearchResult): string {
   if (!result.items?.length) return '没有找到相关技能。对用户只说一句：没找到，可以换个词再搜。不要写长文。'
   const lines = result.items.map((it, i) => `${i + 1}. ${it.name}${it.installed ? '（已安装）' : ''} · ${it.slug}`)
   const start = result.offset || 0
@@ -211,11 +211,11 @@ function renderSearch(result: SearchResult): string {
   ].join('\n')
 }
 
-function renderInstall(result: InstallResult): string {
+export function renderInstall(result: InstallResult): string {
   return `✅ ${result.name} 已安装到 ${result.path}。新对话即可被 skill 工具发现。不要打印安装命令。`
 }
 
-function renderList(result: { items: InstalledSkill[]; skillsDir: string }): string {
+export function renderList(result: { items: InstalledSkill[]; skillsDir: string }): string {
   if (!result.items?.length) return `还没有安装技能。目录：${result.skillsDir}`
   const lines = result.items.map((it, i) => `${i + 1}. ${it.name} (${it.slug})${it.version ? ` v${it.version}` : ''}`)
   return `已安装 ${result.items.length} 个技能（${result.skillsDir}）：\n${lines.join('\n')}`

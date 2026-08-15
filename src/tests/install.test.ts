@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { deflateRawSync } from 'node:zlib'
 import { withDefaults } from '../config-store.js'
-import { installSkill, listInstalled, parseFrontmatter, parseVersion, safeRelPath, skillDir, uninstallSkill } from '../install.js'
+import { installSkill, listInstalled, normalizeZipFiles, parseFrontmatter, parseVersion, safeRelPath, skillDir, uninstallSkill } from '../install.js'
 import { unzipToFiles } from '../unzip.js'
+import { makeDeflatedZip, makeDescriptorZip } from './helpers/zip.js'
 import type { PluginConfig } from '../types.js'
 
 test('safeRelPath rejects traversal', () => {
@@ -55,6 +55,12 @@ test('parseFrontmatter reads name and description', () => {
   assert.equal(meta.name, 'demo')
   assert.equal(meta.description, 'hello')
   assert.equal(meta.version, '1.0.0')
+})
+
+test('parseFrontmatter accepts CRLF and ignores missing fences', () => {
+  const meta = parseFrontmatter('---\r\nname: crlf\r\n---\r\nbody')
+  assert.equal(meta.name, 'crlf')
+  assert.deepEqual(parseFrontmatter('# no frontmatter\n'), {})
 })
 
 test('install requires SKILL.md', async () => {
@@ -118,6 +124,64 @@ test('install uses zip download API', async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
+test('install accepts octet-stream zip by magic bytes', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-magic-'))
+  const zip = makeZip({ 'SKILL.md': '---\nname: magic\n---\n' })
+  const result = await installSkill('magic', testCfg(dir), {
+    fetchBytes: async () => ({ body: zip, contentType: 'application/octet-stream' }),
+  })
+  assert.equal(result.name, 'magic')
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('install rejects non-zip download', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-html-'))
+  await assert.rejects(
+    () => installSkill('bad', testCfg(dir), {
+      fetchBytes: async () => ({ body: Buffer.from('<html>nope</html>'), contentType: 'text/html' }),
+    }),
+    /不是 zip/,
+  )
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('install rejects zip path traversal', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-trav-'))
+  const zip = makeZip({
+    'SKILL.md': '---\nname: evil\n---\n',
+    '../escape.txt': 'nope',
+  })
+  await assert.rejects(
+    () => installSkill('evil', testCfg(dir), {
+      fetchBytes: async () => ({ body: zip, contentType: 'application/zip' }),
+    }),
+    /不安全路径/,
+  )
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('listInstalled skips files, hidden dirs, and folders without SKILL.md', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-list-'))
+  await writeFile(join(dir, 'notes.txt'), 'x')
+  await mkdir(join(dir, '.tmp-hidden'), { recursive: true })
+  await mkdir(join(dir, 'empty'), { recursive: true })
+  await mkdir(join(dir, 'ok'), { recursive: true })
+  await writeFile(join(dir, 'ok', 'SKILL.md'), '---\nname: ok\n---\n')
+  const listed = await listInstalled(dir)
+  assert.equal(listed.length, 1)
+  assert.equal(listed[0].slug, 'ok')
+  assert.deepEqual(await listInstalled(join(dir, 'missing-root')), [])
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('normalizeZipFiles strips a shared top directory', () => {
+  const files = normalizeZipFiles({
+    'pack/SKILL.md': Buffer.from('a'),
+    'pack/refs/t.md': Buffer.from('b'),
+  })
+  assert.deepEqual(Object.keys(files).sort(), ['SKILL.md', 'refs/t.md'])
+})
+
 test('unzipToFiles reads stored and deflated entries', () => {
   const files = unzipToFiles(makeZip({ 'a.txt': 'hello', 'dir/b.txt': 'world' }))
   assert.equal(files['a.txt'].toString(), 'hello')
@@ -138,69 +202,6 @@ function testCfg(skillsDir: string): PluginConfig {
 }
 
 function makeZip(files: Record<string, string>): Buffer {
-  const chunks: Buffer[] = []
-  for (const [name, text] of Object.entries(files)) {
-    const raw = Buffer.from(text)
-    const compressed = deflateRawSync(raw)
-    const nameBuf = Buffer.from(name)
-    const header = Buffer.alloc(30)
-    header.writeUInt32LE(0x04034b50, 0)
-    header.writeUInt16LE(20, 4)
-    header.writeUInt16LE(0, 6)
-    header.writeUInt16LE(8, 8)
-    header.writeUInt16LE(0, 10)
-    header.writeUInt16LE(0, 12)
-    header.writeUInt32LE(0, 14)
-    header.writeUInt32LE(compressed.length, 18)
-    header.writeUInt32LE(raw.length, 22)
-    header.writeUInt16LE(nameBuf.length, 26)
-    header.writeUInt16LE(0, 28)
-    chunks.push(header, nameBuf, compressed)
-  }
-  chunks.push(Buffer.from([0x50, 0x4b, 0x01, 0x02]))
-  return Buffer.concat(chunks)
+  return makeDeflatedZip(files)
 }
 
-function makeDescriptorZip(files: Record<string, string>): Buffer {
-  const locals: Buffer[] = []
-  const centrals: Buffer[] = []
-  let offset = 0
-  for (const [name, text] of Object.entries(files)) {
-    const raw = Buffer.from(text)
-    const compressed = deflateRawSync(raw)
-    const nameBuf = Buffer.from(name)
-    const local = Buffer.alloc(30)
-    local.writeUInt32LE(0x04034b50, 0)
-    local.writeUInt16LE(20, 4)
-    local.writeUInt16LE(8, 6)
-    local.writeUInt16LE(8, 8)
-    local.writeUInt16LE(nameBuf.length, 26)
-    const desc = Buffer.alloc(16)
-    desc.writeUInt32LE(0x08074b50, 0)
-    desc.writeUInt32LE(compressed.length, 8)
-    desc.writeUInt32LE(raw.length, 12)
-    const chunk = Buffer.concat([local, nameBuf, compressed, desc])
-    const central = Buffer.alloc(46)
-    central.writeUInt32LE(0x02014b50, 0)
-    central.writeUInt16LE(20, 4)
-    central.writeUInt16LE(20, 6)
-    central.writeUInt16LE(8, 8)
-    central.writeUInt16LE(8, 10)
-    central.writeUInt32LE(compressed.length, 20)
-    central.writeUInt32LE(raw.length, 24)
-    central.writeUInt16LE(nameBuf.length, 28)
-    central.writeUInt32LE(offset, 42)
-    locals.push(chunk)
-    centrals.push(central, nameBuf)
-    offset += chunk.length
-  }
-  const cd = Buffer.concat(centrals)
-  const eocd = Buffer.alloc(22)
-  eocd.writeUInt32LE(0x06054b50, 0)
-  const n = Object.keys(files).length
-  eocd.writeUInt16LE(n, 8)
-  eocd.writeUInt16LE(n, 10)
-  eocd.writeUInt32LE(cd.length, 12)
-  eocd.writeUInt32LE(offset, 16)
-  return Buffer.concat([...locals, cd, eocd])
-}

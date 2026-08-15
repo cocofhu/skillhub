@@ -202,6 +202,56 @@ test('mapIntegrity requires hash or signature', () => {
   assert.equal(mapIntegrity({ signed: false, content_hash: 'deadbeef' })?.signed, false)
 })
 
+test('mapSecurityReports drops javascript and traversal URLs', () => {
+  const mapped = mapSecurityReports({
+    keen: { status: 'malicious', statusText: 'bad', reportUrl: 'https://evil.example/../x' },
+    sanbu: { status: 'scanning', statusText: 'scan', reportUrl: 'https://lab.example/r' },
+  })
+  assert.equal(mapped?.keen?.status, 'malicious')
+  assert.equal(mapped?.keen?.reportUrl, undefined)
+  assert.equal(mapped?.sanbu?.reportUrl, 'https://lab.example/r')
+})
+
+test('searchSkills falls back to popular when keyword is empty of hits', async () => {
+  const empty: SkillHubListResponse = { code: 0, data: { skills: [], total: 0 } }
+  const result = await searchSkills('no-such-skill', {
+    cfg: testCfg(),
+    limit: 12,
+    fetchJsonImpl: async <T>(url: string) => {
+      if (String(url).includes('keyword=')) return empty as T
+      return fixture as T
+    },
+  })
+  assert.equal(result.fallback, true)
+  assert.equal(result.query, 'no-such-skill')
+  assert.ok(result.items.length > 0)
+})
+
+test('searchSkills paginates with offset', async () => {
+  const result = await searchSkills('pdf', {
+    cfg: testCfg(),
+    limit: 12,
+    offset: 1,
+    fetchJsonImpl: async <T>(url: string) => {
+      assert.match(String(url), /page=1/)
+      return fixture as T
+    },
+  })
+  assert.equal(result.items.length, 1)
+  assert.equal(result.items[0].slug, 'pdf-ocr-md')
+  assert.equal(result.offset, 1)
+})
+
+test('parseSlug rejects backslash and null bytes', () => {
+  assert.throws(() => parseSlug('a\\b'), /无效 slug/)
+  assert.throws(() => parseSlug('abc\0'), /无效 slug/)
+})
+
+test('collectQueries drops short tokens and caps at four', () => {
+  assert.deepEqual(collectQueries('a'), [])
+  assert.equal(collectQueries('主词', ['aa', 'bb', 'cc', 'dd', 'ee']).length, 4)
+})
+
 function testCfg(overrides: Partial<PluginConfig> = {}): PluginConfig {
   return withDefaults({ timeoutMs: 5000, userAgent: 'test', skillsDir: '/tmp/skills', ...overrides })
 }

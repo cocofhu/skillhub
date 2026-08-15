@@ -134,6 +134,7 @@ cd skillhub
 pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
+pnpm test:coverage
 pnpm build
 ```
 

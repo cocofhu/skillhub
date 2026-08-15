@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- 补充 http / unzip / 安装安全、配置 overlay、搜索回退与 Host 渲染测试
+- CI 增加核心模块覆盖率门槛，以及独立的打包检查 job
+
 ## [0.1.0] - 2026-08-16
 
 ### Added

@@ -32,6 +32,7 @@ pnpm build
 | --- | --- |
 | `pnpm typecheck` | TypeScript 检查，不写 `lib/` |
 | `pnpm test` | 构建后跑 `node:test` |
+| `pnpm test:coverage` | 对核心模块检查行/函数/分支覆盖率门槛 |
 | `pnpm build` | 清空并生成 `lib/`，复制 `src/client.js` |
 | `pnpm pack:check` | 检查发布包文件列表 |
 
@@ -81,8 +82,9 @@ dsh web --host 127.0.0.1 --port 3080
 推送到 `main` 或打开 PR 时，GitHub Actions 会：
 
 - 在 Node.js 22 和 24 上安装依赖、类型检查、跑测试
+- 在 Node.js 22 上检查核心模块覆盖率门槛
 - 检查 `lib/` 未被提交
-- 打包并确认 tarball 含 `LICENSE`、`lib/host.js`、`lib/client.js`，且不含 `src/` 与测试
+- 打包并确认 tarball 含 `LICENSE`、Host/Client 与核心模块，且不含 `src/` 与测试
 
 依赖更新由 Dependabot 提交 PR。不必在文档 PR 里顺手升级无关依赖。
 
