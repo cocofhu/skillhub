@@ -143,10 +143,16 @@ window.__ModuleLoader__.load({
       return (t.slice(0, 3) || String(name || "SK").slice(0, 2)).toUpperCase();
     }
 
+    function pluginUrl(path) {
+      const suffix = String(path || "").replace(/^\/+/, "");
+      const base = typeof document !== "undefined" ? document.baseURI : "/";
+      return new URL("./skillhub" + (suffix ? "/" + suffix : ""), base).toString();
+    }
+
     function iconSrc(url) {
       if (!url) return "";
       if (url.startsWith("data:")) return url;
-      return "/skillhub/icon?url=" + encodeURIComponent(url);
+      return pluginUrl("icon?url=" + encodeURIComponent(url));
     }
 
     function fmt(n, tr) {
@@ -389,7 +395,7 @@ window.__ModuleLoader__.load({
     ];
 
     async function api(method, payload) {
-      const res = await fetch("/skillhub", {
+      const res = await fetch(pluginUrl(""), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ method, ...payload }),
