@@ -7,8 +7,6 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-本仓库是独立开源项目，**不是** SkillHub 或 DeepSeek 的官方产品。SkillHub 上的技能由第三方发布，安装前请自行判断来源与风险。
-
 最新正式版：[v0.1.1](https://github.com/cocofhu/skillhub/releases/tag/v0.1.1) · [更新日志](CHANGELOG.md)
 
 ## 目录
