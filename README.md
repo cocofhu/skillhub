@@ -86,7 +86,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 ### 设置里的插件市场
 
-打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的已验证 DSH 插件（与站点 Plugins 页同源）。点 **安装** 后，Host 会先向官方 API **独立核验**该插件 `installability=verified`（不信任前端字段），再拉取上游 `install-plan`，且仅接受 commit-pinned 的 `github:owner/repo#sha`（拒绝 `file:` / `link:` / 裸 URL / 浮动分支），按 `dsh plugin --profile <profile> add <source>` 直装。过程中显示 loading 与阶段进度（Host 返回的真实阶段 → 自动重启 → done）。
+打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的已验证 DSH 插件（与站点 Plugins 页同源）。点 **安装** 后，Host 会先请求官方详情 `GET /api/v1/plugins/{owner}/{name}` **独立核验** `installability=verified`（不信任前端字段、也不走搜索列表），再拉取上游 `install-plan`，且仅接受 **40 位 hex commit** 钉扎的 `github:owner/repo#sha`（拒绝 `file:` / `link:` / 裸 URL / 短 SHA / 浮动分支；若 plan 带 `plugin.headSha` 则必须一致），按 `dsh plugin --profile <profile> add <source>` 直装。过程中显示 loading 与阶段进度（Host 返回的真实阶段 → 自动重启 → **done 100%**）。
 
 直装路径默认只允许 `https://api.skillhub.cn`；若需自定义 `apiBase`，须设置环境变量 `SKILLHUB_ALLOW_CUSTOM_API_BASE=1`，且直装请求使用 `redirect: error` 避免重定向 SSRF。
 
@@ -144,6 +144,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | 安装包 | `GET /api/v1/download?slug={slug}&source=dsh` |
 | DSH 插件类目 | `GET /api/v1/plugins/categories` |
 | DSH 插件目录 | `GET /api/v1/plugins` |
+| 插件详情 | `GET /api/v1/plugins/{owner}/{name}` |
 | 插件安装计划 | `GET /api/v1/plugins/{owner}/{name}/install-plan` |
 
 上游请求有超时；安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。

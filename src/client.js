@@ -1532,7 +1532,7 @@ window.__ModuleLoader__.load({
                       applyPhase("init", "busy");
                       directInstallPlugin(plugin, (phase) => applyPhase(phase, "busy")).then(
                         (body) => {
-                          applyPhase(body.phase || "auto-restart", "ok");
+                          applyPhase("done", "ok");
                           setFeedback(body.message || tr("mkt.sent", { name: plugin.fullName || id }));
                           setFeedbackKind("ok");
                         },

@@ -75,6 +75,8 @@ test('client marketplace install path uses pluginInstall not prompt/session', ()
   assert.doesNotMatch(src, /session\.prompt/)
   assert.doesNotMatch(src, /mkt\.noTask/)
   assert.match(src, /inject = \["slots"\]/)
+  assert.match(src, /applyPhase\("done", "ok"\)/)
+  assert.doesNotMatch(src, /applyPhase\(body\.phase \|\| "auto-restart"/)
 })
 
 test('phaseMeta covers Demo progress stages', () => {

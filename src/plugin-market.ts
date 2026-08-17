@@ -98,9 +98,13 @@ export function trimBase(raw: string): string {
   return String(raw || '').replace(/\/$/, '')
 }
 
-export function installPlanUrl(apiBase: string, owner: string, name: string): string {
+export function pluginDetailUrl(apiBase: string, owner: string, name: string): string {
   const ref = parsePluginRef(owner, name)
-  return `${trimBase(apiBase)}/api/v1/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}/install-plan`
+  return `${trimBase(apiBase)}/api/v1/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
+}
+
+export function installPlanUrl(apiBase: string, owner: string, name: string): string {
+  return `${pluginDetailUrl(apiBase, owner, name)}/install-plan`
 }
 
 export function pluginCategoriesUrl(apiBase: string): string {

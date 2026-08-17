@@ -43,9 +43,13 @@ const plan = {
   command: `dsh plugin --profile web add ${pinned}`,
   source: pinned,
   profile: 'web',
+  plugin: { fullName: 'demo/owner-plugin', headSha: 'abcdef0123456789abcdef0123456789abcdef01' },
 }
 const catalog = {
-  items: [{ owner: 'demo', name: 'owner-plugin', fullName: 'demo/owner-plugin', installability: 'verified' }],
+  owner: 'demo',
+  name: 'owner-plugin',
+  fullName: 'demo/owner-plugin',
+  installability: 'verified',
 }
 
 function fetchFixture(url) {
@@ -91,6 +95,7 @@ assert.equal(failCase.restarts, 0, 'failure must not SIGTERM')
 assert.match(failCase.result.error || '', /allowBuilds/)
 
 let planFetched = false
+let detailUrl = ''
 const gate = await installMarketPlugin(
   withDefaults({}),
   { owner: 'demo', name: 'owner-plugin', installability: 'verified' },
@@ -100,8 +105,11 @@ const gate = await installMarketPlugin(
         planFetched = true
         throw new Error('should not fetch plan')
       }
+      detailUrl = String(url)
       return {
-        items: [{ owner: 'demo', name: 'owner-plugin', installability: 'unsupported' }],
+        owner: 'demo',
+        name: 'owner-plugin',
+        installability: 'unsupported',
       }
     },
     runCommand: async () => { throw new Error('should not spawn') },
@@ -113,6 +121,8 @@ const gate = await installMarketPlugin(
 assert.equal(gate.ok, false)
 assert.equal(planFetched, false, 'upstream unsupported must not fetch install-plan')
 assert.match(gate.error || '', /verified/)
+assert.match(detailUrl, /\/api\/v1\/plugins\/demo\/owner-plugin$/)
+assert.doesNotMatch(detailUrl, /[?&]q=/)
 
 const summary = {
   ok: true,
@@ -122,6 +132,7 @@ const summary = {
   failureRestarts: failCase.restarts,
   argv: recorded.args,
   upstreamGate: true,
+  detailUrl,
 }
 writeFileSync(assertFile, JSON.stringify(summary, null, 2))
 console.log('plugin-install L1 smoke passed')

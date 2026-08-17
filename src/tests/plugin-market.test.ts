@@ -13,6 +13,7 @@ import {
   parsePluginCategory,
   parsePluginRef,
   pluginCategoriesUrl,
+  pluginDetailUrl,
   pluginPageUrl,
   sanitizePluginScope,
   sanitizePluginSort,
@@ -121,6 +122,10 @@ test('createInstallPrompt en includes install-plan and forbids force/pnpm', () =
 })
 
 test('installPlanUrl and pluginPageUrl encode owner/name', () => {
+  assert.equal(
+    pluginDetailUrl('https://api.skillhub.cn/', 'liustack', 'modlens'),
+    'https://api.skillhub.cn/api/v1/plugins/liustack/modlens',
+  )
   assert.equal(
     installPlanUrl('https://api.skillhub.cn', 'o', 'n'),
     'https://api.skillhub.cn/api/v1/plugins/o/n/install-plan',

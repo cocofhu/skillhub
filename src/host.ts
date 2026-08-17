@@ -347,12 +347,11 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginC
       return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
     }
     if (method === 'pluginInstall') {
-      // Client installability is a hint only; installMarketPlugin re-checks upstream.
+      // Ignore client installability; installMarketPlugin re-checks GET /plugins/{owner}/{name}.
       const result = await installMarketPlugin(cfg, {
         owner: body.owner ?? url.searchParams.get('owner'),
         name: body.name ?? url.searchParams.get('name'),
         fullName: body.fullName ?? url.searchParams.get('fullName'),
-        installability: body.installability ?? url.searchParams.get('installability'),
       })
       // Always 200 so the client can read phase/error without losing the payload.
       return sendJson(res, 200, { ...result, ok: result.ok })

@@ -12,8 +12,8 @@
 
 ### Security
 
-- Host 直装前向上游目录独立核验 `installability=verified`，忽略客户端伪造字段
-- `install-plan` source 收紧为 commit-pinned `github:owner/repo#sha`，拒绝 file/link/http(s)/绝对路径与浮动 ref
+- Host 直装前请求 `GET /api/v1/plugins/{owner}/{name}` 独立核验 `installability=verified`，忽略客户端伪造字段，不走搜索列表
+- `install-plan` source 必须为 40 位 hex commit-pinned `github:owner/repo#sha`；拒绝 file/link/http(s)/绝对路径/短 SHA/浮动 ref；`plugin.headSha` 若存在必须与 pin 一致
 - 直装默认仅允许 `https://api.skillhub.cn`；自定义需 `SKILLHUB_ALLOW_CUSTOM_API_BASE=1`；直装 fetch 使用 `redirect: error`
 
 ## [0.2.1] - 2026-08-18
