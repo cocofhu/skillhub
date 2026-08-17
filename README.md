@@ -7,7 +7,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.1.1](https://github.com/cocofhu/skillhub/releases/tag/v0.1.1) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.0](https://github.com/cocofhu/skillhub/releases/tag/v0.2.0) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -41,10 +41,10 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-推荐安装已发布的 **v0.1.1**：
+推荐安装已发布的 **v0.2.0**：
 
 ```sh
-dsh plugin --profile web add github:cocofhu/skillhub#v0.1.1
+dsh plugin --profile web add github:cocofhu/skillhub#v0.2.0
 ```
 
 也可以跟踪默认分支（可能含未发布改动）：
