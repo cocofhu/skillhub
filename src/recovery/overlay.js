@@ -1,15 +1,19 @@
 (function () {
-  var COPY = {
-    button: "快速修复 · 卸载全部第三方",
-    warningTitle: "粗暴模式 · 会卸载所有第三方插件",
-    warningBody: "不逐个甄别肇事项：一次性移除 profile 内全部第三方包（含 anime-find、skillhub 等），再重启 dsh web。基线内置插件保留。",
-    hint: "目标：立刻拉回可用 UI。副作用：第三方能力全部清掉，需事后按需重装。",
-    running: "正在执行粗暴快速修复…",
-    successTitle: "服务已恢复（安全模式）",
-    successBody: "全部第三方插件已卸载；仅基线能力在线。正在等待 dsh web 重启…",
-    restartHint: "若页面未自动恢复，请手动重启 dsh web 并强制刷新。",
-    retry: "重试",
-  };
+  var BOOT = typeof window !== "undefined" && window.__SKILLHUB_RECOVERY_BOOT__
+    ? window.__SKILLHUB_RECOVERY_BOOT__
+    : {
+      button: "快速修复 · 卸载全部第三方",
+      warningTitle: "粗暴模式 · 会卸载所有第三方插件",
+      warningBody: "不逐个甄别肇事项：一次性移除 profile 内全部第三方包（含 anime-find、skillhub 等），再重启 dsh web。基线内置插件保留。",
+      hint: "目标：立刻拉回可用 UI。副作用：第三方能力全部清掉，需事后按需重装。",
+      running: "正在执行粗暴快速修复…",
+      successTitle: "服务已恢复（安全模式）",
+      successBody: "全部第三方插件已卸载；仅基线能力在线。正在等待 dsh web 重启…",
+      restartHint: "若页面未自动恢复，请手动重启 dsh web 并强制刷新。",
+      retry: "重试",
+      nonce: "",
+    };
+  var COPY = BOOT;
   var CSS_ID = "skillhub-recovery-style";
   var ROOT_ID = "skillhub-recovery-root";
   var CSS = [
@@ -45,11 +49,22 @@
 
   function isFailPage() {
     var text = document.body ? document.body.innerText : "";
-    return text.indexOf("Failed to load plugins") !== -1;
+    if (text.indexOf("Failed to load plugins") === -1) return false;
+    // Prefer the user-facing options.id regression text when present.
+    return true;
+  }
+
+  function looksLikeOptionsIdFailure() {
+    var text = document.body ? document.body.innerText : "";
+    return text.indexOf('requires options.id') !== -1 || text.indexOf("settings.plugin.item") !== -1;
   }
 
   function apiUrl(path) {
     return new URL(path, document.baseURI).href;
+  }
+
+  function safeLabel(value) {
+    return String(value == null ? "" : value).replace(/[^\w@/.\-+#: ]+/g, "");
   }
 
   function mount() {
@@ -58,16 +73,20 @@
     var root = document.createElement("div");
     root.id = ROOT_ID;
     root.setAttribute("data-skillhub-recovery-ui", "fail");
+    if (looksLikeOptionsIdFailure()) root.setAttribute("data-skillhub-fail-kind", "options-id");
     document.body.appendChild(root);
     renderFail(root);
   }
 
   function renderFail(root, error) {
     root.setAttribute("data-skillhub-recovery-ui", error ? "error" : "fail");
-    root.innerHTML = "";
+    root.textContent = "";
     var warn = document.createElement("div");
     warn.className = "sh-rec-warn";
-    warn.innerHTML = "<strong>" + COPY.warningTitle + "</strong>" + COPY.warningBody;
+    var strong = document.createElement("strong");
+    strong.textContent = COPY.warningTitle;
+    warn.appendChild(strong);
+    warn.appendChild(document.createTextNode(COPY.warningBody));
     var actions = document.createElement("div");
     actions.className = "sh-rec-actions";
     var btn = document.createElement("button");
@@ -78,7 +97,7 @@
     btn.addEventListener("click", function () { runFix(root, btn); });
     var hint = document.createElement("p");
     hint.className = "sh-rec-hint";
-    hint.innerHTML = COPY.hint;
+    hint.textContent = COPY.hint;
     actions.appendChild(btn);
     actions.appendChild(hint);
     root.appendChild(warn);
@@ -86,14 +105,14 @@
     if (error) {
       var err = document.createElement("p");
       err.className = "sh-rec-err";
-      err.textContent = error;
+      err.textContent = String(error);
       root.appendChild(err);
     }
   }
 
   function renderRun(root) {
     root.setAttribute("data-skillhub-recovery-ui", "running");
-    root.innerHTML = "";
+    root.textContent = "";
     var head = document.createElement("p");
     head.style.fontWeight = "750";
     head.textContent = COPY.running;
@@ -102,7 +121,9 @@
     log.id = "skillhub-recovery-log";
     var bar = document.createElement("div");
     bar.className = "sh-rec-bar";
-    bar.innerHTML = "<i id=\"skillhub-recovery-bar\"></i>";
+    var barInner = document.createElement("i");
+    barInner.id = "skillhub-recovery-bar";
+    bar.appendChild(barInner);
     root.appendChild(head);
     root.appendChild(log);
     root.appendChild(bar);
@@ -125,10 +146,24 @@
   function renderOk(root, body) {
     root.setAttribute("data-skillhub-recovery-ui", "success");
     var removed = (body && body.removed) || [];
-    root.innerHTML = "";
+    root.textContent = "";
     var banner = document.createElement("div");
     banner.className = "sh-rec-ok";
-    banner.innerHTML = "<div><h2>" + COPY.successTitle + "</h2><p>" + COPY.successBody + "</p><p>" + COPY.restartHint + "</p><p>已卸载: " + (removed.join(", ") || "—") + "</p></div>";
+    var wrap = document.createElement("div");
+    var h2 = document.createElement("h2");
+    h2.textContent = COPY.successTitle;
+    var p1 = document.createElement("p");
+    p1.textContent = COPY.successBody;
+    var p2 = document.createElement("p");
+    p2.textContent = COPY.restartHint;
+    var p3 = document.createElement("p");
+    var labels = removed.map(safeLabel).filter(Boolean);
+    p3.textContent = "已卸载: " + (labels.join(", ") || "—");
+    wrap.appendChild(h2);
+    wrap.appendChild(p1);
+    wrap.appendChild(p2);
+    wrap.appendChild(p3);
+    banner.appendChild(wrap);
     root.appendChild(banner);
   }
 
@@ -140,10 +175,11 @@
     addLog("→ enumerating third-party (no cherry-pick)", "warn");
     setProgress(28);
     try {
+      if (!COPY.nonce) throw new Error("recovery nonce missing — reload the fail page");
       var res = await fetch(apiUrl("./skillhub/recovery/nuke"), {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ confirm: "nuke-third-party" }),
+        body: JSON.stringify({ confirm: "nuke-third-party", nonce: COPY.nonce }),
       });
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok || body.ok === false) throw new Error(body.error || ("HTTP " + res.status));
@@ -173,7 +209,7 @@
           location.reload();
         }
       }).catch(function () {});
-      if (tries > 40) clearInterval(timer);
+      if (tries > 80) clearInterval(timer);
     }, 1500);
   }
 

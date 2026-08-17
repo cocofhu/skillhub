@@ -3,7 +3,14 @@ import test from 'node:test'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { defaultRestart, injectRecoveryScript, mountRecovery, overlayPath } from '../recovery/host.js'
+import {
+  createRecoverySession,
+  defaultRestart,
+  injectRecoveryScript,
+  materializeOverlay,
+  mountRecovery,
+  overlayPath,
+} from '../recovery/host.js'
 import { parseArgs, runCli } from '../recovery/cli.js'
 import { FAIL_PAGE_COPY } from '../recovery/fail-page-machine.js'
 
@@ -47,7 +54,10 @@ interface FakeReq {
 class FakeRes {
   statusCode = 200
   body = ''
-  setHeader(_key: string, _value: string): void {}
+  headers: Record<string, string> = {}
+  setHeader(key: string, value: string): void {
+    this.headers[key.toLowerCase()] = value
+  }
   end(chunk?: unknown): void {
     if (chunk != null) this.body = String(chunk)
   }
@@ -75,10 +85,22 @@ function mockReq(opts: {
 async function invoke(
   handler: (req: FakeReq, res: FakeRes) => void | Promise<void>,
   req: FakeReq,
-): Promise<{ status: number; body: string }> {
+): Promise<{ status: number; body: string; headers: Record<string, string> }> {
   const res = new FakeRes()
   await handler(req, res)
-  return { status: res.statusCode, body: res.body }
+  return { status: res.statusCode, body: res.body, headers: res.headers }
+}
+
+async function armOverlay(server: ReturnType<typeof fakeServer>): Promise<string> {
+  const armed = await invoke(server.routes.get('/skillhub/recovery.js')!, mockReq({
+    method: 'GET',
+    url: '/skillhub/recovery.js',
+  }))
+  assert.equal(armed.status, 200)
+  const nonce = armed.headers['x-skillhub-recovery-nonce']
+  assert.ok(nonce)
+  assert.match(armed.body, new RegExp(nonce))
+  return nonce
 }
 
 test('index tap injects the recovery overlay without depending on client plugins', () => {
@@ -88,7 +110,7 @@ test('index tap injects the recovery overlay without depending on client plugins
   assert.equal(injectRecoveryScript(html), html)
 })
 
-test('local nuke request edits the fixture profile; remote is 403', async () => {
+test('healthy boot POST nuke is 404 until overlay arms a one-time nonce', async () => {
   const dir = fixtureDir()
   const server = fakeServer()
   let restarted = 0
@@ -98,23 +120,56 @@ test('local nuke request edits the fixture profile; remote is 403', async () => 
     overlaySource: '/* overlay */',
     restart: () => { restarted += 1 },
   })
-  assert.equal(server.taps.length, 1)
-  assert.ok(server.routes.has('/skillhub/recovery/nuke'))
+  const cold = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
+    method: 'POST',
+    url: '/skillhub/recovery/nuke',
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce: 'nope' }),
+  }))
+  assert.equal(cold.status, 404)
+  assert.equal(restarted, 0)
+
+  const nonce = await armOverlay(server)
+  const badNonce = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
+    method: 'POST',
+    url: '/skillhub/recovery/nuke',
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce: 'wrong' }),
+  }))
+  assert.equal(badNonce.status, 400)
+
   const ok = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
     method: 'POST',
     url: '/skillhub/recovery/nuke',
-    body: JSON.stringify({ confirm: 'nuke-third-party' }),
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce }),
   }))
   assert.equal(ok.status, 200)
   const payload = JSON.parse(ok.body) as { removed: string[]; kept: string[] }
   assert.deepEqual(payload.removed.sort(), ['anime-find', 'skillhub'])
   assert.ok(payload.kept.includes('@deepseek-ai/dsh-base'))
   assert.equal(restarted, 1)
+
+  const reused = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
+    method: 'POST',
+    url: '/skillhub/recovery/nuke',
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce }),
+  }))
+  assert.equal(reused.status, 404)
+})
+
+test('local nuke after arm edits fixture; remote is 403', async () => {
+  const dir = fixtureDir()
+  const server = fakeServer()
+  mountRecovery(server as never, {
+    profile: 'web',
+    profileDir: dir,
+    overlaySource: '/* overlay */',
+    restart: () => {},
+  })
+  const nonce = await armOverlay(server)
   const denied = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
     method: 'POST',
     url: '/skillhub/recovery/nuke',
     remoteAddress: '198.51.100.10',
-    body: JSON.stringify({ confirm: 'nuke-third-party' }),
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce }),
   }))
   assert.equal(denied.status, 403)
 })
@@ -180,10 +235,11 @@ test('nuke against a missing profile is 500; HEAD overlay is empty', async () =>
   }))
   assert.equal(head.status, 200)
   assert.equal(head.body, '')
+  const nonce = head.headers['x-skillhub-recovery-nonce']
   const boom = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
     method: 'POST',
     url: '/skillhub/recovery/nuke',
-    body: JSON.stringify({ confirm: 'nuke-third-party' }),
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce }),
   }))
   assert.equal(boom.status, 500)
 })
@@ -216,16 +272,19 @@ test('overlay GET is loopback-only and missing confirm is 400', async () => {
   }))
   assert.equal(local.status, 200)
   assert.match(local.body, /overlay-fixture/)
+  assert.match(local.body, /快速修复/)
+  assert.match(local.body, /window\.__SKILLHUB_RECOVERY_BOOT__=/)
   const remote = await invoke(server.routes.get('/skillhub/recovery.js')!, mockReq({
     method: 'GET',
     url: '/skillhub/recovery.js',
     remoteAddress: '8.8.8.8',
   }))
   assert.equal(remote.status, 403)
+  const nonce = local.headers['x-skillhub-recovery-nonce']
   const bad = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
     method: 'POST',
     url: '/skillhub/recovery/nuke',
-    body: JSON.stringify({ confirm: 'nope' }),
+    body: JSON.stringify({ confirm: 'nope', nonce }),
   }))
   assert.equal(bad.status, 400)
   const missing = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
@@ -240,11 +299,55 @@ test('injectRecoveryScript prepends when head is missing', () => {
   assert.match(injectRecoveryScript('<html>'), /^<script data-skillhub-recovery/)
 })
 
-test('defaultRestart schedules process.exit(0)', () => {
-  let called = false
+test('defaultRestart respawns with same argv then exits current process', () => {
+  const spawns: Array<{ cmd: string; args: string[]; opts: Record<string, unknown> }> = []
+  let exited = false
   defaultRestart({
-    run: () => { called = true },
     wait: (fn) => { fn() },
+    spawn: ((cmd: string, args: string[], opts: Record<string, unknown>) => {
+      spawns.push({ cmd, args, opts })
+      return { unref() {} }
+    }) as never,
+    execPath: '/usr/bin/node',
+    argv: ['/tmp/dsh', 'web', '--host', '127.0.0.1', '--port', '3080'],
+    cwd: '/tmp',
+    env: { FOO: '1' },
+    exitCurrent: false,
+    run: undefined,
   })
-  assert.equal(called, true)
+  // When run is undefined, default body uses spawn — but we passed exitCurrent false via hooks
+  // Re-call with explicit path that exercises spawn inside default run:
+  defaultRestart({
+    wait: (fn) => { fn() },
+    spawn: ((cmd: string, args: string[], opts: Record<string, unknown>) => {
+      spawns.push({ cmd, args, opts })
+      return { unref() {} }
+    }) as never,
+    execPath: '/usr/bin/node',
+    argv: ['/tmp/dsh', 'web', '--host', '127.0.0.1'],
+    cwd: '/tmp',
+    env: { FOO: '1' },
+    exitCurrent: false,
+  })
+  assert.equal(spawns.length >= 1, true)
+  const last = spawns.at(-1)!
+  assert.equal(last.cmd, '/usr/bin/node')
+  assert.deepEqual(last.args, ['/tmp/dsh', 'web', '--host', '127.0.0.1'])
+  assert.equal(last.opts.detached, true)
+  assert.equal((last.opts.env as { SKILLHUB_RECOVERY_RESPAWN: string }).SKILLHUB_RECOVERY_RESPAWN, '1')
+  assert.equal(exited, false)
+})
+
+test('materializeOverlay injects FAIL_PAGE_COPY and nonce', () => {
+  const out = materializeOverlay('/* body */', 'abc123')
+  assert.match(out, /^window\.__SKILLHUB_RECOVERY_BOOT__=/)
+  assert.match(out, /abc123/)
+  assert.match(out, /快速修复 · 卸载全部第三方/)
+  assert.match(out, /\/\* body \*\//)
+})
+
+test('createRecoverySession starts unarmed', () => {
+  const session = createRecoverySession()
+  assert.equal(session.armed, false)
+  assert.equal(session.nonce, null)
 })

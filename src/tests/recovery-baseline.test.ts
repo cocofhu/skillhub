@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { classifyPluginNames, isBaselinePlugin, isThirdPartyPlugin } from '../recovery/baseline.js'
+import {
+  classifyPluginNames,
+  isBaselineDependency,
+  isBaselinePlugin,
+  isBaselinePluginId,
+  isThirdPartyPlugin,
+} from '../recovery/baseline.js'
 
 test('anime-find and skillhub are third-party', () => {
   assert.equal(isThirdPartyPlugin('anime-find'), true)
@@ -9,11 +15,27 @@ test('anime-find and skillhub are third-party', () => {
   assert.equal(isBaselinePlugin('skillhub'), false)
 })
 
-test('core/ui/settings and template bundles are baseline', () => {
-  for (const name of ['core', 'ui', 'settings', '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app']) {
-    assert.equal(isBaselinePlugin(name), true, name)
-    assert.equal(isThirdPartyPlugin(name), false, name)
+test('core/ui/settings fiber ids are baseline; template bundles are baseline deps', () => {
+  for (const name of ['core', 'ui', 'settings']) {
+    assert.equal(isBaselinePluginId(name), true, name)
+    assert.equal(isBaselineDependency(name), false, `${name} must NOT be a dependency whitelist hit`)
   }
+  for (const name of ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app']) {
+    assert.equal(isBaselineDependency(name), true, name)
+    assert.equal(isBaselinePlugin(name), true, name)
+  }
+})
+
+test('npm package named settings is third-party dependency (not protected by fiber id)', () => {
+  assert.equal(isThirdPartyPlugin('settings', 'dependency'), true)
+  assert.equal(isBaselineDependency('settings'), false)
+  assert.equal(isThirdPartyPlugin('settings', 'plugin-id'), false)
+})
+
+test('arbitrary @deepseek-ai scoped packages are NOT auto-baseline', () => {
+  assert.equal(isBaselineDependency('@deepseek-ai/random-plugin'), false)
+  assert.equal(isThirdPartyPlugin('@deepseek-ai/random-plugin', 'dependency'), true)
+  assert.equal(isThirdPartyPlugin('@deepseek-ai/random-plugin', 'bundle'), true)
 })
 
 test('classify selects every third-party and never a baseline', () => {

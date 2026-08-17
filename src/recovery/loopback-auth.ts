@@ -17,13 +17,24 @@ export interface RecoveryTrustInput {
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]'])
 
+function stripMappedIpv4(addr: string): string {
+  const lower = addr.trim().toLowerCase()
+  if (lower.startsWith('::ffff:')) return lower.slice('::ffff:'.length)
+  return lower
+}
+
+/** True only for concrete loopback IPs — never hostname prefixes like 127.attacker.example. */
 export function isLoopbackAddress(addr?: string | null): boolean {
   if (!addr) return false
-  const value = addr.trim().toLowerCase()
+  const value = stripMappedIpv4(addr)
   if (value === '::1' || value === '127.0.0.1') return true
-  if (value.startsWith('::ffff:127.0.0.1')) return true
-  if (value.startsWith('127.')) return true
-  return false
+  // IPv4 127.0.0.0/8 — digits only, no DNS labels
+  const m = /^127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(value)
+  if (!m) return false
+  return m.slice(1).every((octet) => {
+    const n = Number(octet)
+    return n >= 0 && n <= 255
+  })
 }
 
 export function parseAuthority(raw: string): { host: string; port: string } | undefined {
@@ -37,12 +48,12 @@ export function parseAuthority(raw: string): { host: string; port: string } | un
   }
 }
 
+/** Host header / Origin authority: exact loopback names or IPs only (no startsWith('127.')). */
 export function isLoopbackAuthority(hostHeader: string): boolean {
   const parsed = parseAuthority(hostHeader)
   if (!parsed) return false
   if (LOOPBACK_HOSTS.has(parsed.host)) return true
-  if (parsed.host.startsWith('127.')) return true
-  return false
+  return isLoopbackAddress(parsed.host)
 }
 
 export function isTrustedAuthority(hostHeader: string, trustedHosts: readonly string[] = []): boolean {
@@ -76,6 +87,7 @@ export function assertRecoveryAllowed(req: RecoveryTrustInput, options?: { metho
   if (!methods.includes(method)) {
     throw new RecoveryAuthError(`method ${method} not allowed`, 405)
   }
+  // Intentionally ignore X-Forwarded-For / Forwarded — only the socket peer counts.
   if (!isLoopbackAddress(req.socket?.remoteAddress)) {
     throw new RecoveryAuthError('recovery is loopback-only')
   }

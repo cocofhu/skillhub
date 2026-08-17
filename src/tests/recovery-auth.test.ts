@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { RecoveryAuthError, assertRecoveryAllowed, isLoopbackAddress, isTrustedAuthority } from '../recovery/loopback-auth.js'
+import {
+  RecoveryAuthError,
+  assertRecoveryAllowed,
+  isLoopbackAddress,
+  isLoopbackAuthority,
+  isTrustedAuthority,
+} from '../recovery/loopback-auth.js'
 
 function req(partial: {
   method?: string
@@ -10,6 +16,7 @@ function req(partial: {
   referer?: string
   site?: string
   trustedHosts?: string[]
+  headers?: Record<string, string | string[] | undefined>
 }) {
   return {
     method: partial.method || 'POST',
@@ -18,6 +25,7 @@ function req(partial: {
       origin: partial.origin,
       referer: partial.referer,
       'sec-fetch-site': partial.site,
+      ...partial.headers,
     },
     socket: { remoteAddress: partial.remoteAddress || '127.0.0.1' },
     trustedHosts: partial.trustedHosts,
@@ -26,10 +34,30 @@ function req(partial: {
 
 test('loopback addresses are accepted, public ones are not', () => {
   assert.equal(isLoopbackAddress('127.0.0.1'), true)
+  assert.equal(isLoopbackAddress('127.0.0.2'), true)
   assert.equal(isLoopbackAddress('::1'), true)
   assert.equal(isLoopbackAddress('::ffff:127.0.0.1'), true)
   assert.equal(isLoopbackAddress('10.0.0.8'), false)
   assert.equal(isLoopbackAddress('8.8.8.8'), false)
+})
+
+test('127.attacker.example hostname is NOT loopback authority', () => {
+  assert.equal(isLoopbackAuthority('127.attacker.example'), false)
+  assert.equal(isLoopbackAuthority('127.attacker.example:3080'), false)
+  assert.throws(
+    () => assertRecoveryAllowed(req({ host: '127.attacker.example:3080' })),
+    RecoveryAuthError,
+  )
+})
+
+test('X-Forwarded-For cannot bypass non-loopback remoteAddress', () => {
+  assert.throws(
+    () => assertRecoveryAllowed(req({
+      remoteAddress: '203.0.113.9',
+      headers: { 'x-forwarded-for': '127.0.0.1', forwarded: 'for=127.0.0.1' },
+    })),
+    (err: unknown) => err instanceof RecoveryAuthError && err.status === 403,
+  )
 })
 
 test('L1 fixture: local POST is allowed', () => {
@@ -81,4 +109,3 @@ test('array Host headers and port-less trusted hosts work', () => {
     trustedHosts: ['preview.example:8443'],
   })))
 })
-
