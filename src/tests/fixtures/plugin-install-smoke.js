@@ -44,6 +44,14 @@ const plan = {
   source: pinned,
   profile: 'web',
 }
+const catalog = {
+  items: [{ owner: 'demo', name: 'owner-plugin', fullName: 'demo/owner-plugin', installability: 'verified' }],
+}
+
+function fetchFixture(url) {
+  if (String(url).includes('/install-plan')) return plan
+  return catalog
+}
 
 async function runCase(label, fail) {
   let restarts = 0
@@ -51,7 +59,7 @@ async function runCase(label, fail) {
     withDefaults({ timeoutMs: 5000 }),
     { owner: 'demo', name: 'owner-plugin', installability: 'verified' },
     {
-      fetchJson: async () => plan,
+      fetchJson: async (url) => fetchFixture(url),
       runCommand: async (cmd, args, opts) => {
         // Simulate npx forwarding to fake dsh by recording the intended argv.
         writeFileSync(argvLog, JSON.stringify({ cmd, args, cwd: opts.cwd }) + '\n')
@@ -82,11 +90,20 @@ assert.equal(failCase.result.phase, 'plugin-add')
 assert.equal(failCase.restarts, 0, 'failure must not SIGTERM')
 assert.match(failCase.result.error || '', /allowBuilds/)
 
+let planFetched = false
 const gate = await installMarketPlugin(
   withDefaults({}),
-  { owner: 'demo', name: 'owner-plugin', installability: 'unsupported' },
+  { owner: 'demo', name: 'owner-plugin', installability: 'verified' },
   {
-    fetchJson: async () => { throw new Error('should not fetch') },
+    fetchJson: async (url) => {
+      if (String(url).includes('/install-plan')) {
+        planFetched = true
+        throw new Error('should not fetch plan')
+      }
+      return {
+        items: [{ owner: 'demo', name: 'owner-plugin', installability: 'unsupported' }],
+      }
+    },
     runCommand: async () => { throw new Error('should not spawn') },
     profileDir: () => profileDir,
     requestRestart: () => { throw new Error('should not restart') },
@@ -94,6 +111,7 @@ const gate = await installMarketPlugin(
   },
 )
 assert.equal(gate.ok, false)
+assert.equal(planFetched, false, 'upstream unsupported must not fetch install-plan')
 assert.match(gate.error || '', /verified/)
 
 const summary = {
@@ -103,6 +121,7 @@ const summary = {
   successRestarts: okCase.restarts,
   failureRestarts: failCase.restarts,
   argv: recorded.args,
+  upstreamGate: true,
 }
 writeFileSync(assertFile, JSON.stringify(summary, null, 2))
 console.log('plugin-install L1 smoke passed')

@@ -2,9 +2,15 @@ import { join } from 'node:path'
 import { fetchOpts } from './api.js'
 import { dshHome } from './config-store.js'
 import { fetchJson } from './http.js'
-import { installPlanUrl, parsePluginRef } from './plugin-market.js'
+import {
+  buildPluginsUrl,
+  installPlanUrl,
+  mapMarketPlugin,
+  parsePluginRef,
+  type MarketPlugin,
+} from './plugin-market.js'
 import { runCommand } from './run-command.js'
-import type { PluginConfig } from './types.js'
+import type { FetchOptions, PluginConfig } from './types.js'
 
 export type PluginInstallPhase =
   | 'init'
@@ -18,6 +24,7 @@ export interface PluginInstallInput {
   owner: unknown
   name: unknown
   fullName?: unknown
+  /** Client hint only; Host ignores this and re-checks upstream. */
   installability?: unknown
 }
 
@@ -25,6 +32,7 @@ export interface InstallPlan {
   command?: string
   source?: string
   profile?: string
+  installability?: unknown
 }
 
 export interface PluginInstallResult {
@@ -61,7 +69,10 @@ const defaultDeps: PluginInstallDeps = {
 }
 
 const PROFILE_RE = /^[A-Za-z0-9._-]{1,64}$/
-const SOURCE_RE = /^(github:[^\s]+|https?:\/\/\S+|link:\S+|file:\S+|\/\S+)$/i
+/** Only commit-pinned github specs: github:owner/repo#sha (7–40 hex). */
+const PINNED_GITHUB_RE =
+  /^github:([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})#([a-fA-F0-9]{7,40})$/
+const DEFAULT_INSTALL_API_HOSTS = new Set(['api.skillhub.cn'])
 
 export function assertVerifiedInstallability(raw: unknown): void {
   if (raw !== 'verified') {
@@ -69,8 +80,56 @@ export function assertVerifiedInstallability(raw: unknown): void {
   }
 }
 
+export function assertSafeInstallApiBase(apiBase: string): void {
+  let url: URL
+  try {
+    url = new URL(String(apiBase || '').trim())
+  } catch {
+    throw new Error('apiBase 无效')
+  }
+  if (url.protocol !== 'https:') {
+    throw new Error('市场直装要求 apiBase 使用 https')
+  }
+  const host = url.hostname.toLowerCase()
+  const allowCustom = process.env.SKILLHUB_ALLOW_CUSTOM_API_BASE === '1'
+  if (!DEFAULT_INSTALL_API_HOSTS.has(host) && !allowCustom) {
+    throw new Error(
+      '市场直装仅允许官方 API 主机（api.skillhub.cn）；自定义 apiBase 需设置环境变量 SKILLHUB_ALLOW_CUSTOM_API_BASE=1',
+    )
+  }
+}
+
+export function assertPinnedGithubSource(
+  source: string,
+  expected?: { owner: string; name: string },
+): string {
+  const raw = String(source || '').trim()
+  const m = raw.match(PINNED_GITHUB_RE)
+  if (!m) {
+    throw new Error(
+      'install-plan source 必须为 commit-pinned github:owner/repo#sha，拒绝 file/link/http(s)/绝对路径与浮动分支',
+    )
+  }
+  const owner = m[1]
+  const name = m[2]
+  const sha = m[3].toLowerCase()
+  if (expected) {
+    if (owner.toLowerCase() !== expected.owner.toLowerCase() || name.toLowerCase() !== expected.name.toLowerCase()) {
+      throw new Error(`install-plan source 与请求插件不一致: 期望 ${expected.owner}/${expected.name}`)
+    }
+  }
+  return `github:${owner}/${name}#${sha}`
+}
+
+function installFetchOpts(cfg: PluginConfig): FetchOptions {
+  return { ...fetchOpts(cfg), redirect: 'error' }
+}
+
 /** Prefer install-plan.source; fall back to parsing `dsh plugin … add <spec>`. */
-export function resolveInstallPlan(raw: unknown): { command: string; source: string; profile: string } {
+export function resolveInstallPlan(
+  raw: unknown,
+  expected?: { owner: string; name: string },
+): { command: string; source: string; profile: string } {
   if (!raw || typeof raw !== 'object') throw new Error('install-plan 无效')
   const plan = raw as InstallPlan
   const profile = String(plan.profile || '').trim()
@@ -83,7 +142,7 @@ export function resolveInstallPlan(raw: unknown): { command: string; source: str
     if (m) source = m[1]
   }
   if (!source) throw new Error('install-plan 缺少 source/command')
-  if (!SOURCE_RE.test(source)) throw new Error(`install-plan source 无效: ${source}`)
+  source = assertPinnedGithubSource(source, expected)
   if (!command) {
     return {
       command: `dsh plugin --profile ${profile} add ${source}`,
@@ -101,6 +160,40 @@ export function buildPluginAddArgs(profile: string, source: string): string[] {
   return ['--yes', '@deepseek-ai/dsh', 'plugin', '--profile', profile, 'add', source]
 }
 
+export async function fetchUpstreamPlugin(
+  cfg: PluginConfig,
+  owner: string,
+  name: string,
+  deps: Pick<PluginInstallDeps, 'fetchJson'> = defaultDeps,
+  signal?: AbortSignal,
+): Promise<MarketPlugin | null> {
+  const url = buildPluginsUrl(cfg.apiBase, {
+    q: `${owner}/${name}`,
+    scope: 'all',
+    pageSize: 50,
+    page: 1,
+  })
+  const body = await deps.fetchJson<{ items?: unknown[] }>(url, installFetchOpts(cfg), signal)
+  const items = (Array.isArray(body.items) ? body.items : [])
+    .map(mapMarketPlugin)
+    .filter((it): it is MarketPlugin => !!it)
+  return (
+    items.find((p) => p.owner.toLowerCase() === owner.toLowerCase() && p.name.toLowerCase() === name.toLowerCase()) ||
+    null
+  )
+}
+
+export async function assertUpstreamVerified(
+  cfg: PluginConfig,
+  owner: string,
+  name: string,
+  deps: Pick<PluginInstallDeps, 'fetchJson'> = defaultDeps,
+  signal?: AbortSignal,
+): Promise<void> {
+  const hit = await fetchUpstreamPlugin(cfg, owner, name, deps, signal)
+  assertVerifiedInstallability(hit?.installability)
+}
+
 export async function fetchInstallPlan(
   cfg: PluginConfig,
   owner: string,
@@ -109,7 +202,7 @@ export async function fetchInstallPlan(
   signal?: AbortSignal,
 ): Promise<unknown> {
   const url = installPlanUrl(cfg.apiBase, owner, name)
-  return deps.fetchJson(url, fetchOpts(cfg), signal)
+  return deps.fetchJson(url, installFetchOpts(cfg), signal)
 }
 
 export async function installMarketPlugin(
@@ -130,7 +223,14 @@ export async function installMarketPlugin(
   })
 
   try {
-    assertVerifiedInstallability(input.installability)
+    assertSafeInstallApiBase(cfg.apiBase)
+  } catch (err) {
+    return fail('failed', err instanceof Error ? err.message : String(err))
+  }
+
+  // Hard gate: ignore client installability; verify from upstream catalog.
+  try {
+    await assertUpstreamVerified(cfg, ref.owner, ref.name, deps, signal)
   } catch (err) {
     return fail('failed', err instanceof Error ? err.message : String(err))
   }
@@ -138,7 +238,10 @@ export async function installMarketPlugin(
   let resolved: { command: string; source: string; profile: string }
   try {
     const plan = await fetchInstallPlan(cfg, ref.owner, ref.name, deps, signal)
-    resolved = resolveInstallPlan(plan)
+    if (plan && typeof plan === 'object' && 'installability' in plan) {
+      assertVerifiedInstallability((plan as InstallPlan).installability)
+    }
+    resolved = resolveInstallPlan(plan, ref)
   } catch (err) {
     return fail('install-plan', err instanceof Error ? err.message : String(err))
   }

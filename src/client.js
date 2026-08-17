@@ -1354,33 +1354,28 @@ window.__ModuleLoader__.load({
 
     async function directInstallPlugin(plugin, onPhase) {
       if (onPhase) onPhase("init");
-      if (onPhase) onPhase("install-plan");
-      const tick = setTimeout(() => { if (onPhase) onPhase("plugin-add"); }, 120);
-      try {
-        const res = await fetch(pluginUrl(""), {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            method: "pluginInstall",
-            owner: plugin.owner,
-            name: plugin.name,
-            fullName: plugin.fullName,
-            installability: plugin.installability,
-          }),
-        });
-        const body = await res.json().catch(() => ({}));
-        clearTimeout(tick);
-        if (!res.ok || !body || body.ok === false) {
-          const err = new Error((body && (body.error || body.message)) || ("HTTP " + res.status));
-          err.phase = (body && body.phase) || "failed";
-          throw err;
-        }
-        if (onPhase) onPhase(body.phase || "auto-restart");
-        return body;
-      } catch (e) {
-        clearTimeout(tick);
-        throw e;
+      const res = await fetch(pluginUrl(""), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          method: "pluginInstall",
+          owner: plugin.owner,
+          name: plugin.name,
+          fullName: plugin.fullName,
+          installability: plugin.installability,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body || body.ok === false) {
+        const err = new Error((body && (body.error || body.message)) || ("HTTP " + res.status));
+        err.phase = (body && body.phase) || "failed";
+        if (onPhase) onPhase(err.phase);
+        throw err;
       }
+      const phase = body.phase || "auto-restart";
+      if (onPhase) onPhase(phase);
+      if (onPhase && phase !== "done") onPhase("done");
+      return body;
     }
 
     function Marketplace(props) {

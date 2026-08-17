@@ -114,9 +114,8 @@ test('directInstallPlugin posts pluginInstall without sessions binding', async (
       (p) => phases.push(p),
     )
     assert.equal(result.ok, true)
-    assert.ok(phases.includes('init'))
-    assert.ok(phases.includes('install-plan'))
-    assert.ok(phases.includes('auto-restart'))
+    assert.deepEqual(phases, ['init', 'auto-restart', 'done'])
+    assert.doesNotMatch(readFileSync(join(root, 'src/client.js'), 'utf8'), /setTimeout\(\s*\(\)\s*=>\s*\{\s*if\s*\(onPhase\)\s*onPhase\("plugin-add"\)/)
   } finally {
     globalThis.fetch = originalFetch
   }

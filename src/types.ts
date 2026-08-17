@@ -3,6 +3,8 @@ export type SortBy = 'score' | 'downloads' | 'stars' | 'installs' | 'updated_at'
 export interface FetchOptions {
   timeoutMs: number
   userAgent: string
+  /** Defaults to follow; market direct-install uses error to avoid SSRF via redirect. */
+  redirect?: RequestRedirect
 }
 
 export interface PluginConfig {

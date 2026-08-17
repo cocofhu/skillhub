@@ -29,7 +29,7 @@ async function request(url: string, options: FetchOptions, signal?: AbortSignal)
     const res = await fetch(url, {
       signal: ctrl.signal,
       headers: { 'user-agent': options.userAgent, accept: '*/*' },
-      redirect: 'follow',
+      redirect: options.redirect ?? 'follow',
     })
     if (!res.ok) throw new HttpError(`HTTP ${res.status} ${url}`, res.status)
     return res

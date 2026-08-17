@@ -86,7 +86,9 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 ### 设置里的插件市场
 
-打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的已验证 DSH 插件（与站点 Plugins 页同源）。点 **安装** 后，Host 会拉取上游 `install-plan`，按其中 pinned 的 `dsh plugin --profile <profile> add <source>` 直装，过程中显示 loading 与阶段进度（拉计划 → 直装 → 自动重启）。
+打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的已验证 DSH 插件（与站点 Plugins 页同源）。点 **安装** 后，Host 会先向官方 API **独立核验**该插件 `installability=verified`（不信任前端字段），再拉取上游 `install-plan`，且仅接受 commit-pinned 的 `github:owner/repo#sha`（拒绝 `file:` / `link:` / 裸 URL / 浮动分支），按 `dsh plugin --profile <profile> add <source>` 直装。过程中显示 loading 与阶段进度（Host 返回的真实阶段 → 自动重启 → done）。
+
+直装路径默认只允许 `https://api.skillhub.cn`；若需自定义 `apiBase`，须设置环境变量 `SKILLHUB_ALLOW_CUSTOM_API_BASE=1`，且直装请求使用 `redirect: error` 避免重定向 SSRF。
 
 安装成功后会向当前 dsh 进程发送 **SIGTERM** 优雅退出，以便外部守护（launchd KeepAlive / systemd / 容器重启策略等）拉起新进程并挂载新插件层。**推荐在有 supervisor 的环境使用**；若没有外部守护，进程退出后需要自行重新启动 `dsh web`。
 

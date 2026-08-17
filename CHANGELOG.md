@@ -7,8 +7,14 @@
 ### Changed
 
 - 插件市场安装改为 Host 按 install-plan 直装（`dsh plugin add`），不再排队 Agent 审核 prompt，也不依赖当前任务
-- 安装过程展示按钮 loading 与阶段进度（拉计划 → 直装 → 自动重启）
+- 安装过程展示按钮 loading 与阶段进度（Host 真实阶段 → 自动重启 → done）
 - 直装成功后向当前 dsh 进程发送 SIGTERM 优雅退出；推荐在有 KeepAlive/supervisor 的环境使用，无守护时需自行拉起
+
+### Security
+
+- Host 直装前向上游目录独立核验 `installability=verified`，忽略客户端伪造字段
+- `install-plan` source 收紧为 commit-pinned `github:owner/repo#sha`，拒绝 file/link/http(s)/绝对路径与浮动 ref
+- 直装默认仅允许 `https://api.skillhub.cn`；自定义需 `SKILLHUB_ALLOW_CUSTOM_API_BASE=1`；直装 fetch 使用 `redirect: error`
 
 ## [0.2.1] - 2026-08-18
 
