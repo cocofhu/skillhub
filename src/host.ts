@@ -10,6 +10,7 @@ import { installSkill, listInstalled, uninstallSkill } from './install.js'
 import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
+import { mountRecovery } from './recovery/host.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
 
 export const name = 'skillhub'
@@ -178,9 +179,25 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   ctx.inject(['webServer'], (c) => {
-    const server = (c as unknown as { webServer: { register: (route: { kind: string; path: string; handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void> }) => void } }).webServer
+    const server = (c as unknown as {
+      webServer: {
+        register: (route: { kind: string; path: string; handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void> }) => void
+        tapIndex?: (transform: (html: string) => string) => void
+      }
+      get?: (name: string) => { trustedHosts?: string[] } | undefined
+    }).webServer
+    const host = c as unknown as { webServer: typeof server; get?: (name: string) => { trustedHosts?: string[] } | undefined }
     server.register({ kind: 'exact', path: '/skillhub', handler: (req, res) => handleApi(req, res, cfg) })
     server.register({ kind: 'exact', path: '/skillhub/icon', handler: (req, res) => handleIcon(req, res, cfg) })
+    mountRecovery(server, {
+      trustedHosts: () => {
+        try {
+          return host.get?.('webRuntime')?.trustedHosts ?? []
+        } catch {
+          return []
+        }
+      },
+    })
   })
 
   // 插件配置页按 Host settings 命名空间分发 settings.plugin.item。

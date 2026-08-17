@@ -33,6 +33,8 @@ must=(
   lib/skill-detail.js
   lib/self-update.js
   lib/categories.js
+  lib/recovery/overlay.js
+  lib/recovery/cli.js
 )
 
 missing=0

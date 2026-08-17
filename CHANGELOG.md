@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Failed to load plugins 时提供粗暴快速修复：Host 在失败页注入「快速修复 · 卸载全部第三方」，保留基线并清空第三方，CLI 为 `skillhub-recovery nuke-third-party`。说明见 [docs/recovery.md](docs/recovery.md)
+
 ## [0.2.1] - 2026-08-18
 
 ### Changed

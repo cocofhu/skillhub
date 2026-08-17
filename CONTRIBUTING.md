@@ -33,7 +33,8 @@ pnpm build
 | `pnpm typecheck` | TypeScript 检查，不写 `lib/` |
 | `pnpm test` | 构建后跑 `node:test` |
 | `pnpm test:coverage` | 对核心模块检查行/函数/分支覆盖率门槛 |
-| `pnpm build` | 清空并生成 `lib/`，复制 `src/client.js` |
+| `pnpm build` | 清空并生成 `lib/`，复制 `src/client.js` 与 `src/recovery/overlay.js` |
+| `pnpm recovery` | 失败页恢复 CLI（`nuke-third-party`，见 [docs/recovery.md](docs/recovery.md)） |
 | `pnpm pack:check` | 检查发布包文件列表 |
 
 测试不访问真实网络，夹具放在 `src/tests/fixtures/`。

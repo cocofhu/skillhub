@@ -159,6 +159,7 @@ pnpm build
 | 文件 | 作用 |
 | --- | --- |
 | `src/host.ts` | 工具注册与本机 `/skillhub` API |
+| `src/recovery/` | 失败页 Nuke 第三方：基线判定、profile 恢复、loopback 通道、overlay |
 | `src/client.js` | 搜索卡片、详情弹窗、设置页、插件市场 |
 | `src/api.ts` | 搜索与技能卡片映射 |
 | `src/plugin-market.ts` | DSH 插件目录查询与审核安装提示词 |
@@ -177,6 +178,7 @@ pnpm build
 | 现象 | 处理 |
 | --- | --- |
 | 页面停在 Loading plugins | 确认 `pnpm build` 成功，重启 `dsh web` 后强制刷新 |
+| Failed to load plugins | 失败页点 **快速修复 · 卸载全部第三方**（会清空全部第三方、保留基线），或运行 `pnpm recovery nuke-third-party --profile web`，再重启 `dsh web` 并强制刷新。详见 [docs/recovery.md](docs/recovery.md)。不是只删单个肇事插件，也不会卸载 core/ui/settings 基线。进程 hang/崩溃时此路径不可用 |
 | `cannot get property "locale" without inject@skillhub` | 升级到含此次修复的版本；重启 `dsh web` 并强制刷新 |
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
