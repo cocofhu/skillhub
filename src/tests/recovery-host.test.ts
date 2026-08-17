@@ -497,7 +497,7 @@ test('createRecoverySession starts unarmed', () => {
   assert.equal(recoveryShouldArm(session, { failLoud: () => { throw new Error('probe') } }), false)
 })
 
-test('loaderLooksFailLoud reads Host fiber FAILED / missing fiber', () => {
+test('loaderLooksFailLoud is true only for Host fiber FAILED, not null fiber', () => {
   assert.equal(loaderLooksFailLoud(undefined), false)
   assert.equal(loaderLooksFailLoud({ entries: () => [] }), false)
   assert.equal(loaderLooksFailLoud({
@@ -507,11 +507,72 @@ test('loaderLooksFailLoud reads Host fiber FAILED / missing fiber', () => {
     entries: () => [{ options: { name: 'anime-find' }, fiber: { state: 3 } }],
   }), true)
   assert.equal(loaderLooksFailLoud({
-    entries: () => [{ options: { name: 'anime-find' }, fiber: null }],
-  }), true)
+    entries: () => [{ options: { name: 'skillhub' }, fiber: null }],
+  }), false)
+  assert.equal(loaderLooksFailLoud({
+    entries: () => [
+      { options: { name: 'skillhub' }, fiber: null },
+      { options: { name: '@deepseek-ai/dsh-base' }, fiber: { state: 2 } },
+    ],
+  }), false)
   assert.equal(loaderLooksFailLoud({
     entries: () => { throw new Error('loader down') },
   }), false)
+})
+
+test('healthy settled Host loader via failLoud does not arm recovery.js; POST nuke is 404', async () => {
+  const dir = fixtureDir()
+  const server = fakeServer()
+  let restarted = 0
+  const healthyLoader = {
+    entries: () => [
+      { options: { name: 'skillhub' }, fiber: null },
+      { options: { name: '@deepseek-ai/dsh-base' }, fiber: { state: 2 } },
+    ],
+  }
+  const session = createRecoverySession()
+  mountRecovery(server as never, {
+    profile: 'web',
+    profileDir: dir,
+    overlaySource: '/* overlay */',
+    session,
+    failLoud: () => loaderLooksFailLoud(healthyLoader),
+    restart: () => { restarted += 1 },
+  })
+  const autoLoad = await invoke(server.routes.get('/skillhub/recovery.js')!, mockReq({
+    method: 'GET',
+    url: '/skillhub/recovery.js',
+  }))
+  assert.equal(autoLoad.status, 200)
+  assert.equal(autoLoad.headers['x-skillhub-recovery-nonce'], undefined)
+  assert.match(autoLoad.body, /"armed":false/)
+  assert.equal(session.armed, false)
+
+  const cold = await invoke(server.routes.get('/skillhub/recovery/nuke')!, mockReq({
+    method: 'POST',
+    url: '/skillhub/recovery/nuke',
+    body: JSON.stringify({ confirm: 'nuke-third-party', nonce: 'nope' }),
+  }))
+  assert.equal(cold.status, 404)
+  assert.equal(restarted, 0)
+})
+
+test('Host loader with FAILED fiber arms recovery.js via failLoud', async () => {
+  const server = fakeServer()
+  const failedLoader = {
+    entries: () => [{ options: { name: 'anime-find' }, fiber: { state: 3 } }],
+  }
+  mountRecovery(server as never, {
+    overlaySource: '/* overlay */',
+    failLoud: () => loaderLooksFailLoud(failedLoader),
+    restart: () => {},
+  })
+  const overlay = await invoke(server.routes.get('/skillhub/recovery.js')!, mockReq({
+    method: 'GET',
+    url: '/skillhub/recovery.js',
+  }))
+  assert.equal(overlay.status, 200)
+  assert.ok(overlay.headers['x-skillhub-recovery-nonce'])
 })
 
 test('defaultRestart run hook can succeed or fail without exiting', async () => {

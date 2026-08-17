@@ -57,7 +57,7 @@ export function createRecoverySession(seed?: Partial<RecoverySession>): Recovery
 /** Cordis FiberState.FAILED (numeric enum has no runtime object in some builds). */
 export const FIBER_STATE_FAILED = 3
 
-/** True when the Host loader already shows a failed or fiberless entry. */
+/** True only when the Host loader has an entry in Cordis FiberState.FAILED. */
 export function loaderLooksFailLoud(loader?: {
   entries?: () => Iterable<{
     options?: { name?: string }
@@ -68,8 +68,7 @@ export function loaderLooksFailLoud(loader?: {
   try {
     for (const entry of loader.entries()) {
       const fiber = entry.fiber
-      if (fiber == null) return true
-      if (fiber.state === FIBER_STATE_FAILED) return true
+      if (fiber?.state === FIBER_STATE_FAILED) return true
     }
   } catch {
     return false
@@ -360,7 +359,7 @@ export function mountRecovery(
         session.armed = false
         session.nonce = null
         session.failLoud = false
-        send(res, 200, {
+        const payload = {
           ok: true,
           profile: result.profile,
           removed: result.removed,
@@ -368,11 +367,14 @@ export function mountRecovery(
           logs: result.logs,
           restartRequired: true,
           copy: FAIL_PAGE_COPY,
-        })
+        }
+        res.statusCode = 200
+        res.setHeader('content-type', 'application/json; charset=utf-8')
         if (respawned) {
           const onExit = options.restartHooks?.onExit ?? (() => { process.exit(0) })
-          setTimeout(onExit, 80)
+          res.once('finish', () => { setTimeout(onExit, 80) })
         }
+        res.end(JSON.stringify(payload))
       } catch (err) {
         if (err instanceof RecoveryAuthError) {
           send(res, err.status, { ok: false, error: err.message })

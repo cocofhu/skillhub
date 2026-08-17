@@ -27,7 +27,7 @@ skillhub-recovery nuke-third-party --profile web
 
 1. 打开 Web，看到 `Failed to load plugins`（列表可能含 anime-find、skillhub；常见文案含 `list slot "settings.plugin.item" requires options.id`）。
 2. 检测脚本确认失败壳后才拉取 `/skillhub/recovery.js`。**健康 boot 即使手动/自动 GET 了 recovery.js 也不会武装 nonce**；`POST /skillhub/recovery/nuke` 恒 **404**。
-3. 武装条件是 Host 可观测的 fail-loud：Host loader 已有 FAILED/无 fiber 的 entry，或失败页 overlay 调用 `POST /skillhub/recovery/arm`（`failLoud: true`）拿到一次性 nonce。
+3. 武装条件是 Host 可观测的 fail-loud：Host loader 已有 **FAILED** 状态的 entry（`fiber.state === 3`），或失败页 overlay 调用 `POST /skillhub/recovery/arm`（`failLoud: true`）拿到一次性 nonce。健康 settled 态下 `fiber == null` **不算** fail-loud。
 4. 点主按钮 **快速修复 · 卸载全部第三方**（请求体带 `confirm` + `nonce`）。
 5. 成功后提示安全模式；Host 会 **先 spawn 原进程 argv（detached）再退出当前进程**。spawn 失败返回 500，不退出、nonce 仍可用，可重试。
 
