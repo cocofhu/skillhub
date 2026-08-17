@@ -7,7 +7,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.0](https://github.com/cocofhu/skillhub/releases/tag/v0.2.0) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.1](https://github.com/cocofhu/skillhub/releases/tag/v0.2.1) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -30,7 +30,7 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 - 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
 - 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
-- 设置侧栏 **SkillHub 市场**：搜索 DSH 插件，把安装请求交给当前任务审核执行
+- 设置 **插件 → 插件市场**：搜索 DSH 插件，把安装请求交给当前任务审核执行
 - 界面跟随 Harness 中英文
 
 ## 环境要求
@@ -41,10 +41,10 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-推荐安装已发布的 **v0.2.0**：
+推荐安装已发布的 **v0.2.1**：
 
 ```sh
-dsh plugin --profile web add github:cocofhu/skillhub#v0.2.0
+dsh plugin --profile web add github:cocofhu/skillhub#v0.2.1
 ```
 
 也可以跟踪默认分支（可能含未发布改动）：
@@ -86,7 +86,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 ### 设置里的插件市场
 
-打开 **设置 → SkillHub 市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **交给 DSH 安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
+打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
 
 对话里的技能搜索 / zip 安装不受影响。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
 
@@ -181,7 +181,7 @@ pnpm build
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
-| 设置里没有 SkillHub 市场 | 重启 `dsh web` 并强制刷新；确认安装的是含市场分区的版本 |
+| 设置里没有插件市场 | 打开 **设置 → 插件** 的「插件市场」标签；重启 `dsh web` 并强制刷新 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 在 profile 的 `pnpm-workspace.yaml` 写入 `allowBuilds.skillhub: true` |
 
