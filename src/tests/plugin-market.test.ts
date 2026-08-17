@@ -4,10 +4,15 @@ import { withDefaults } from '../config-store.js'
 import {
   buildPluginsUrl,
   createInstallPrompt,
+  fallbackPluginCategories,
   installPlanUrl,
+  listPluginCategories,
   listPlugins,
   mapMarketPlugin,
+  mapPluginCategory,
+  parsePluginCategory,
   parsePluginRef,
+  pluginCategoriesUrl,
   pluginPageUrl,
   sanitizePluginScope,
   sanitizePluginSort,
@@ -26,11 +31,19 @@ test('sanitizePluginScope and sort default safely', () => {
   assert.equal(sanitizePluginSort('trending'), 'stars')
 })
 
+test('parsePluginCategory only accepts plugin keys, not skill keys', () => {
+  assert.equal(parsePluginCategory('web-tools'), 'web-tools')
+  assert.equal(parsePluginCategory('fun-dressup'), 'fun-dressup')
+  assert.equal(parsePluginCategory('office-efficiency'), undefined)
+  assert.equal(parsePluginCategory('ai-agent'), undefined)
+  assert.equal(parsePluginCategory(''), undefined)
+})
+
 test('buildPluginsUrl forwards filters to /api/v1/plugins', () => {
   const url = buildPluginsUrl('https://api.skillhub.cn/', {
     q: 'sidebar',
     scope: 'all',
-    category: 'ai-agent',
+    category: 'web-tools',
     sort: 'updated',
     page: 2,
     pageSize: 24,
@@ -38,14 +51,14 @@ test('buildPluginsUrl forwards filters to /api/v1/plugins', () => {
   assert.match(url, /^https:\/\/api\.skillhub\.cn\/api\/v1\/plugins\?/)
   assert.match(url, /q=sidebar/)
   assert.match(url, /scope=all/)
-  assert.match(url, /category=ai-agent/)
+  assert.match(url, /category=web-tools/)
   assert.match(url, /sort=updated/)
   assert.match(url, /page=2/)
   assert.match(url, /page_size=24/)
 })
 
-test('buildPluginsUrl omits blank query and unknown category', () => {
-  const url = buildPluginsUrl('https://api.skillhub.cn', { q: '  ', category: 'nope', scope: 'verified' })
+test('buildPluginsUrl omits blank query, unknown category, and skill category keys', () => {
+  const url = buildPluginsUrl('https://api.skillhub.cn', { q: '  ', category: 'office-efficiency', scope: 'verified' })
   assert.doesNotMatch(url, /[?&]q=/)
   assert.doesNotMatch(url, /category=/)
   assert.match(url, /scope=verified/)
@@ -59,14 +72,20 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
     fullName: 'liustack/modlens',
     description: 'vision plugin',
     stars: 12,
-    categoryKey: 'ai-agent',
+    categoryKey: 'web-tools',
     installability: 'verified',
     repositoryUrl: 'https://github.com/liustack/modlens',
   })
   assert.equal(ok?.installability, 'verified')
-  assert.equal(ok?.categoryKey, 'ai-agent')
+  assert.equal(ok?.categoryKey, 'web-tools')
   assert.equal(mapMarketPlugin({ owner: '../x', name: 'n' }), null)
   assert.equal(mapMarketPlugin({ owner: 'o', name: 'n', installability: 'candidate' })?.installability, 'unsupported')
+  assert.equal(mapMarketPlugin({
+    owner: 'o',
+    name: 'n',
+    categoryKey: 'office-efficiency',
+    repositoryUrl: 'https://github.com/o/n',
+  })?.categoryKey, '')
 })
 
 test('createInstallPrompt zh includes install-plan and forbids force/pnpm', () => {
@@ -124,7 +143,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
         fullName: 'liustack/modlens',
         description: 'vision',
         stars: 10,
-        categoryKey: 'ai-agent',
+        categoryKey: 'web-tools',
         installability: 'verified',
         repositoryUrl: 'https://github.com/liustack/modlens',
       }],
@@ -138,4 +157,28 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
   assert.equal(page.webBase, 'https://skillhub.cn')
   assert.equal(page.apiBase, 'https://api.skillhub.cn')
   assert.equal(page.items[0].name, 'modlens')
+})
+
+test('pluginCategoriesUrl hits /api/v1/plugins/categories', () => {
+  assert.equal(pluginCategoriesUrl('https://api.skillhub.cn/'), 'https://api.skillhub.cn/api/v1/plugins/categories')
+})
+
+test('mapPluginCategory drops skill keys', () => {
+  assert.deepEqual(mapPluginCategory({ key: 'memory', displayName: '记忆' }), { key: 'memory', displayName: '记忆' })
+  assert.equal(mapPluginCategory({ key: 'office-efficiency', displayName: '办公效率' }), null)
+  assert.equal(fallbackPluginCategories().length, 7)
+  assert.equal(fallbackPluginCategories()[0].key, 'fun-dressup')
+})
+
+test('listPluginCategories uses catalog payload and falls back', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const items = await listPluginCategories(cfg, async <T>(url: string) => {
+    assert.equal(url, 'https://api.skillhub.cn/api/v1/plugins/categories')
+    return { items: [{ key: 'web-tools', displayName: '联网工具' }, { key: 'office-efficiency', displayName: 'nope' }] } as T
+  })
+  assert.deepEqual(items, [{ key: 'web-tools', displayName: '联网工具' }])
+  const fallback = await listPluginCategories(cfg, async () => {
+    throw new Error('offline')
+  })
+  assert.equal(fallback.length, 7)
 })
