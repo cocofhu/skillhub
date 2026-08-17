@@ -11,7 +11,16 @@ export const FAIL_PAGE_COPY = {
   successTitle: '服务已恢复（安全模式）',
   successBody: '全部第三方插件已卸载；仅基线能力在线，Web UI 可正常进入。',
   restartHint: '请重启 dsh web 并强制刷新。第三方清零后才会进入可用 UI。',
+  cliFallback:
+    'skillhub Host 不可达或恢复通道未武装。请在本机执行：skillhub-recovery nuke-third-party --profile web，然后重启 dsh web 并强制刷新。',
 } as const
+
+/** Screenshot / fail-loud body classification for overlay mount (not source grep). */
+export function failPageKind(bodyText: string): 'options-id' | 'fail-loud' | null {
+  if (!bodyText.includes('Failed to load plugins')) return null
+  if (bodyText.includes('requires options.id') || bodyText.includes('settings.plugin.item')) return 'options-id'
+  return 'fail-loud'
+}
 
 export type FailPagePhase = 'fail' | 'running' | 'success' | 'error'
 export type LogClass = 'ok' | 'bad' | 'warn'

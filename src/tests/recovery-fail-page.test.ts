@@ -3,7 +3,7 @@ import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { FAIL_PAGE_COPY, buttonEnabled, initialFailPageState, reduceFailPage } from '../recovery/fail-page-machine.js'
+import { FAIL_PAGE_COPY, buttonEnabled, failPageKind, initialFailPageState, reduceFailPage } from '../recovery/fail-page-machine.js'
 import { materializeOverlay } from '../recovery/host.js'
 
 const dir = dirname(fileURLToPath(import.meta.url))
@@ -38,11 +38,92 @@ test('fail page with options.id regression text is recognized as fail-loud', () 
     'skillhub',
     'failed to apply loader entry fb6de590 (anime-find): list slot "settings.plugin.item" requires options.id',
   ].join('\n')
-  assert.match(sample, /Failed to load plugins/)
-  assert.match(sample, /requires options\.id/)
-  assert.match(sample, /settings\.plugin\.item/)
+  assert.equal(failPageKind(sample), 'options-id')
+  assert.equal(failPageKind('Loading plugins…'), null)
+  assert.equal(failPageKind('Failed to load plugins\nother'), 'fail-loud')
+})
+
+test('overlay mounts options-id fail kind from screenshot body text', async () => {
+  const { createContext, runInNewContext } = await import('node:vm')
   const overlay = readFileSync(join(dir, '../recovery/overlay.js'), 'utf8')
-  assert.match(overlay, /looksLikeOptionsIdFailure|requires options\.id/)
+  const screenshot = [
+    'HARNESS',
+    'Failed to load plugins',
+    'anime-find',
+    'skillhub',
+    'failed to apply loader entry fb6de590 (anime-find): list slot "settings.plugin.item" requires options.id',
+  ].join('\n')
+  const store = new Map<string, FakeNode>()
+  interface FakeNode {
+    id: string
+    className: string
+    textContent: string
+    attrs: Record<string, string>
+    children: FakeNode[]
+    style: Record<string, string>
+    setAttribute: (k: string, v: string) => void
+    getAttribute: (k: string) => string | undefined
+    appendChild: (c: FakeNode) => FakeNode
+    addEventListener: () => void
+  }
+  function makeNode(): FakeNode {
+    const node: FakeNode = {
+      id: '',
+      className: '',
+      textContent: '',
+      attrs: {},
+      children: [],
+      style: {},
+      setAttribute(k, v) {
+        this.attrs[k] = String(v)
+        if (k === 'id') {
+          this.id = String(v)
+          store.set(this.id, this)
+        }
+      },
+      getAttribute(k) { return this.attrs[k] },
+      appendChild(c) {
+        this.children.push(c)
+        if (c.id) store.set(c.id, c)
+        return c
+      },
+      addEventListener() {},
+    }
+    return node
+  }
+  const body = Object.assign(makeNode(), { innerText: screenshot })
+  const document = {
+    body,
+    head: makeNode(),
+    baseURI: 'http://127.0.0.1:3080/',
+    readyState: 'complete',
+    getElementById(id: string) { return store.get(id) ?? null },
+    createElement(_tag: string) { return makeNode() },
+    createTextNode(text: string) { return Object.assign(makeNode(), { textContent: text }) },
+    addEventListener() {},
+    querySelector() { return null },
+  }
+  class MutationObserver { observe() {} disconnect() {} }
+  runInNewContext(overlay, createContext({
+    window: {
+      __SKILLHUB_RECOVERY_BOOT__: {
+        ...FAIL_PAGE_COPY,
+        retry: '重试',
+        nonce: '',
+        armed: false,
+      },
+    },
+    document,
+    MutationObserver,
+    URL,
+    setInterval() { return 0 },
+    setTimeout() { return 0 },
+    fetch: async () => ({ ok: false, status: 503, json: async () => ({}) }),
+  }))
+  const root = store.get('skillhub-recovery-root')
+  assert.ok(root)
+  assert.equal(root.attrs['data-skillhub-fail-kind'], 'options-id')
+  assert.equal(root.attrs['data-skillhub-recovery-ui'], 'fail')
 })
 
 test('fail page state machine: fail → running → success', () => {
@@ -85,4 +166,6 @@ test('overlay disables the button while running and surfaces fetch errors via re
   assert.match(overlay, /btn\.disabled = true/)
   assert.match(overlay, /renderFail\(root, err/)
   assert.match(overlay, /HTTP /)
+  assert.match(overlay, /ensureNonce/)
+  assert.match(overlay, /cliFallback|skillhub-recovery nuke-third-party/)
 })

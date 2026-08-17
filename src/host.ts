@@ -10,7 +10,7 @@ import { installSkill, listInstalled, uninstallSkill } from './install.js'
 import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
-import { mountRecovery } from './recovery/host.js'
+import { loaderLooksFailLoud, mountRecovery } from './recovery/host.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
 
 export const name = 'skillhub'
@@ -195,6 +195,13 @@ export function apply(ctx: Context, config: Config): void {
           return host.get?.('webRuntime')?.trustedHosts ?? []
         } catch {
           return []
+        }
+      },
+      failLoud: () => {
+        try {
+          return loaderLooksFailLoud((c as unknown as { loader?: Parameters<typeof loaderLooksFailLoud>[0] }).loader)
+        } catch {
+          return false
         }
       },
     })

@@ -10,8 +10,10 @@
       successTitle: "服务已恢复（安全模式）",
       successBody: "全部第三方插件已卸载；仅基线能力在线。正在等待 dsh web 重启…",
       restartHint: "若页面未自动恢复，请手动重启 dsh web 并强制刷新。",
+      cliFallback: "skillhub Host 不可达或恢复通道未武装。请在本机执行：skillhub-recovery nuke-third-party --profile web，然后重启 dsh web 并强制刷新。",
       retry: "重试",
       nonce: "",
+      armed: false,
     };
   var COPY = BOOT;
   var CSS_ID = "skillhub-recovery-style";
@@ -56,7 +58,29 @@
 
   function looksLikeOptionsIdFailure() {
     var text = document.body ? document.body.innerText : "";
-    return text.indexOf('requires options.id') !== -1 || text.indexOf("settings.plugin.item") !== -1;
+    return text.indexOf("requires options.id") !== -1 || text.indexOf("settings.plugin.item") !== -1;
+  }
+
+  function withCliFallback(message) {
+    var msg = String(message || "");
+    if (msg.indexOf("skillhub-recovery") !== -1) return msg;
+    return msg + " — " + COPY.cliFallback;
+  }
+
+  async function ensureNonce() {
+    if (COPY.nonce) return COPY.nonce;
+    var res = await fetch(apiUrl("./skillhub/recovery/arm"), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ failLoud: true, confirm: "fail-loud" }),
+    });
+    var body = await res.json().catch(function () { return {}; });
+    if (!res.ok || !body.nonce) {
+      throw new Error(body.error || ("HTTP " + res.status));
+    }
+    COPY.nonce = body.nonce;
+    COPY.armed = true;
+    return COPY.nonce;
   }
 
   function apiUrl(path) {
@@ -76,6 +100,9 @@
     if (looksLikeOptionsIdFailure()) root.setAttribute("data-skillhub-fail-kind", "options-id");
     document.body.appendChild(root);
     renderFail(root);
+    ensureNonce().catch(function (err) {
+      renderFail(root, err && err.message ? err.message : String(err));
+    });
   }
 
   function renderFail(root, error) {
@@ -105,7 +132,8 @@
     if (error) {
       var err = document.createElement("p");
       err.className = "sh-rec-err";
-      err.textContent = String(error);
+      err.setAttribute("data-skillhub-recovery-error", "1");
+      err.textContent = withCliFallback(error);
       root.appendChild(err);
     }
   }
@@ -175,7 +203,8 @@
     addLog("→ enumerating third-party (no cherry-pick)", "warn");
     setProgress(28);
     try {
-      if (!COPY.nonce) throw new Error("recovery nonce missing — reload the fail page");
+      await ensureNonce();
+      if (!COPY.nonce) throw new Error("recovery nonce missing");
       var res = await fetch(apiUrl("./skillhub/recovery/nuke"), {
         method: "POST",
         headers: { "content-type": "application/json" },

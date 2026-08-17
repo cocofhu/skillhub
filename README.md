@@ -178,7 +178,7 @@ pnpm build
 | 现象 | 处理 |
 | --- | --- |
 | 页面停在 Loading plugins | 确认 `pnpm build` 成功，重启 `dsh web` 后强制刷新 |
-| Failed to load plugins | 前提：**skillhub Host 仍为 ACTIVE**。失败页点 **快速修复 · 卸载全部第三方**（清空全部第三方、保留基线 bundle；Host 会 detached 复用原 argv 拉起 `dsh web`），或运行 `pnpm recovery nuke-third-party --profile web`。详见 [docs/recovery.md](docs/recovery.md)。健康页未拉 overlay 时 nuke 端点 404；不是只删单个肇事插件。进程 hang/崩溃时此路径不可用 |
+| Failed to load plugins | **前提：skillhub Host 仍为 ACTIVE**（截图 FAILED 列表含 skillhub 时，只要 Host 还在即可）。失败页点 **快速修复 · 卸载全部第三方**（清空全部第三方、保留基线；Host 先 detached 拉起 `dsh web` 再退出）。健康页即使加载了 `/skillhub/recovery.js` 也不会武装，`POST /nuke` 为 404。Host 不可达或没有按钮时执行 `skillhub-recovery nuke-third-party --profile web` 后重启并强制刷新。详见 [docs/recovery.md](docs/recovery.md)。不是只删单个肇事插件。进程 hang/崩溃时此路径不可用 |
 | `cannot get property "locale" without inject@skillhub` | 升级到含此次修复的版本；重启 `dsh web` 并强制刷新 |
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
