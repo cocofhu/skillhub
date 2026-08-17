@@ -1,4 +1,3 @@
-import { parseCategory } from './categories.js'
 import { fetchJson } from './http.js'
 import { fetchOpts } from './api.js'
 import type { PluginConfig } from './types.js'
@@ -7,6 +6,24 @@ export type PluginScope = 'verified' | 'all'
 export type PluginSort = 'stars' | 'updated'
 export type PluginInstallability = 'verified' | 'unsupported'
 export type PromptLocale = 'zh' | 'en'
+
+/** Plugin 一级类目，与 Skill 的 `categories.ts` 无关。非法 key 会让目录接口 400。 */
+export const PLUGIN_CATEGORIES: Record<string, string> = {
+  'fun-dressup': '趣味换装',
+  'web-tools': '联网工具',
+  memory: '记忆',
+  'agent-workflow': 'Agent 工作流',
+  'model-inference': '模型推理',
+  client: '客户端',
+  'admin-security': '管理安全',
+}
+
+export const PLUGIN_CATEGORY_KEYS = Object.keys(PLUGIN_CATEGORIES)
+
+export interface PluginCategory {
+  key: string
+  displayName: string
+}
 
 export interface MarketPlugin {
   owner: string
@@ -48,6 +65,17 @@ export function parsePluginRef(owner: unknown, name: unknown): { owner: string; 
   return { owner: o, name: n, fullName: `${o}/${n}` }
 }
 
+export function parsePluginCategory(raw: unknown): string | undefined {
+  const key = String(raw || '').trim()
+  if (!key) return undefined
+  return PLUGIN_CATEGORY_KEYS.includes(key) ? key : undefined
+}
+
+export function pluginCategoryLabel(key: string | undefined): string {
+  if (!key) return ''
+  return PLUGIN_CATEGORIES[key] || key
+}
+
 export function sanitizePluginScope(raw: unknown): PluginScope {
   return raw === 'all' ? 'all' : 'verified'
 }
@@ -58,7 +86,7 @@ export function sanitizePluginSort(raw: unknown): PluginSort {
 
 export function pluginPageSize(raw: unknown): number {
   const n = Math.floor(Number(raw) || 24)
-  return Math.max(1, Math.min(48, n))
+  return Math.max(1, Math.min(100, n))
 }
 
 export function pluginPage(raw: unknown): number {
@@ -75,6 +103,10 @@ export function installPlanUrl(apiBase: string, owner: string, name: string): st
   return `${trimBase(apiBase)}/api/v1/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}/install-plan`
 }
 
+export function pluginCategoriesUrl(apiBase: string): string {
+  return `${trimBase(apiBase)}/api/v1/plugins/categories`
+}
+
 export function pluginPageUrl(webBase: string, owner: string, name: string): string {
   const ref = parsePluginRef(owner, name)
   return `${trimBase(webBase)}/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
@@ -86,7 +118,7 @@ export function buildPluginsUrl(apiBase: string, query: PluginListQuery = {}): s
   if (q) params.set('q', q)
   params.set('scope', sanitizePluginScope(query.scope))
   params.set('sort', sanitizePluginSort(query.sort))
-  const category = parseCategory(query.category)
+  const category = parsePluginCategory(query.category)
   if (category) params.set('category', category)
   params.set('page', String(pluginPage(query.page)))
   params.set('page_size', String(pluginPageSize(query.pageSize)))
@@ -105,7 +137,7 @@ export function mapMarketPlugin(raw: unknown): MarketPlugin | null {
       fullName: String(r.fullName || ref.fullName).slice(0, 200),
       description: String(r.description || '').slice(0, 500),
       stars: Number(r.stars) || 0,
-      categoryKey: parseCategory(r.categoryKey) || '',
+      categoryKey: parsePluginCategory(r.categoryKey) || '',
       installability: r.installability === 'verified' ? 'verified' : 'unsupported',
       repositoryUrl: /^https:\/\/github\.com\//i.test(repo) ? repo.slice(0, 300) : '',
     }
@@ -137,6 +169,33 @@ export function createInstallPrompt(
     '执行前确认当前 profile 目录；若目录不在沙箱可写范围，在兼容预检前一次性申请仅覆盖该 profile 的 dsh plugin 命令及目录的主机权限。',
     '先执行安装计划中的 pnpm store 兼容预检，再只执行普通安装命令，或 store 不兼容时的两步修复序列；不要先试错，也不要对 add 使用 --force。不要修改 DeepSeek Harness 源码，也不要在 profile 中直接运行 pnpm install/add。完成后运行最小启动验证，并回报成功或失败。',
   ].join('')
+}
+
+export function fallbackPluginCategories(): PluginCategory[] {
+  return PLUGIN_CATEGORY_KEYS.map((key) => ({ key, displayName: PLUGIN_CATEGORIES[key] }))
+}
+
+export function mapPluginCategory(raw: unknown): PluginCategory | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const key = parsePluginCategory(r.key)
+  if (!key) return null
+  const displayName = String(r.displayName || PLUGIN_CATEGORIES[key] || key).trim().slice(0, 40)
+  return { key, displayName: displayName || PLUGIN_CATEGORIES[key] }
+}
+
+export async function listPluginCategories(
+  cfg: PluginConfig,
+  fetchJsonImpl: typeof fetchJson = fetchJson,
+): Promise<PluginCategory[]> {
+  const url = pluginCategoriesUrl(cfg.apiBase)
+  try {
+    const body = await fetchJsonImpl<{ items?: unknown[] }>(url, fetchOpts(cfg))
+    const items = (Array.isArray(body.items) ? body.items : []).map(mapPluginCategory).filter((it): it is PluginCategory => !!it)
+    return items.length ? items : fallbackPluginCategories()
+  } catch {
+    return fallbackPluginCategories()
+  }
 }
 
 export async function listPlugins(

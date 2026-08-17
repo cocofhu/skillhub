@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 客户端不再在未 inject `locale` 时读取 `ctx.locale`，避免 loader 报 `cannot get property "locale" without inject@skillhub`
+- `settings.plugin.item` 按 keyed slot 用 `key` 注册，不再传 `id`，避免 loader 报 `requires options.key`
+- Host 登记 `skillhub` settings 命名空间，插件配置页才能分发 SkillHub 卡片
+- 插件市场不再展示「Topic 仓库」范围，只浏览已验证的 DSH 插件
+- 插件市场改到设置「插件」分区的标签页，不再单独占侧栏一项
+- 插件市场改用 `/api/v1/plugins/categories` 的 7 个 Plugin 类目，不再传 Skill 类目 key
+
 ## [0.2.0] - 2026-08-17
 
 ### Added

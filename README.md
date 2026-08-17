@@ -136,6 +136,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | TRACE 评测 | `GET /api/v1/skills/{slug}/evaluation` |
 | 内容签名 | `GET /api/v1/open/skills/{slug}/versions/{version}/signature` |
 | 安装包 | `GET /api/v1/download?slug={slug}&source=dsh` |
+| DSH 插件类目 | `GET /api/v1/plugins/categories` |
 | DSH 插件目录 | `GET /api/v1/plugins` |
 | 插件安装计划 | `GET /api/v1/plugins/{owner}/{name}/install-plan` |
 
@@ -176,6 +177,7 @@ pnpm build
 | 现象 | 处理 |
 | --- | --- |
 | 页面停在 Loading plugins | 确认 `pnpm build` 成功，重启 `dsh web` 后强制刷新 |
+| `cannot get property "locale" without inject@skillhub` | 升级到含此次修复的版本；重启 `dsh web` 并强制刷新 |
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |

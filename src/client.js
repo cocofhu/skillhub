@@ -142,7 +142,7 @@ window.__ModuleLoader__.load({
 .sh-mkt-filter{height:30px;padding:0 10px;border-radius:8px}
 .sh-mkt-filter:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
 .sh-mkt-filter.on{background:var(--dsw-specific-sidebar-nav-item-active,#ebeef2);color:var(--dsw-alias-label-primary,#17191c);font-weight:500}
-.sh-mkt-results{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px}
+.sh-mkt-results{display:flex;align-items:baseline;justify-content:flex-start;gap:12px;padding:0 2px}
 .sh-mkt-results strong{font-size:13px;line-height:20px;font-weight:600}
 .sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
@@ -310,12 +310,12 @@ window.__ModuleLoader__.load({
       "cat.life-service": "生活服务",
       "mkt.title": "插件市场",
       "mkt.copy": "浏览 SkillHub 收录的 DSH 插件，并把安装请求交给当前任务审核执行。",
-      "mkt.searchPlaceholder": "搜索插件、作者或标签",
+      "mkt.searchPlaceholder": "输入关键词",
       "mkt.search": "搜索",
       "mkt.verifiedScope": "DSH 插件",
       "mkt.allScope": "Topic 仓库",
       "mkt.results": "推荐插件",
-      "mkt.repos": "{n} 个仓库",
+      "mkt.repos": "已为你找到 {n} 个插件",
       "mkt.loading": "正在读取 SkillHub",
       "mkt.error": "连接失败：{m}",
       "mkt.empty": "没有匹配的插件。",
@@ -324,7 +324,7 @@ window.__ModuleLoader__.load({
       "mkt.verified": "已验证",
       "mkt.unsupported": "不可直接安装",
       "mkt.sending": "正在发送",
-      "mkt.install": "交给 DSH 安装",
+      "mkt.install": "安装",
       "mkt.sent": "已把 {name} 的审核安装请求发送给当前 DSH 任务。",
       "mkt.noTask": "请先打开一个 DSH 任务",
       "mkt.unavailableTask": "当前 DSH 任务不可用",
@@ -414,12 +414,12 @@ window.__ModuleLoader__.load({
       "cat.life-service": "Lifestyle",
       "mkt.title": "Plugin Market",
       "mkt.copy": "Browse DSH plugins listed by SkillHub and send install requests to the current task for review.",
-      "mkt.searchPlaceholder": "Search plugins, authors, or tags",
+      "mkt.searchPlaceholder": "Enter keywords",
       "mkt.search": "Search",
       "mkt.verifiedScope": "DSH plugins",
       "mkt.allScope": "Topic repositories",
       "mkt.results": "Recommended plugins",
-      "mkt.repos": "{n} repositories",
+      "mkt.repos": "Found {n} plugins for you",
       "mkt.loading": "Loading SkillHub",
       "mkt.error": "Connection failed: {m}",
       "mkt.empty": "No plugins match your filters.",
@@ -428,7 +428,7 @@ window.__ModuleLoader__.load({
       "mkt.verified": "Verified",
       "mkt.unsupported": "Direct install unavailable",
       "mkt.sending": "Sending",
-      "mkt.install": "Install with DSH",
+      "mkt.install": "Install",
       "mkt.sent": "Sent the review-first install request for {name} to the current DSH task.",
       "mkt.noTask": "Open a DSH task before installing",
       "mkt.unavailableTask": "The current DSH task is unavailable",
@@ -1174,12 +1174,9 @@ window.__ModuleLoader__.load({
       useEffect(() => ensureCss(), []);
       const tr = typeof props.t === "function" ? props.t : lookup;
       const [open, setOpen] = useState(false);
-      const [showInstalled, setShowInstalled] = useState(false);
       const [saved, setSaved] = useState(emptyDraft);
       const [draft, setDraft] = useState(emptyDraft);
       const [saving, setSaving] = useState(false);
-      const [updating, setUpdating] = useState(false);
-      const [toast, setToast] = useState("");
       const [updateInfo, setUpdateInfo] = useState(null);
       const [err, setErr] = useState("");
       useEffect(() => {
@@ -1225,20 +1222,6 @@ window.__ModuleLoader__.load({
           setSaving(false);
         }
       };
-      const updatePlugin = async () => {
-        setUpdating(true);
-        setErr("");
-        try {
-          const d = await api("update", {});
-          setUpdateInfo(d);
-          if (d.updated) setToast(tr("cfg.updateOk", { tag: d.latest?.tag || d.currentVersion }));
-          else setToast(d.message || tr("cfg.updateLatest", { tag: d.latest?.tag || d.currentVersion }));
-        } catch (e) {
-          setErr(e.message || String(e));
-        } finally {
-          setUpdating(false);
-        }
-      };
       const versionHint = updateInfo?.latest
         ? tr("cfg.updateHint", { cur: updateInfo.currentVersion || "-", latest: updateInfo.latest.version || "-" })
         : "";
@@ -1258,18 +1241,6 @@ window.__ModuleLoader__.load({
               ),
               dirty ? h("span", { className: "sh-tag orange" }, tr("cfg.unsaved")) : null,
             ),
-            h("button", {
-              type: "button",
-              className: "sh-mini",
-              disabled: updating,
-              title: versionHint || undefined,
-              onClick: updatePlugin,
-            }, updating ? tr("cfg.updating") : tr("cfg.update")),
-            h("button", {
-              type: "button",
-              className: "sh-mini",
-              onClick: () => setShowInstalled(true),
-            }, tr("cfg.installed")),
             h("button", {
               type: "button",
               className: "sh-cfg-toggle",
@@ -1315,15 +1286,26 @@ window.__ModuleLoader__.load({
             ),
           ) : null,
         ),
-        showInstalled ? h(InstalledModal, { onClose: () => setShowInstalled(false) }) : null,
-        toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
       ));
     }
 
-    const MARKET_CATS = [
-      "office-efficiency", "content-creation", "dev-programming", "data-analysis",
-      "design-media", "ai-agent", "knowledge-management", "business-ops",
-      "education", "professional", "it-ops-security", "life-service",
+    const MARKET_CAT_EN = {
+      "fun-dressup": "Fun dress-up",
+      "web-tools": "Web tools",
+      memory: "Memory",
+      "agent-workflow": "Agent workflow",
+      "model-inference": "Model inference",
+      client: "Client",
+      "admin-security": "Admin & security",
+    };
+    const MARKET_CAT_FALLBACK = [
+      { key: "fun-dressup", displayName: "趣味换装" },
+      { key: "web-tools", displayName: "联网工具" },
+      { key: "memory", displayName: "记忆" },
+      { key: "agent-workflow", displayName: "Agent 工作流" },
+      { key: "model-inference", displayName: "模型推理" },
+      { key: "client", displayName: "客户端" },
+      { key: "admin-security", displayName: "管理安全" },
     ];
 
     function SearchIcon() {
@@ -1358,7 +1340,6 @@ window.__ModuleLoader__.load({
       const [query, setQuery] = useState("");
       const [submitted, setSubmitted] = useState("");
       const [category, setCategory] = useState("");
-      const [scope, setScope] = useState("verified");
       const [page, setPage] = useState(1);
       const [items, setItems] = useState([]);
       const [total, setTotal] = useState(0);
@@ -1367,11 +1348,23 @@ window.__ModuleLoader__.load({
       const [err, setErr] = useState("");
       const [sending, setSending] = useState("");
       const [feedback, setFeedback] = useState("");
+      const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
       const install = React.useMemo(() => queueInstallPrompt(props.sessions, locale), [props.sessions, locale]);
       useEffect(() => {
         let live = true;
+        api("pluginCategories", {})
+          .then((d) => {
+            if (!live) return;
+            const items = Array.isArray(d.items) ? d.items.filter((it) => it && it.key) : [];
+            if (items.length) setCats(items);
+          })
+          .catch(() => {});
+        return () => { live = false; };
+      }, []);
+      useEffect(() => {
+        let live = true;
         if (page === 1) setStatus("loading");
-        api("plugins", { q: submitted, scope, category, sort: "stars", page, pageSize: 24 })
+        api("plugins", { q: submitted, scope: "verified", category, sort: "stars", page, pageSize: 24 })
           .then((d) => {
             if (!live) return;
             setItems((cur) => page === 1 ? (d.items || []) : cur.concat(d.items || []));
@@ -1390,30 +1383,16 @@ window.__ModuleLoader__.load({
             setErr(e.message || String(e));
           });
         return () => { live = false; };
-      }, [submitted, scope, category, page]);
+      }, [submitted, category, page]);
       const catLabelFor = (key) => {
         if (!key) return "";
-        const label = tr("cat." + key);
-        return label && label !== "cat." + key ? label : key;
+        if (locale === "en" && MARKET_CAT_EN[key]) return MARKET_CAT_EN[key];
+        const hit = cats.find((it) => it.key === key);
+        return (hit && hit.displayName) || MARKET_CAT_FALLBACK.find((it) => it.key === key)?.displayName || key;
       };
       const detailHref = (plugin) => webBase.replace(/\/$/, "") + "/plugins/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
-          h("div", { className: "sh-mkt-header" },
-            h("div", null,
-              h("div", { className: "sh-mkt-brand" }, h("span", { className: "sh-mkt-dot" }), "SKILLHUB"),
-              h("h2", { className: "sh-mkt-title" }, tr("mkt.title")),
-              h("p", { className: "sh-mkt-copy" }, tr("mkt.copy")),
-            ),
-          ),
-          h("div", { className: "sh-mkt-scope" },
-            ["verified", "all"].map((item) => h("button", {
-              key: item,
-              type: "button",
-              className: "sh-mkt-scope-btn" + (scope === item ? " on" : ""),
-              onClick: () => { setScope(item); setPage(1); },
-            }, item === "verified" ? tr("mkt.verifiedScope") : tr("mkt.allScope"))),
-          ),
           h("form", {
             className: "sh-mkt-search",
             onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
@@ -1435,15 +1414,14 @@ window.__ModuleLoader__.load({
               className: "sh-mkt-filter" + (!category ? " on" : ""),
               onClick: () => { setCategory(""); setPage(1); },
             }, tr("mkt.catAll")),
-            MARKET_CATS.map((key) => h("button", {
-              key,
+            cats.map((it) => h("button", {
+              key: it.key,
               type: "button",
-              className: "sh-mkt-filter" + (category === key ? " on" : ""),
-              onClick: () => { setCategory(key); setPage(1); },
-            }, catLabelFor(key))),
+              className: "sh-mkt-filter" + (category === it.key ? " on" : ""),
+              onClick: () => { setCategory(it.key); setPage(1); },
+            }, catLabelFor(it.key))),
           ),
           status === "ready" ? h("div", { className: "sh-mkt-results" },
-            h("strong", null, tr("mkt.results")),
             h("p", { className: "sh-mkt-summary" }, tr("mkt.repos", { n: total })),
           ) : null,
           feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px" } }, feedback) : null,
@@ -1498,15 +1476,18 @@ window.__ModuleLoader__.load({
       const slots = (ctx && ctx.slots) || (ctx && typeof ctx.get === "function" && ctx.get("slots"));
       if (!slots) return;
       const sessions = (ctx && ctx.sessions) || (ctx && typeof ctx.get === "function" && ctx.get("sessions"));
-      const loc = (ctx && ctx.locale) || (ctx && typeof ctx.get === "function" && ctx.get("locale"));
-      if (loc && typeof loc.register === "function") {
-        ctx.effect(() => {
-          try {
-            return loc.register("skillhub", { zh: ZH, en: EN });
-          } catch {
-            return () => {};
-          }
-        }, "skillhub-locale");
+      if (typeof ctx.inject === "function") {
+        ctx.inject(["locale"], (c) => {
+          const loc = c.locale;
+          if (!loc || typeof loc.register !== "function") return;
+          c.effect(() => {
+            try {
+              return loc.register("skillhub", { zh: ZH, en: EN });
+            } catch {
+              return () => {};
+            }
+          }, "skillhub-locale");
+        });
       }
       ctx.effect(() => ensureCss(), "skillhub-style");
       slots.inject("tool.call.toolview", () => slots.register(
@@ -1518,13 +1499,13 @@ window.__ModuleLoader__.load({
         ListToolView,
       ));
       slots.inject("settings.plugin.item", () => slots.register(
-        { name: "settings.plugin.item", id: "skillhub", order: 32, locale: "skillhub" },
+        { name: "settings.plugin.item", key: "skillhub", locale: "skillhub" },
         ConfigCard,
       ));
-      slots.inject("settings.section", () => slots.register(
-        { name: "settings.section", id: "skillhub-market", order: 17, label: "SkillHub 市场", locale: "skillhub" },
-        function MarketSection(sectionProps) {
-          return h(Marketplace, { ...sectionProps, sessions });
+      slots.inject("settings.plugins.tab", () => slots.register(
+        { name: "settings.plugins.tab", id: "skillhub-market", order: 5, label: () => lookup("mkt.title"), locale: "skillhub" },
+        function MarketTab(tabProps) {
+          return h(Marketplace, { ...tabProps, sessions });
         },
       ));
     }

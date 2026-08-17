@@ -7,7 +7,7 @@ import { CATEGORY_KEYS, categoryLabel, parseCategory } from './categories.js'
 import { assignConfig, publicConfig, readOverlay, sanitizePatch, sanitizeSortBy, withDefaults, writeOverlay } from './config-store.js'
 import { fetchBytes } from './http.js'
 import { installSkill, listInstalled, uninstallSkill } from './install.js'
-import { createInstallPrompt, listPlugins } from './plugin-market.js'
+import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
@@ -182,6 +182,15 @@ export function apply(ctx: Context, config: Config): void {
     server.register({ kind: 'exact', path: '/skillhub', handler: (req, res) => handleApi(req, res, cfg) })
     server.register({ kind: 'exact', path: '/skillhub/icon', handler: (req, res) => handleIcon(req, res, cfg) })
   })
+
+  // 插件配置页按 Host settings 命名空间分发 settings.plugin.item。
+  // 不登记 skillhub 的话，客户端卡片永远不会被 dispatch。
+  ctx.inject(['settings'], (c) => {
+    const settings = (c as unknown as {
+      settings: { register: (ns: string, schema: typeof Config, options?: { base?: Config }) => void }
+    }).settings
+    settings.register('skillhub', Config, { base: config })
+  })
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -306,6 +315,10 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginC
         userAgent: cfg.userAgent,
       })
       return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginCategories') {
+      const items = await listPluginCategories(cfg)
+      return sendJson(res, 200, { ok: true, items })
     }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
