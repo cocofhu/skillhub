@@ -1,10 +1,12 @@
-import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dshHome } from './config-store.js'
 import { fetchJson } from './http.js'
+import { runCommand } from './run-command.js'
 import type { FetchOptions } from './types.js'
+
+export { runCommand } from './run-command.js'
 
 export const PLUGIN_REPO = 'cocofhu/skillhub'
 export const PLUGIN_GITHUB_SPEC = `github:${PLUGIN_REPO}`
@@ -169,44 +171,4 @@ export async function updateToLatestRelease(
     message: `已更新到 ${status.latest.tag}，请重启 dsh web 并强制刷新浏览器`,
     log: log.slice(-4000),
   }
-}
-
-export async function runCommand(
-  command: string,
-  args: string[],
-  options: { cwd: string; timeoutMs: number; signal?: AbortSignal; env?: NodeJS.ProcessEnv },
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      cwd: options.cwd,
-      env: { ...process.env, ...options.env, CI: '1' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    let out = ''
-    let settled = false
-    const finish = (err?: Error) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timer)
-      options.signal?.removeEventListener('abort', onAbort)
-      if (err) reject(err)
-      else resolve(out)
-    }
-    const timer = setTimeout(() => {
-      child.kill('SIGTERM')
-      finish(new Error(`更新超时 ${options.timeoutMs}ms`))
-    }, options.timeoutMs)
-    const onAbort = () => {
-      child.kill('SIGTERM')
-      finish(new Error('更新已取消'))
-    }
-    options.signal?.addEventListener('abort', onAbort, { once: true })
-    child.stdout.on('data', (chunk) => { out += String(chunk) })
-    child.stderr.on('data', (chunk) => { out += String(chunk) })
-    child.on('error', (err) => finish(err))
-    child.on('close', (code) => {
-      if (code === 0) finish()
-      else finish(new Error(`更新失败 (exit ${code}): ${out.trim().slice(-800) || 'no output'}`))
-    })
-  })
 }

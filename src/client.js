@@ -157,9 +157,26 @@ window.__ModuleLoader__.load({
 .sh-mkt-meta{display:flex;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:17px}
 .sh-mkt-actions{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
 .sh-mkt-details{flex:1;color:var(--dsw-alias-label-secondary,#4b5058);font-size:12px;font-weight:500;text-decoration:none;position:relative;z-index:1}
-.sh-mkt-install{position:relative;z-index:1;min-height:30px;padding:0 10px;font-size:12px}
+.sh-mkt-install{position:relative;z-index:1;min-height:30px;padding:0 10px;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .sh-mkt-install:disabled{opacity:.4;cursor:default}
+.sh-mkt-install.loading{opacity:1;cursor:wait}
+.sh-mkt-spin{width:12px;height:12px;border:2px solid color-mix(in srgb,currentColor 25%,transparent);border-top-color:currentColor;border-radius:50%;animation:sh-mkt-spin .7s linear infinite;flex:none}
+@keyframes sh-mkt-spin{to{transform:rotate(360deg)}}
+.sh-mkt-progress{margin:0 2px;padding:12px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
+.sh-mkt-progress.ok{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 35%,transparent)}
+.sh-mkt-progress.err{border-color:color-mix(in srgb,var(--dsw-alias-state-danger-primary,#d14d4d) 35%,transparent)}
+.sh-mkt-progress-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.sh-mkt-progress-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--dsw-alias-label-primary,#17191c)}
+.sh-mkt-progress-pct{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;color:var(--dsw-alias-label-tertiary,#7b8088)}
+.sh-mkt-track{height:6px;overflow:hidden;border-radius:999px;background:var(--dsw-alias-bg-layer-2,#eceef2)}
+.sh-mkt-bar{height:100%;width:0%;border-radius:999px;background:var(--dsw-alias-state-business-primary,#4d6bfe);transition:width .35s ease}
+.sh-mkt-progress.ok .sh-mkt-bar{background:var(--dsw-alias-state-success-primary,#279c62)}
+.sh-mkt-progress.err .sh-mkt-bar{background:var(--dsw-alias-state-danger-primary,#d14d4d)}
+.sh-mkt-progress-phase{margin-top:8px;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;color:var(--dsw-alias-label-tertiary,#7b8088)}
 .sh-mkt-status{margin:0;padding:32px 12px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;text-align:center}
+.sh-mkt-feedback{margin:0;padding:8px 2px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary,#4b5058)}
+.sh-mkt-feedback.ok{color:var(--dsw-alias-state-success-primary,#279c62)}
+.sh-mkt-feedback.err{color:var(--dsw-alias-state-danger-primary,#d14d4d)}
 .sh-mkt-more{align-self:center;height:32px;padding:0 14px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:8px;background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,inherit);font:inherit;font-size:12px;cursor:pointer}
 @media (max-width:680px){.sh-mkt-grid{grid-template-columns:minmax(0,1fr)}.sh-mkt-search{align-items:stretch;flex-direction:column}.sh-mkt-go{width:100%}}
 `;
@@ -309,7 +326,7 @@ window.__ModuleLoader__.load({
       "cat.it-ops-security": "IT 运维与安全",
       "cat.life-service": "生活服务",
       "mkt.title": "插件市场",
-      "mkt.copy": "浏览 SkillHub 收录的 DSH 插件，并把安装请求交给当前任务审核执行。",
+      "mkt.copy": "浏览 SkillHub 收录的 DSH 插件；Host 按 install-plan 直装，成功后自动重启 dsh。",
       "mkt.searchPlaceholder": "输入关键词",
       "mkt.search": "搜索",
       "mkt.verifiedScope": "DSH 插件",
@@ -323,11 +340,15 @@ window.__ModuleLoader__.load({
       "mkt.details": "详情",
       "mkt.verified": "已验证",
       "mkt.unsupported": "不可直接安装",
-      "mkt.sending": "正在发送",
+      "mkt.sending": "安装中",
       "mkt.install": "安装",
-      "mkt.sent": "已把 {name} 的审核安装请求发送给当前 DSH 任务。",
-      "mkt.noTask": "请先打开一个 DSH 任务",
-      "mkt.unavailableTask": "当前 DSH 任务不可用",
+      "mkt.sent": "已一站式直装 {name} 并请求自动重启。推荐有 KeepAlive/supervisor；无守护时需自行拉起。",
+      "mkt.phase.init": "准备安装…",
+      "mkt.phase.install-plan": "拉取 install-plan…",
+      "mkt.phase.plugin-add": "执行 dsh plugin add…",
+      "mkt.phase.auto-restart": "自动重启 dsh…",
+      "mkt.phase.done": "完成 · 已自动重启",
+      "mkt.phase.failed": "安装失败",
       "mkt.more": "加载更多",
       "mkt.catAll": "全部",
     };
@@ -413,7 +434,7 @@ window.__ModuleLoader__.load({
       "cat.it-ops-security": "IT & Security",
       "cat.life-service": "Lifestyle",
       "mkt.title": "Plugin Market",
-      "mkt.copy": "Browse DSH plugins listed by SkillHub and send install requests to the current task for review.",
+      "mkt.copy": "Browse DSH plugins listed by SkillHub. Host installs from install-plan and auto-restarts dsh on success.",
       "mkt.searchPlaceholder": "Enter keywords",
       "mkt.search": "Search",
       "mkt.verifiedScope": "DSH plugins",
@@ -427,11 +448,15 @@ window.__ModuleLoader__.load({
       "mkt.details": "Details",
       "mkt.verified": "Verified",
       "mkt.unsupported": "Direct install unavailable",
-      "mkt.sending": "Sending",
+      "mkt.sending": "Installing",
       "mkt.install": "Install",
-      "mkt.sent": "Sent the review-first install request for {name} to the current DSH task.",
-      "mkt.noTask": "Open a DSH task before installing",
-      "mkt.unavailableTask": "The current DSH task is unavailable",
+      "mkt.sent": "Installed {name} one-shot and requested auto-restart. Prefer KeepAlive/supervisor; without a supervisor, start dsh yourself after exit.",
+      "mkt.phase.init": "Preparing…",
+      "mkt.phase.install-plan": "Fetching install-plan…",
+      "mkt.phase.plugin-add": "Running dsh plugin add…",
+      "mkt.phase.auto-restart": "Auto-restarting dsh…",
+      "mkt.phase.done": "Done · auto-restart requested",
+      "mkt.phase.failed": "Install failed",
       "mkt.more": "Load more",
       "mkt.catAll": "All",
     };
@@ -1315,22 +1340,47 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function queueInstallPrompt(sessions, locale) {
-      return async (plugin) => {
-        const current = sessions && sessions.list && sessions.list.getSnapshot && sessions.list.getSnapshot().current;
-        if (!current) throw new Error(locale === "en" ? EN["mkt.noTask"] : ZH["mkt.noTask"]);
-        const binding = sessions.binding && sessions.binding(current);
-        if (!binding || !binding.session || typeof binding.session.prompt !== "function") {
-          throw new Error(locale === "en" ? EN["mkt.unavailableTask"] : ZH["mkt.unavailableTask"]);
-        }
-        const body = await api("pluginInstallPrompt", {
-          owner: plugin.owner,
-          name: plugin.name,
-          fullName: plugin.fullName,
-          locale,
-        });
-        await binding.session.prompt([{ type: "text", text: body.prompt }], "queue");
+    function phaseMeta(phase) {
+      const map = {
+        init: { pct: 12, key: "mkt.phase.init" },
+        "install-plan": { pct: 38, key: "mkt.phase.install-plan" },
+        "plugin-add": { pct: 72, key: "mkt.phase.plugin-add" },
+        "auto-restart": { pct: 92, key: "mkt.phase.auto-restart" },
+        done: { pct: 100, key: "mkt.phase.done" },
+        failed: { pct: 58, key: "mkt.phase.failed" },
       };
+      return map[phase] || map.init;
+    }
+
+    async function directInstallPlugin(plugin, onPhase) {
+      if (onPhase) onPhase("init");
+      if (onPhase) onPhase("install-plan");
+      const tick = setTimeout(() => { if (onPhase) onPhase("plugin-add"); }, 120);
+      try {
+        const res = await fetch(pluginUrl(""), {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            method: "pluginInstall",
+            owner: plugin.owner,
+            name: plugin.name,
+            fullName: plugin.fullName,
+            installability: plugin.installability,
+          }),
+        });
+        const body = await res.json().catch(() => ({}));
+        clearTimeout(tick);
+        if (!res.ok || !body || body.ok === false) {
+          const err = new Error((body && (body.error || body.message)) || ("HTTP " + res.status));
+          err.phase = (body && body.phase) || "failed";
+          throw err;
+        }
+        if (onPhase) onPhase(body.phase || "auto-restart");
+        return body;
+      } catch (e) {
+        clearTimeout(tick);
+        throw e;
+      }
     }
 
     function Marketplace(props) {
@@ -1348,8 +1398,9 @@ window.__ModuleLoader__.load({
       const [err, setErr] = useState("");
       const [sending, setSending] = useState("");
       const [feedback, setFeedback] = useState("");
+      const [feedbackKind, setFeedbackKind] = useState("");
+      const [progress, setProgress] = useState(null);
       const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
-      const install = React.useMemo(() => queueInstallPrompt(props.sessions, locale), [props.sessions, locale]);
       useEffect(() => {
         let live = true;
         api("pluginCategories", {})
@@ -1391,6 +1442,15 @@ window.__ModuleLoader__.load({
         return (hit && hit.displayName) || MARKET_CAT_FALLBACK.find((it) => it.key === key)?.displayName || key;
       };
       const detailHref = (plugin) => webBase.replace(/\/$/, "") + "/plugins/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
+      const applyPhase = (phase, state) => {
+        const meta = phaseMeta(phase);
+        setProgress({
+          phase,
+          pct: meta.pct,
+          label: tr(meta.key),
+          state: state || "busy",
+        });
+      };
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
           h("form", {
@@ -1424,7 +1484,27 @@ window.__ModuleLoader__.load({
           status === "ready" ? h("div", { className: "sh-mkt-results" },
             h("p", { className: "sh-mkt-summary" }, tr("mkt.repos", { n: total })),
           ) : null,
-          feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px" } }, feedback) : null,
+          progress ? h("div", {
+            className: "sh-mkt-progress" + (progress.state === "ok" ? " ok" : "") + (progress.state === "err" ? " err" : ""),
+            "aria-live": "polite",
+          },
+            h("div", { className: "sh-mkt-progress-top" },
+              h("div", { className: "sh-mkt-progress-label" },
+                progress.state === "busy" ? h("span", { className: "sh-mkt-spin", "aria-hidden": "true" }) : null,
+                h("span", null, progress.label),
+              ),
+              h("span", { className: "sh-mkt-progress-pct" }, progress.pct + "%"),
+            ),
+            h("div", {
+              className: "sh-mkt-track",
+              role: "progressbar",
+              "aria-valuemin": 0,
+              "aria-valuemax": 100,
+              "aria-valuenow": progress.pct,
+            }, h("div", { className: "sh-mkt-bar", style: { width: progress.pct + "%" } })),
+            h("div", { className: "sh-mkt-progress-phase" }, progress.phase),
+          ) : null,
+          feedback ? h("p", { className: "sh-mkt-feedback" + (feedbackKind ? " " + feedbackKind : "") }, feedback) : null,
           status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
           status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
           status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("mkt.empty")) : null,
@@ -1432,6 +1512,7 @@ window.__ModuleLoader__.load({
             items.map((plugin) => {
               const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
               const verified = plugin.installability === "verified";
+              const busy = sending === id;
               return h("article", { key: id, className: "sh-mkt-card" },
                 h("div", { className: "sh-mkt-top" },
                   h("p", { className: "sh-mkt-owner" }, plugin.owner),
@@ -1447,17 +1528,31 @@ window.__ModuleLoader__.load({
                   h("a", { className: "sh-mkt-details", href: detailHref(plugin), target: "_blank", rel: "noreferrer" }, tr("mkt.details")),
                   h("button", {
                     type: "button",
-                    className: "sh-mkt-install",
-                    disabled: !verified || sending === id,
+                    className: "sh-mkt-install" + (busy ? " loading" : ""),
+                    disabled: !verified || !!sending,
                     onClick: () => {
                       setSending(id);
                       setFeedback("");
-                      install(plugin).then(
-                        () => setFeedback(tr("mkt.sent", { name: plugin.fullName || id })),
-                        (e) => setFeedback(e.message || String(e)),
+                      setFeedbackKind("");
+                      applyPhase("init", "busy");
+                      directInstallPlugin(plugin, (phase) => applyPhase(phase, "busy")).then(
+                        (body) => {
+                          applyPhase(body.phase || "auto-restart", "ok");
+                          setFeedback(body.message || tr("mkt.sent", { name: plugin.fullName || id }));
+                          setFeedbackKind("ok");
+                        },
+                        (e) => {
+                          const phase = e.phase || "failed";
+                          applyPhase(phase, "err");
+                          setFeedback(e.message || String(e));
+                          setFeedbackKind("err");
+                        },
                       ).finally(() => setSending(""));
                     },
-                  }, !verified ? tr("mkt.unsupported") : (sending === id ? tr("mkt.sending") : tr("mkt.install"))),
+                  },
+                    busy ? h("span", { className: "sh-mkt-spin", "aria-hidden": "true" }) : null,
+                    h("span", { className: "sh-mkt-btn-label" }, !verified ? tr("mkt.unsupported") : (busy ? tr("mkt.sending") : tr("mkt.install"))),
+                  ),
                 ),
               );
             }),
@@ -1471,11 +1566,10 @@ window.__ModuleLoader__.load({
       );
     }
 
-    const inject = ["slots", "sessions"];
+    const inject = ["slots"];
     function apply(ctx) {
       const slots = (ctx && ctx.slots) || (ctx && typeof ctx.get === "function" && ctx.get("slots"));
       if (!slots) return;
-      const sessions = (ctx && ctx.sessions) || (ctx && typeof ctx.get === "function" && ctx.get("sessions"));
       if (typeof ctx.inject === "function") {
         ctx.inject(["locale"], (c) => {
           const loc = c.locale;
@@ -1505,11 +1599,11 @@ window.__ModuleLoader__.load({
       slots.inject("settings.plugins.tab", () => slots.register(
         { name: "settings.plugins.tab", id: "skillhub-market", order: 5, label: () => lookup("mkt.title"), locale: "skillhub" },
         function MarketTab(tabProps) {
-          return h(Marketplace, { ...tabProps, sessions });
+          return h(Marketplace, { ...tabProps });
         },
       ));
     }
 
-    return { inject, apply, SearchToolView, ListToolView, Marketplace };
+    return { inject, apply, SearchToolView, ListToolView, Marketplace, directInstallPlugin, phaseMeta };
   },
 });

@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 插件市场安装改为 Host 按 install-plan 直装（`dsh plugin add`），不再排队 Agent 审核 prompt，也不依赖当前任务
+- 安装过程展示按钮 loading 与阶段进度（拉计划 → 直装 → 自动重启）
+- 直装成功后向当前 dsh 进程发送 SIGTERM 优雅退出；推荐在有 KeepAlive/supervisor 的环境使用，无守护时需自行拉起
+
 ## [0.2.1] - 2026-08-18
 
 ### Changed

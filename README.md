@@ -30,7 +30,7 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 - 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
 - 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
-- 设置 **插件 → 插件市场**：搜索 DSH 插件，把安装请求交给当前任务审核执行
+- 设置 **插件 → 插件市场**：搜索已验证的 DSH 插件，一键直装并自动请求重启 dsh
 - 界面跟随 Harness 中英文
 
 ## 环境要求
@@ -86,9 +86,13 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 ### 设置里的插件市场
 
-打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
+打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的已验证 DSH 插件（与站点 Plugins 页同源）。点 **安装** 后，Host 会拉取上游 `install-plan`，按其中 pinned 的 `dsh plugin --profile <profile> add <source>` 直装，过程中显示 loading 与阶段进度（拉计划 → 直装 → 自动重启）。
 
-对话里的技能搜索 / zip 安装不受影响。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
+安装成功后会向当前 dsh 进程发送 **SIGTERM** 优雅退出，以便外部守护（launchd KeepAlive / systemd / 容器重启策略等）拉起新进程并挂载新插件层。**推荐在有 supervisor 的环境使用**；若没有外部守护，进程退出后需要自行重新启动 `dsh web`。
+
+失败时结束 loading 并展示原因，不会回退到 Agent 审核 prompt，也不会自动 `--force` / 放行 `allowBuilds`。
+
+对话里的技能搜索 / zip 安装与设置页自更新路径不受影响。
 
 ### Agent 工具
 
@@ -161,7 +165,9 @@ pnpm build
 | `src/host.ts` | 工具注册与本机 `/skillhub` API |
 | `src/client.js` | 搜索卡片、详情弹窗、设置页、插件市场 |
 | `src/api.ts` | 搜索与技能卡片映射 |
-| `src/plugin-market.ts` | DSH 插件目录查询与审核安装提示词 |
+| `src/plugin-market.ts` | DSH 插件目录查询与审核安装提示词（兼容保留） |
+| `src/plugin-install.ts` | 市场直装：install-plan → pinned `dsh plugin add` → SIGTERM |
+| `src/run-command.ts` | 市场直装与自更新共用的 spawn 辅助 |
 | `src/install.ts` | zip 下载、解压、安装 / 卸载 |
 | `src/skill-detail.ts` | 版本历史与 TRACE 评测 |
 | `src/unzip.ts` | zip 解压（含 data descriptor） |
@@ -182,6 +188,8 @@ pnpm build
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 设置里没有插件市场 | 打开 **设置 → 插件** 的「插件市场」标签；重启 `dsh web` 并强制刷新 |
+| 市场直装后服务停了 | 自动重启依赖外部 KeepAlive/supervisor；无守护时需手动再跑 `dsh web` |
+| 市场安装失败 / allowBuilds | 按报错把包名写入 profile 的 `pnpm-workspace.yaml` allowBuilds 后再试；不会自动 `--force` |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 在 profile 的 `pnpm-workspace.yaml` 写入 `allowBuilds.skillhub: true` |
 

@@ -8,6 +8,7 @@ import { assignConfig, publicConfig, readOverlay, sanitizePatch, sanitizeSortBy,
 import { fetchBytes } from './http.js'
 import { installSkill, listInstalled, uninstallSkill } from './install.js'
 import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
+import { installMarketPlugin } from './plugin-install.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
@@ -344,6 +345,16 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginC
         },
       )
       return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
+    }
+    if (method === 'pluginInstall') {
+      const result = await installMarketPlugin(cfg, {
+        owner: body.owner ?? url.searchParams.get('owner'),
+        name: body.name ?? url.searchParams.get('name'),
+        fullName: body.fullName ?? url.searchParams.get('fullName'),
+        installability: body.installability ?? url.searchParams.get('installability'),
+      })
+      // Always 200 so the client can read phase/error without losing the payload.
+      return sendJson(res, 200, { ...result, ok: result.ok })
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))
