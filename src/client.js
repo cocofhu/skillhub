@@ -116,6 +116,52 @@ window.__ModuleLoader__.load({
 .sh-cfg-disc{background:0 0;border:1px solid var(--dsw-alias-border-l2,#d1d5db);color:var(--dsw-alias-label-secondary,#4b5563)}
 .sh-cfg-err{color:var(--dsw-alias-state-error-primary,#b91c1c);flex:1;margin:0;font-size:12px}
 @keyframes sh-in{from{opacity:0}to{opacity:1}}
+.sh-mkt{display:flex;flex-direction:column;gap:14px;width:100%;max-width:760px;padding-bottom:24px;color:var(--dsw-alias-label-primary,#17191c);font-family:var(--dsw-font-family,inherit)}
+.sh-mkt *{box-sizing:border-box}
+.sh-mkt-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.sh-mkt-brand{display:flex;align-items:center;gap:7px;margin-bottom:5px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;font-weight:600;letter-spacing:.08em}
+.sh-mkt-dot{width:7px;height:7px;border-radius:999px;background:var(--dsw-alias-state-business-primary,#4d6bfe)}
+.sh-mkt-title{margin:0;font-size:20px;line-height:28px;font-weight:600;letter-spacing:-.01em}
+.sh-mkt-copy{max-width:600px;margin:5px 0 0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px}
+.sh-mkt-scope{display:flex;align-items:center;gap:4px;width:fit-content;max-width:100%;padding:3px;overflow-x:auto;border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
+.sh-mkt-scope-btn,.sh-mkt-filter{flex:none;border:0;background:transparent;color:var(--dsw-alias-label-tertiary,#7b8088);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.sh-mkt-scope-btn{height:30px;padding:0 12px;border-radius:8px}
+.sh-mkt-scope-btn:hover,.sh-mkt-scope-btn.on{color:var(--dsw-alias-label-primary,#17191c)}
+.sh-mkt-scope-btn.on{background:var(--dsw-alias-bg-layer-3,#fff);box-shadow:var(--dsw-shadow-lv1,0 1px 3px rgb(20 24 32 / 10%))}
+.sh-mkt-search{display:flex;align-items:center;gap:8px}
+.sh-mkt-field{position:relative;flex:1;min-width:0;color:var(--dsw-alias-label-tertiary,#7b8088)}
+.sh-mkt-field svg{position:absolute;top:10px;left:12px;width:16px;height:16px;pointer-events:none}
+.sh-mkt-search input{width:100%;height:36px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:8px;padding:0 12px 0 36px;outline:none;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-primary,#17191c);font:inherit;font-size:13px}
+.sh-mkt-search input::placeholder{color:var(--dsw-alias-label-tertiary,#7b8088)}
+.sh-mkt-search input:focus-visible{border-color:var(--dsw-alias-state-business-primary,#4d6bfe);box-shadow:0 0 0 2px color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 18%,transparent)}
+.sh-mkt-go,.sh-mkt-install{border:1px solid transparent;border-radius:8px;background:var(--dsw-alias-label-primary,#17191c);color:var(--dsw-alias-bg-layer-3,#fff);font:inherit;font-weight:600;cursor:pointer}
+.sh-mkt-go{flex:none;height:36px;padding:0 16px;font-size:13px}
+.sh-mkt-go:hover,.sh-mkt-install:hover:not(:disabled){opacity:.82}
+.sh-mkt-filters{display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.sh-mkt-filters::-webkit-scrollbar{display:none}
+.sh-mkt-filter{height:30px;padding:0 10px;border-radius:8px}
+.sh-mkt-filter:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
+.sh-mkt-filter.on{background:var(--dsw-specific-sidebar-nav-item-active,#ebeef2);color:var(--dsw-alias-label-primary,#17191c);font-weight:500}
+.sh-mkt-results{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px}
+.sh-mkt-results strong{font-size:13px;line-height:20px;font-weight:600}
+.sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
+.sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
+.sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-mkt-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-mkt-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sh-mkt-owner{min-width:0;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:18px;text-overflow:ellipsis;white-space:nowrap}
+.sh-mkt-badge{flex:none;min-height:20px;display:inline-flex;align-items:center;border-radius:5px;padding:1px 6px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px}
+.sh-mkt-badge.ok{background:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 10%,transparent);color:var(--dsw-alias-state-success-primary,#279c62)}
+.sh-mkt-name{margin:10px 0 5px;overflow-wrap:anywhere;font-size:15px;line-height:21px;font-weight:600}
+.sh-mkt-desc{display:-webkit-box;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;line-height:18px;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+.sh-mkt-meta{display:flex;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:17px}
+.sh-mkt-actions{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
+.sh-mkt-details{flex:1;color:var(--dsw-alias-label-secondary,#4b5058);font-size:12px;font-weight:500;text-decoration:none;position:relative;z-index:1}
+.sh-mkt-install{position:relative;z-index:1;min-height:30px;padding:0 10px;font-size:12px}
+.sh-mkt-install:disabled{opacity:.4;cursor:default}
+.sh-mkt-status{margin:0;padding:32px 12px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;text-align:center}
+.sh-mkt-more{align-self:center;height:32px;padding:0 14px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:8px;background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,inherit);font:inherit;font-size:12px;cursor:pointer}
+@media (max-width:680px){.sh-mkt-grid{grid-template-columns:minmax(0,1fr)}.sh-mkt-search{align-items:stretch;flex-direction:column}.sh-mkt-go{width:100%}}
 `;
 
     const CSS_ID = "skillhub-style";
@@ -262,6 +308,28 @@ window.__ModuleLoader__.load({
       "cat.professional": "行业专业",
       "cat.it-ops-security": "IT 运维与安全",
       "cat.life-service": "生活服务",
+      "mkt.title": "插件市场",
+      "mkt.copy": "浏览 SkillHub 收录的 DSH 插件，并把安装请求交给当前任务审核执行。",
+      "mkt.searchPlaceholder": "搜索插件、作者或标签",
+      "mkt.search": "搜索",
+      "mkt.verifiedScope": "DSH 插件",
+      "mkt.allScope": "Topic 仓库",
+      "mkt.results": "推荐插件",
+      "mkt.repos": "{n} 个仓库",
+      "mkt.loading": "正在读取 SkillHub",
+      "mkt.error": "连接失败：{m}",
+      "mkt.empty": "没有匹配的插件。",
+      "mkt.noDesc": "这个仓库还没有填写简介。",
+      "mkt.details": "详情",
+      "mkt.verified": "已验证",
+      "mkt.unsupported": "不可直接安装",
+      "mkt.sending": "正在发送",
+      "mkt.install": "交给 DSH 安装",
+      "mkt.sent": "已把 {name} 的审核安装请求发送给当前 DSH 任务。",
+      "mkt.noTask": "请先打开一个 DSH 任务",
+      "mkt.unavailableTask": "当前 DSH 任务不可用",
+      "mkt.more": "加载更多",
+      "mkt.catAll": "全部",
     };
     const EN = {
       locale: "en",
@@ -344,6 +412,28 @@ window.__ModuleLoader__.load({
       "cat.professional": "Professional",
       "cat.it-ops-security": "IT & Security",
       "cat.life-service": "Lifestyle",
+      "mkt.title": "Plugin Market",
+      "mkt.copy": "Browse DSH plugins listed by SkillHub and send install requests to the current task for review.",
+      "mkt.searchPlaceholder": "Search plugins, authors, or tags",
+      "mkt.search": "Search",
+      "mkt.verifiedScope": "DSH plugins",
+      "mkt.allScope": "Topic repositories",
+      "mkt.results": "Recommended plugins",
+      "mkt.repos": "{n} repositories",
+      "mkt.loading": "Loading SkillHub",
+      "mkt.error": "Connection failed: {m}",
+      "mkt.empty": "No plugins match your filters.",
+      "mkt.noDesc": "This repository has no description yet.",
+      "mkt.details": "Details",
+      "mkt.verified": "Verified",
+      "mkt.unsupported": "Direct install unavailable",
+      "mkt.sending": "Sending",
+      "mkt.install": "Install with DSH",
+      "mkt.sent": "Sent the review-first install request for {name} to the current DSH task.",
+      "mkt.noTask": "Open a DSH task before installing",
+      "mkt.unavailableTask": "The current DSH task is unavailable",
+      "mkt.more": "Load more",
+      "mkt.catAll": "All",
     };
 
     const I18nCtx = React.createContext(null);
@@ -1230,11 +1320,185 @@ window.__ModuleLoader__.load({
       ));
     }
 
-    const inject = ["slots"];
+    const MARKET_CATS = [
+      "office-efficiency", "content-creation", "dev-programming", "data-analysis",
+      "design-media", "ai-agent", "knowledge-management", "business-ops",
+      "education", "professional", "it-ops-security", "life-service",
+    ];
+
+    function SearchIcon() {
+      return h("svg", { viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" },
+        h("circle", { cx: "7", cy: "7", r: "5.25", stroke: "currentColor", strokeWidth: "1.5" }),
+        h("path", { d: "M11 11.5 14 14.5", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round" }),
+      );
+    }
+
+    function queueInstallPrompt(sessions, locale) {
+      return async (plugin) => {
+        const current = sessions && sessions.list && sessions.list.getSnapshot && sessions.list.getSnapshot().current;
+        if (!current) throw new Error(locale === "en" ? EN["mkt.noTask"] : ZH["mkt.noTask"]);
+        const binding = sessions.binding && sessions.binding(current);
+        if (!binding || !binding.session || typeof binding.session.prompt !== "function") {
+          throw new Error(locale === "en" ? EN["mkt.unavailableTask"] : ZH["mkt.unavailableTask"]);
+        }
+        const body = await api("pluginInstallPrompt", {
+          owner: plugin.owner,
+          name: plugin.name,
+          fullName: plugin.fullName,
+          locale,
+        });
+        await binding.session.prompt([{ type: "text", text: body.prompt }], "queue");
+      };
+    }
+
+    function Marketplace(props) {
+      useEffect(() => ensureCss(), []);
+      const tr = typeof props.t === "function" ? props.t : lookup;
+      const locale = tr("locale") === "en" ? "en" : "zh";
+      const [query, setQuery] = useState("");
+      const [submitted, setSubmitted] = useState("");
+      const [category, setCategory] = useState("");
+      const [scope, setScope] = useState("verified");
+      const [page, setPage] = useState(1);
+      const [items, setItems] = useState([]);
+      const [total, setTotal] = useState(0);
+      const [webBase, setWebBase] = useState("https://skillhub.cn");
+      const [status, setStatus] = useState("loading");
+      const [err, setErr] = useState("");
+      const [sending, setSending] = useState("");
+      const [feedback, setFeedback] = useState("");
+      const install = React.useMemo(() => queueInstallPrompt(props.sessions, locale), [props.sessions, locale]);
+      useEffect(() => {
+        let live = true;
+        if (page === 1) setStatus("loading");
+        api("plugins", { q: submitted, scope, category, sort: "stars", page, pageSize: 24 })
+          .then((d) => {
+            if (!live) return;
+            setItems((cur) => page === 1 ? (d.items || []) : cur.concat(d.items || []));
+            setTotal(Number(d.total) || 0);
+            if (d.webBase) setWebBase(d.webBase);
+            setStatus("ready");
+            setErr("");
+          })
+          .catch((e) => {
+            if (!live) return;
+            if (page === 1) {
+              setItems([]);
+              setTotal(0);
+            }
+            setStatus("error");
+            setErr(e.message || String(e));
+          });
+        return () => { live = false; };
+      }, [submitted, scope, category, page]);
+      const catLabelFor = (key) => {
+        if (!key) return "";
+        const label = tr("cat." + key);
+        return label && label !== "cat." + key ? label : key;
+      };
+      const detailHref = (plugin) => webBase.replace(/\/$/, "") + "/plugins/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
+      return h(I18nProvider, { t: tr },
+        h("div", { className: "sh-mkt" },
+          h("div", { className: "sh-mkt-header" },
+            h("div", null,
+              h("div", { className: "sh-mkt-brand" }, h("span", { className: "sh-mkt-dot" }), "SKILLHUB"),
+              h("h2", { className: "sh-mkt-title" }, tr("mkt.title")),
+              h("p", { className: "sh-mkt-copy" }, tr("mkt.copy")),
+            ),
+          ),
+          h("div", { className: "sh-mkt-scope" },
+            ["verified", "all"].map((item) => h("button", {
+              key: item,
+              type: "button",
+              className: "sh-mkt-scope-btn" + (scope === item ? " on" : ""),
+              onClick: () => { setScope(item); setPage(1); },
+            }, item === "verified" ? tr("mkt.verifiedScope") : tr("mkt.allScope"))),
+          ),
+          h("form", {
+            className: "sh-mkt-search",
+            onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
+          },
+            h("div", { className: "sh-mkt-field" },
+              h(SearchIcon),
+              h("input", {
+                type: "search",
+                value: query,
+                placeholder: tr("mkt.searchPlaceholder"),
+                onChange: (e) => setQuery(e.currentTarget.value),
+              }),
+            ),
+            h("button", { type: "submit", className: "sh-mkt-go" }, tr("mkt.search")),
+          ),
+          h("div", { className: "sh-mkt-filters" },
+            h("button", {
+              type: "button",
+              className: "sh-mkt-filter" + (!category ? " on" : ""),
+              onClick: () => { setCategory(""); setPage(1); },
+            }, tr("mkt.catAll")),
+            MARKET_CATS.map((key) => h("button", {
+              key,
+              type: "button",
+              className: "sh-mkt-filter" + (category === key ? " on" : ""),
+              onClick: () => { setCategory(key); setPage(1); },
+            }, catLabelFor(key))),
+          ),
+          status === "ready" ? h("div", { className: "sh-mkt-results" },
+            h("strong", null, tr("mkt.results")),
+            h("p", { className: "sh-mkt-summary" }, tr("mkt.repos", { n: total })),
+          ) : null,
+          feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px" } }, feedback) : null,
+          status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
+          status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
+          status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("mkt.empty")) : null,
+          items.length ? h("div", { className: "sh-mkt-grid" },
+            items.map((plugin) => {
+              const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
+              const verified = plugin.installability === "verified";
+              return h("article", { key: id, className: "sh-mkt-card" },
+                h("div", { className: "sh-mkt-top" },
+                  h("p", { className: "sh-mkt-owner" }, plugin.owner),
+                  h("span", { className: "sh-mkt-badge" + (verified ? " ok" : "") }, verified ? tr("mkt.verified") : tr("mkt.unsupported")),
+                ),
+                h("div", { className: "sh-mkt-name" }, plugin.name),
+                h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
+                h("div", { className: "sh-mkt-meta" },
+                  h("span", null, catLabelFor(plugin.categoryKey) || plugin.categoryKey),
+                  h("span", null, "★ " + (Number(plugin.stars) || 0)),
+                ),
+                h("div", { className: "sh-mkt-actions" },
+                  h("a", { className: "sh-mkt-details", href: detailHref(plugin), target: "_blank", rel: "noreferrer" }, tr("mkt.details")),
+                  h("button", {
+                    type: "button",
+                    className: "sh-mkt-install",
+                    disabled: !verified || sending === id,
+                    onClick: () => {
+                      setSending(id);
+                      setFeedback("");
+                      install(plugin).then(
+                        () => setFeedback(tr("mkt.sent", { name: plugin.fullName || id })),
+                        (e) => setFeedback(e.message || String(e)),
+                      ).finally(() => setSending(""));
+                    },
+                  }, !verified ? tr("mkt.unsupported") : (sending === id ? tr("mkt.sending") : tr("mkt.install"))),
+                ),
+              );
+            }),
+          ) : null,
+          status === "ready" && items.length < total ? h("button", {
+            type: "button",
+            className: "sh-mkt-more",
+            onClick: () => setPage((n) => n + 1),
+          }, tr("mkt.more")) : null,
+        ),
+      );
+    }
+
+    const inject = ["slots", "sessions"];
     function apply(ctx) {
-      const slots = ctx.get("slots");
+      const slots = (ctx && ctx.slots) || (ctx && typeof ctx.get === "function" && ctx.get("slots"));
       if (!slots) return;
-      const loc = ctx.get("locale");
+      const sessions = (ctx && ctx.sessions) || (ctx && typeof ctx.get === "function" && ctx.get("sessions"));
+      const loc = (ctx && ctx.locale) || (ctx && typeof ctx.get === "function" && ctx.get("locale"));
       if (loc && typeof loc.register === "function") {
         ctx.effect(() => {
           try {
@@ -1257,8 +1521,14 @@ window.__ModuleLoader__.load({
         { name: "settings.plugin.item", id: "skillhub", order: 32, locale: "skillhub" },
         ConfigCard,
       ));
+      slots.inject("settings.section", () => slots.register(
+        { name: "settings.section", id: "skillhub-market", order: 17, label: "SkillHub 市场", locale: "skillhub" },
+        function MarketSection(sectionProps) {
+          return h(Marketplace, { ...sectionProps, sessions });
+        },
+      ));
     }
 
-    return { inject, apply, SearchToolView, ListToolView };
+    return { inject, apply, SearchToolView, ListToolView, Marketplace };
   },
 });

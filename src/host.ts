@@ -7,6 +7,7 @@ import { CATEGORY_KEYS, categoryLabel, parseCategory } from './categories.js'
 import { assignConfig, publicConfig, readOverlay, sanitizePatch, sanitizeSortBy, withDefaults, writeOverlay } from './config-store.js'
 import { fetchBytes } from './http.js'
 import { installSkill, listInstalled, uninstallSkill } from './install.js'
+import { createInstallPrompt, listPlugins } from './plugin-market.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SkillCard, SortBy } from './types.js'
@@ -305,6 +306,31 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginC
         userAgent: cfg.userAgent,
       })
       return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'plugins') {
+      const result = await listPlugins(cfg, {
+        q: body.q ?? body.query ?? url.searchParams.get('q'),
+        scope: body.scope ?? url.searchParams.get('scope'),
+        category: body.category ?? url.searchParams.get('category'),
+        sort: body.sort ?? url.searchParams.get('sort'),
+        page: body.page ?? url.searchParams.get('page'),
+        pageSize: body.pageSize ?? body.limit ?? url.searchParams.get('page_size') ?? url.searchParams.get('pageSize'),
+      })
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstallPrompt') {
+      const prompt = createInstallPrompt(
+        {
+          owner: body.owner ?? url.searchParams.get('owner'),
+          name: body.name ?? url.searchParams.get('name'),
+          fullName: body.fullName ?? url.searchParams.get('fullName'),
+        },
+        {
+          locale: body.locale ?? url.searchParams.get('locale'),
+          apiBase: cfg.apiBase,
+        },
+      )
+      return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))
