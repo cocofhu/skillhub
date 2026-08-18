@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-08-18
+
+### Fixed
+
+- `settings.plugin.item` 等 slot 同时带 `id` 和 `key`，兼容 dsh 0.1.0-rc.6（list 要 id）和 rc.7+（keyed 要 key）
+
 ## [0.2.6] - 2026-08-18
 
 ### Added

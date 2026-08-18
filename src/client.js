@@ -1687,6 +1687,13 @@ window.__ModuleLoader__.load({
     }
 
     const inject = ["slots", "sessions"];
+    // rc.6 list slots require `id`; rc.7+ keyed slots require `key`. Pass both.
+    function registerSlot(slots, options, component) {
+      const next = { ...options };
+      if (next.id == null && next.key != null) next.id = String(next.key);
+      if (next.key == null && next.id != null) next.key = next.id;
+      return slots.register(next, component);
+    }
     function apply(ctx) {
       const slots = ctx.slots;
       const sessions = ctx.sessions;
@@ -1702,19 +1709,23 @@ window.__ModuleLoader__.load({
         }, "skillhub-locale");
       });
       ctx.effect(() => ensureCss(), "skillhub-style");
-      slots.inject("tool.call.toolview", () => slots.register(
+      slots.inject("tool.call.toolview", () => registerSlot(
+        slots,
         { name: "tool.call.toolview", key: "skillhub_search", locale: "skillhub" },
         SearchToolView,
       ));
-      slots.inject("tool.call.toolview", () => slots.register(
+      slots.inject("tool.call.toolview", () => registerSlot(
+        slots,
         { name: "tool.call.toolview", key: "skillhub_list", locale: "skillhub" },
         ListToolView,
       ));
-      slots.inject("settings.plugin.item", () => slots.register(
+      slots.inject("settings.plugin.item", () => registerSlot(
+        slots,
         { name: "settings.plugin.item", key: "skillhub", locale: "skillhub" },
         ConfigCard,
       ));
-      slots.inject("sidebar.footer.action", () => slots.register(
+      slots.inject("sidebar.footer.action", () => registerSlot(
+        slots,
         { name: "sidebar.footer.action", id: "skillhub-plaza", order: 8, label: () => lookup("plaza.title"), locale: "skillhub" },
         function PlazaEntry(actionProps) {
           return h(PlazaAction, { ...actionProps, sessions });
