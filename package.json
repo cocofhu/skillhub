@@ -1,6 +1,6 @@
 {
   "name": "@cocofhu/skillhub",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "DeepSeek Harness 插件：在对话中搜索、安装和管理 SkillHub 技能",
   "homepage": "https://github.com/cocofhu/skillhub#readme",
   "bugs": {
