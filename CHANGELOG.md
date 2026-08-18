@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-08-18
+
+### Fixed
+
+- `cordis.patch.yml` 的 `name` 改为 `@cocofhu/skillhub`，loader 才能从 npm 包 import，不再找不存在的无前缀 `skillhub`
+
 ## [0.2.2] - 2026-08-18
 
 ### Changed
