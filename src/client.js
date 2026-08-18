@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "skillhub",
+  id: "@cocofhu/skillhub",
   factory: (require) => {
     const React = require("react");
     const h = React.createElement;
