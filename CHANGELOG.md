@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- npm 包名改为 `@cocofhu/skillhub`（`skillhub` 已被占用），可用 `dsh plugin add @cocofhu/skillhub` 安装，避免 git 源触发 `allowBuilds`
+
 ## [0.2.1] - 2026-08-18
 
 ### Changed

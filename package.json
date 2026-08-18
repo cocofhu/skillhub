@@ -1,5 +1,5 @@
 {
-  "name": "skillhub",
+  "name": "@cocofhu/skillhub",
   "version": "0.2.1",
   "description": "DeepSeek Harness 插件：在对话中搜索、安装和管理 SkillHub 技能",
   "homepage": "https://github.com/cocofhu/skillhub#readme",
@@ -33,6 +33,9 @@
     "skills"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=22"
