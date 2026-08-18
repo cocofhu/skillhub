@@ -41,26 +41,32 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-推荐安装已发布的 **v0.2.1**：
+推荐从 npm 安装（预构建，不需要 `allowBuilds`）：
+
+```sh
+dsh plugin --profile web add @cocofhu/skillhub
+```
+
+也可以安装已发布的 GitHub tag：
 
 ```sh
 dsh plugin --profile web add github:cocofhu/skillhub#v0.2.1
 ```
 
-也可以跟踪默认分支（可能含未发布改动）：
+跟踪默认分支（可能含未发布改动）：
 
 ```sh
 dsh plugin --profile web add github:cocofhu/skillhub
 ```
 
-pnpm ≥10 首次从 git 安装时会拒绝运行 `prepare`。按 `dsh` 提示把包名写入 profile 的 `pnpm-workspace.yaml`：
+pnpm ≥10 首次从 **git** 安装时会拒绝运行 `prepare`。按 `dsh` 提示把精确 key 写入 profile 的 `pnpm-workspace.yaml`，例如：
 
 ```yaml
 allowBuilds:
-  skillhub: true
+  "@cocofhu/skillhub@github:cocofhu/skillhub#v0.2.1": true
 ```
 
-然后重新执行 `dsh plugin add`。只允许你信任的来源。
+然后重新执行 `dsh plugin add`。只允许你信任的来源。从 npm 安装不需要这一步。
 
 本地开发安装：
 
@@ -183,7 +189,7 @@ pnpm build
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 设置里没有插件市场 | 打开 **设置 → 插件** 的「插件市场」标签；重启 `dsh web` 并强制刷新 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
-| pnpm 拒绝 `prepare` | 在 profile 的 `pnpm-workspace.yaml` 写入 `allowBuilds.skillhub: true` |
+| pnpm 拒绝 `prepare` | 改用 `dsh plugin add @cocofhu/skillhub`；若必须走 git，按 `dsh` 提示把精确 key 写入 `allowBuilds` |
 
 ## 安全
 

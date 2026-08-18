@@ -88,6 +88,22 @@ dsh web --host 127.0.0.1 --port 3080
 
 依赖更新由 Dependabot 提交 PR。不必在文档 PR 里顺手升级无关依赖。
 
+## 发布
+
+正式版走 GitHub Release tag，并由 `.github/workflows/publish.yml` 用 npm Trusted Publishing 发到 `@cocofhu/skillhub`。不要把 `NPM_TOKEN` 写进 workflow。npm 上的无前缀名 `skillhub` 已被占用。
+
+1. 升 `package.json` 的 `version`，把 `CHANGELOG.md` 的 Unreleased 写入该版本，合并进 `main`。
+2. 打 annotated tag 并推送，例如 `git tag -a v0.2.2 -m "v0.2.2" && git push origin v0.2.2`。
+3. 同时创建 GitHub Release；Actions 里的 Publish 会 `npm publish`。
+
+Trusted Publisher 在 https://www.npmjs.com/package/@cocofhu/skillhub/access 绑定一次即可：
+
+- Organization or user：`cocofhu`
+- Repository：`skillhub`
+- Workflow filename：`publish.yml`
+- Environment name：留空
+- Allowed actions：`npm publish`
+
 ## 文档
 
 用户能感知的行为变化请改 `README.md`。安全边界变化请改 `SECURITY.md`。发布说明写入 `CHANGELOG.md`。

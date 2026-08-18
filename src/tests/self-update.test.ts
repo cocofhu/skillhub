@@ -129,7 +129,7 @@ test('runCommand captures stdout and rejects non-zero exit', async () => {
 test('package helpers read local package.json', async () => {
   const { packageRoot, readPackageJson, webProfileDir } = await import('../self-update.js')
   const pkg = readPackageJson(packageRoot())
-  assert.equal(pkg.name, 'skillhub')
+  assert.equal(pkg.name, '@cocofhu/skillhub')
   assert.match(pkg.version || '', /^\d+\.\d+\.\d+/)
   assert.match(webProfileDir(), /profiles\/web$/)
 })

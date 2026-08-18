@@ -7,7 +7,9 @@ cd "$root"
 name=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('package.json','utf8')).name)")
 version=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('package.json','utf8')).version)")
 dest=${PACK_DEST:-/tmp}
-tgz="$dest/$name-$version.tgz"
+safe_name=${name#@}
+safe_name=${safe_name//\//-}
+tgz="$dest/$safe_name-$version.tgz"
 
 pnpm pack --pack-destination "$dest" >/dev/null
 
