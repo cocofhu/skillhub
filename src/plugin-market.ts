@@ -34,6 +34,7 @@ export interface MarketPlugin {
   categoryKey: string
   installability: PluginInstallability
   repositoryUrl: string
+  avatarUrl: string
 }
 
 export interface PluginListQuery {
@@ -112,6 +113,25 @@ export function pluginPageUrl(webBase: string, owner: string, name: string): str
   return `${trimBase(webBase)}/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
 }
 
+export function pluginGithubUrl(plugin: { owner: unknown; name: unknown; repositoryUrl?: unknown }): string {
+  const repo = String(plugin.repositoryUrl || '').trim()
+  if (/^https:\/\/github\.com\//i.test(repo)) return repo.slice(0, 300)
+  const ref = parsePluginRef(plugin.owner, plugin.name)
+  return `https://github.com/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
+}
+
+export function sanitizePluginAvatarUrl(raw: unknown): string {
+  const url = String(raw || '').trim()
+  if (!/^https:\/\//i.test(url) || url.length > 500 || /[\s<>"'`]/.test(url)) return ''
+  return url
+}
+
+export function pluginInitial(plugin: { owner?: unknown; name?: unknown }): string {
+  const raw = String(plugin.name || plugin.owner || '')
+  const ch = raw.match(/[A-Za-z0-9]|[\u4e00-\u9fff]/)
+  return (ch ? ch[0] : '?').toUpperCase()
+}
+
 export function buildPluginsUrl(apiBase: string, query: PluginListQuery = {}): string {
   const params = new URLSearchParams()
   const q = String(query.q || '').trim()
@@ -140,6 +160,7 @@ export function mapMarketPlugin(raw: unknown): MarketPlugin | null {
       categoryKey: parsePluginCategory(r.categoryKey) || '',
       installability: r.installability === 'verified' ? 'verified' : 'unsupported',
       repositoryUrl: /^https:\/\/github\.com\//i.test(repo) ? repo.slice(0, 300) : '',
+      avatarUrl: sanitizePluginAvatarUrl(r.avatarUrl),
     }
   } catch {
     return null

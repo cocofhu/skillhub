@@ -148,19 +148,27 @@ window.__ModuleLoader__.load({
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
 .sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
 .sh-mkt-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-mkt-head{display:flex;align-items:center;gap:10px}
+.sh-mkt-head-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px;justify-content:center}
+.sh-mkt-avatar{flex:none;width:36px;height:36px;border-radius:9px;object-fit:cover;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);background:linear-gradient(135deg,#c7d2fe,#fbcfe8)}
+.sh-mkt-avatar-fallback{display:grid;place-items:center;font-weight:700;font-size:14px;line-height:1;color:#374151}
 .sh-mkt-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.sh-mkt-owner{min-width:0;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:18px;text-overflow:ellipsis;white-space:nowrap}
-.sh-mkt-badge{flex:none;min-height:20px;display:inline-flex;align-items:center;border-radius:5px;padding:1px 6px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px}
+.sh-mkt-owner{min-width:0;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:14px;text-overflow:ellipsis;white-space:nowrap}
+.sh-mkt-badge{flex:none;min-height:18px;display:inline-flex;align-items:center;border-radius:5px;padding:1px 6px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px}
 .sh-mkt-badge.ok{background:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 10%,transparent);color:var(--dsw-alias-state-success-primary,#279c62)}
-.sh-mkt-name{margin:10px 0 5px;overflow-wrap:anywhere;font-size:15px;line-height:21px;font-weight:600}
-.sh-mkt-desc{display:-webkit-box;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;line-height:18px;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+.sh-mkt-name{margin:0;overflow-wrap:anywhere;font-size:15px;line-height:18px;font-weight:600}
+.sh-mkt-desc{display:-webkit-box;overflow:hidden;margin:10px 0 0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;line-height:18px;-webkit-box-orient:vertical;-webkit-line-clamp:3}
 .sh-mkt-meta{display:flex;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:17px}
 .sh-mkt-actions{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
 .sh-mkt-details{flex:1;color:var(--dsw-alias-label-secondary,#4b5058);font-size:12px;font-weight:500;text-decoration:none;position:relative;z-index:1}
 .sh-mkt-install{position:relative;z-index:1;min-height:30px;padding:0 10px;font-size:12px}
 .sh-mkt-install:disabled{opacity:.4;cursor:default}
 .sh-mkt-status{margin:0;padding:32px 12px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;text-align:center}
-.sh-mkt-more{align-self:center;height:32px;padding:0 14px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:8px;background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,inherit);font:inherit;font-size:12px;cursor:pointer}
+.sh-mkt-more{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:8px;min-height:40px;margin-top:2px;padding:0 16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-secondary,#4b5058);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s,color .16s}
+.sh-mkt-more:hover{background:var(--dsw-alias-bg-layer-3,#fff);border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%));color:var(--dsw-alias-label-primary,#17191c)}
+.sh-mkt-more:active{transform:translateY(0.5px)}
+.sh-mkt-more-left{color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-weight:400;font-variant-numeric:tabular-nums}
+.sh-mkt-more svg{flex:none;width:14px;height:14px}
 @media (max-width:680px){.sh-mkt-grid{grid-template-columns:minmax(0,1fr)}.sh-mkt-search{align-items:stretch;flex-direction:column}.sh-mkt-go{width:100%}}
 `;
 
@@ -329,6 +337,7 @@ window.__ModuleLoader__.load({
       "mkt.noTask": "请先打开一个 DSH 任务",
       "mkt.unavailableTask": "当前 DSH 任务不可用",
       "mkt.more": "加载更多",
+      "mkt.moreLeft": "还剩 {n} 个",
       "mkt.catAll": "全部",
     };
     const EN = {
@@ -433,6 +442,7 @@ window.__ModuleLoader__.load({
       "mkt.noTask": "Open a DSH task before installing",
       "mkt.unavailableTask": "The current DSH task is unavailable",
       "mkt.more": "Load more",
+      "mkt.moreLeft": "{n} remaining",
       "mkt.catAll": "All",
     };
 
@@ -1308,6 +1318,29 @@ window.__ModuleLoader__.load({
       { key: "admin-security", displayName: "管理安全" },
     ];
 
+    function pluginLetter(plugin) {
+      const raw = String((plugin && plugin.name) || (plugin && plugin.owner) || "");
+      const ch = raw.match(/[A-Za-z0-9]|[\u4e00-\u9fff]/);
+      return (ch ? ch[0] : "?").toUpperCase();
+    }
+
+    function MarketAvatar({ plugin }) {
+      const [failed, setFailed] = useState(false);
+      const src = !failed && plugin.avatarUrl ? iconSrc(plugin.avatarUrl) : "";
+      if (src) {
+        return h("img", {
+          className: "sh-mkt-avatar",
+          src,
+          alt: "",
+          onError: () => setFailed(true),
+        });
+      }
+      return h("div", {
+        className: "sh-mkt-avatar sh-mkt-avatar-fallback",
+        "aria-hidden": "true",
+      }, pluginLetter(plugin));
+    }
+
     function SearchIcon() {
       return h("svg", { viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" },
         h("circle", { cx: "7", cy: "7", r: "5.25", stroke: "currentColor", strokeWidth: "1.5" }),
@@ -1343,7 +1376,6 @@ window.__ModuleLoader__.load({
       const [page, setPage] = useState(1);
       const [items, setItems] = useState([]);
       const [total, setTotal] = useState(0);
-      const [webBase, setWebBase] = useState("https://skillhub.cn");
       const [status, setStatus] = useState("loading");
       const [err, setErr] = useState("");
       const [sending, setSending] = useState("");
@@ -1369,7 +1401,6 @@ window.__ModuleLoader__.load({
             if (!live) return;
             setItems((cur) => page === 1 ? (d.items || []) : cur.concat(d.items || []));
             setTotal(Number(d.total) || 0);
-            if (d.webBase) setWebBase(d.webBase);
             setStatus("ready");
             setErr("");
           })
@@ -1390,7 +1421,11 @@ window.__ModuleLoader__.load({
         const hit = cats.find((it) => it.key === key);
         return (hit && hit.displayName) || MARKET_CAT_FALLBACK.find((it) => it.key === key)?.displayName || key;
       };
-      const detailHref = (plugin) => webBase.replace(/\/$/, "") + "/plugins/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
+      const detailHref = (plugin) => {
+        const repo = String(plugin.repositoryUrl || "").trim();
+        if (/^https:\/\/github\.com\//i.test(repo)) return repo;
+        return "https://github.com/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
+      };
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
           h("form", {
@@ -1433,11 +1468,16 @@ window.__ModuleLoader__.load({
               const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
               const verified = plugin.installability === "verified";
               return h("article", { key: id, className: "sh-mkt-card" },
-                h("div", { className: "sh-mkt-top" },
-                  h("p", { className: "sh-mkt-owner" }, plugin.owner),
-                  h("span", { className: "sh-mkt-badge" + (verified ? " ok" : "") }, verified ? tr("mkt.verified") : tr("mkt.unsupported")),
+                h("div", { className: "sh-mkt-head" },
+                  h(MarketAvatar, { plugin }),
+                  h("div", { className: "sh-mkt-head-main" },
+                    h("div", { className: "sh-mkt-top" },
+                      h("p", { className: "sh-mkt-owner" }, plugin.owner),
+                      h("span", { className: "sh-mkt-badge" + (verified ? " ok" : "") }, verified ? tr("mkt.verified") : tr("mkt.unsupported")),
+                    ),
+                    h("div", { className: "sh-mkt-name" }, plugin.name),
+                  ),
                 ),
-                h("div", { className: "sh-mkt-name" }, plugin.name),
                 h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
                 h("div", { className: "sh-mkt-meta" },
                   h("span", null, catLabelFor(plugin.categoryKey) || plugin.categoryKey),
@@ -1466,7 +1506,11 @@ window.__ModuleLoader__.load({
             type: "button",
             className: "sh-mkt-more",
             onClick: () => setPage((n) => n + 1),
-          }, tr("mkt.more")) : null,
+          },
+            h("span", null, tr("mkt.more")),
+            h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: Math.max(0, total - items.length) })),
+            h(ChevronDown),
+          ) : null,
         ),
       );
     }
