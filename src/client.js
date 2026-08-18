@@ -253,14 +253,13 @@ window.__ModuleLoader__.load({
 
     const ZH = {
       locale: "zh",
-      "cfg.desc": "搜索 API、安装目录与结果数量。默认装到 ~/.dsh/skills。",
+      "cfg.desc": "搜索 API、安装目录与结果数量。",
       "cfg.updateHint": "当前 {cur} · 最新 {latest}",
       "cfg.unsaved": "未保存",
       "cfg.collapse": "收起",
       "cfg.expand": "展开",
       "cfg.api": "API 地址",
       "cfg.dir": "安装目录",
-      "cfg.dirHint": "DSH 用户级技能根。也可改成 ~/.cursor/skills。",
       "cfg.max": "搜索结果上限",
       "cfg.discard": "放弃修改",
       "cfg.save": "保存",
@@ -350,14 +349,13 @@ window.__ModuleLoader__.load({
     };
     const EN = {
       locale: "en",
-      "cfg.desc": "Search API, install directory, and result count. Defaults to ~/.dsh/skills.",
+      "cfg.desc": "Search API, install directory, and result count.",
       "cfg.updateHint": "Current {cur} · Latest {latest}",
       "cfg.unsaved": "Unsaved",
       "cfg.collapse": "Collapse",
       "cfg.expand": "Expand",
       "cfg.api": "API URL",
       "cfg.dir": "Install directory",
-      "cfg.dirHint": "DSH user-level skills root. You can also use ~/.cursor/skills.",
       "cfg.max": "Search result limit",
       "cfg.discard": "Discard",
       "cfg.save": "Save",
@@ -1193,7 +1191,6 @@ window.__ModuleLoader__.load({
                 value: draft.skillsDir,
                 onChange: (e) => setDraft({ ...draft, skillsDir: e.target.value }),
               }),
-              h("p", { className: "sh-cfg-hint" }, tr("cfg.dirHint")),
             ),
             h("div", { className: "sh-cfg-f" },
               h("label", { htmlFor: "sh-max" }, tr("cfg.max")),
@@ -1599,7 +1596,7 @@ window.__ModuleLoader__.load({
         h("div", {
           className: "sh-plaza-page",
           role: "dialog",
-          "aria-modal": "true",
+          "aria-modal": "false",
           "aria-label": tr("plaza.title"),
           style: {
             top: box.top,
@@ -1640,6 +1637,16 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function sessionListCurrent(sessions) {
+      try {
+        return sessions && sessions.list && typeof sessions.list.getSnapshot === "function"
+          ? sessions.list.getSnapshot().current
+          : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+
     function PlazaAction({ wide, sessions, t }) {
       useEffect(() => ensureCss(), []);
       const tr = typeof t === "function" ? t : lookup;
@@ -1653,6 +1660,29 @@ window.__ModuleLoader__.load({
         setOpen(false);
         setHint(tr("plaza.noSession"));
       }, [open, box, tr]);
+      useEffect(() => {
+        if (!open) return;
+        const list = sessions && sessions.list;
+        if (!list || typeof list.subscribe !== "function") return;
+        let last = sessionListCurrent(sessions);
+        return list.subscribe(() => {
+          const now = sessionListCurrent(sessions);
+          if (now === last) return;
+          last = now;
+          close();
+        });
+      }, [open, sessions, close]);
+      useEffect(() => {
+        if (!open) return;
+        const onPointer = (e) => {
+          const node = e.target;
+          if (!node || typeof node.closest !== "function") return;
+          if (node.closest(".sh-plaza-page, .sh-plaza-wrap, .sh-overlay")) return;
+          close();
+        };
+        document.addEventListener("pointerdown", onPointer, true);
+        return () => document.removeEventListener("pointerdown", onPointer, true);
+      }, [open, close]);
       const panel = open && box && typeof document !== "undefined"
         ? createPortal(h(PlazaView, { sessions, t: tr, onClose: close, box }), document.body)
         : null;
