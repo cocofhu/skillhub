@@ -40,7 +40,6 @@ export function flattenDetail(raw: SkillHubDetailRaw | null | undefined): SkillH
     version: String(raw?.latestVersion?.version || skill.version || ''),
     iconUrl: skill.iconUrl,
     ownerName: raw?.owner?.handle || skill.ownerName,
-    verified: skill.verified,
     publisher: raw?.publisher || skill.publisher,
     namespace: raw?.namespace || skill.namespace,
     securityReports: raw?.securityReports || skill.securityReports,
@@ -294,6 +293,6 @@ export function fetchOpts(cfg: Pick<PluginConfig, 'timeoutMs' | 'userAgent'>): F
   return { timeoutMs: cfg.timeoutMs, userAgent: cfg.userAgent }
 }
 
-function clamp(n: number, min: number, max: number): number {
+export function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n))
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { HttpError } from '../http.js'
-import { dimScore, evalGrade, fetchEvalScore, fetchSkillTab, overallScore } from '../skill-detail.js'
+import { dimScore, fetchEvalScore, fetchSkillTab, overallScore } from '../skill-detail.js'
 import { withDefaults } from '../config-store.js'
 import type { PluginConfig } from '../types.js'
 
@@ -12,11 +12,6 @@ test('TRACE scores average item scores', () => {
   }
   assert.equal(dimScore(dims.trust), 4.5)
   assert.equal(overallScore(dims), 4.3)
-  assert.equal(evalGrade(4.6), '优秀')
-  assert.equal(evalGrade(4.2), '良好')
-  assert.equal(evalGrade(3.1), '一般')
-  assert.equal(evalGrade(2.2), '待提升')
-  assert.equal(evalGrade(undefined), '')
   assert.equal(dimScore(null), null)
   assert.equal(overallScore(undefined), null)
 })

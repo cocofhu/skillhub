@@ -1,6 +1,6 @@
-import { parseSlug } from './api.js'
+import { fetchOpts, parseSlug } from './api.js'
 import { fetchJson } from './http.js'
-import type { FetchOptions, PluginConfig } from './types.js'
+import type { PluginConfig } from './types.js'
 
 export const TRACE_DIMS = [
   { key: 'trust', letter: 'T', name: '可信任度' },
@@ -30,15 +30,6 @@ export function overallScore(dimensions: Record<string, unknown> | undefined): n
   return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
 }
 
-export function evalGrade(score: number | null | undefined): string {
-  const n = Number(score)
-  if (!Number.isFinite(n)) return ''
-  if (n >= 4.5) return '优秀'
-  if (n >= 4) return '良好'
-  if (n >= 3) return '一般'
-  return '待提升'
-}
-
 export async function fetchEvalScore(
   slug: string,
   cfg: PluginConfig,
@@ -47,7 +38,7 @@ export async function fetchEvalScore(
 ): Promise<number | null> {
   const id = parseSlug(slug)
   try {
-    const raw = await deps.fetchJson<EvalRaw>(url(cfg, id, 'evaluation'), opts(cfg), signal)
+    const raw = await deps.fetchJson<EvalRaw>(url(cfg, id, 'evaluation'), fetchOpts(cfg), signal)
     return overallScore(raw.dimensions)
   } catch {
     return null
@@ -63,7 +54,7 @@ export async function fetchSkillTab(
 ): Promise<Record<string, unknown>> {
   const id = parseSlug(slug)
   if (tab === 'versions') {
-    const raw = await deps.fetchJson<VersionList>(url(cfg, id, 'versions'), opts(cfg), signal)
+    const raw = await deps.fetchJson<VersionList>(url(cfg, id, 'versions'), fetchOpts(cfg), signal)
     return {
       tab,
       versions: (raw.versions || []).slice(0, 40).map((v) => ({
@@ -75,7 +66,7 @@ export async function fetchSkillTab(
   }
   if (tab === 'evaluation') {
     try {
-      const raw = await deps.fetchJson<EvalRaw>(url(cfg, id, 'evaluation'), opts(cfg), signal)
+      const raw = await deps.fetchJson<EvalRaw>(url(cfg, id, 'evaluation'), fetchOpts(cfg), signal)
       return { tab, evaluation: sanitizeEval(raw) }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -110,10 +101,6 @@ function sanitizeEval(raw: EvalRaw): Record<string, unknown> {
 
 function url(cfg: PluginConfig, slug: string, suffix: string): string {
   return `${cfg.apiBase.replace(/\/$/, '')}/api/v1/skills/${encodeURIComponent(slug)}/${suffix}`
-}
-
-function opts(cfg: PluginConfig): FetchOptions {
-  return { timeoutMs: cfg.timeoutMs, userAgent: cfg.userAgent }
 }
 
 interface VersionList {

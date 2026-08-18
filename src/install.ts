@@ -1,9 +1,9 @@
 import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
-import { parseSlug } from './api.js'
+import { fetchOpts, parseSlug } from './api.js'
 import { fetchBytes } from './http.js'
 import { unzipToFiles } from './unzip.js'
-import type { FetchOptions, InstalledSkill, InstallResult, PluginConfig } from './types.js'
+import type { InstalledSkill, InstallResult, PluginConfig } from './types.js'
 
 export interface InstallDeps {
   fetchBytes: typeof fetchBytes
@@ -66,11 +66,11 @@ export async function installSkill(slug: string, cfg: PluginConfig, deps: Instal
   }
 }
 
-export async function downloadSkillFiles(slug: string, cfg: PluginConfig, deps: InstallDeps = defaultDeps, signal?: AbortSignal, version?: string): Promise<Record<string, Buffer>> {
+async function downloadSkillFiles(slug: string, cfg: PluginConfig, deps: InstallDeps = defaultDeps, signal?: AbortSignal, version?: string): Promise<Record<string, Buffer>> {
   const id = parseSlug(slug)
   const ver = parseVersion(version)
   const zipUrl = `${cfg.apiBase.replace(/\/$/, '')}/api/v1/download?slug=${encodeURIComponent(id)}${ver ? `&version=${encodeURIComponent(ver)}` : ''}&source=dsh`
-  const { body, contentType } = await deps.fetchBytes(zipUrl, opts(cfg), signal)
+  const { body, contentType } = await deps.fetchBytes(zipUrl, fetchOpts(cfg), signal)
   if (!/zip|octet-stream/i.test(contentType) && body.subarray(0, 2).toString() !== 'PK') {
     throw new Error(`SkillHub download 不是 zip: ${id}`)
   }
@@ -121,6 +121,10 @@ export async function listInstalled(skillsDir: string): Promise<InstalledSkill[]
   return out
 }
 
+export async function installedSlugs(skillsDir: string): Promise<Set<string>> {
+  return new Set((await listInstalled(skillsDir)).map((it) => it.slug))
+}
+
 export async function uninstallSkill(slug: string, skillsDir: string): Promise<{ slug: string; path: string }> {
   const id = parseSlug(slug)
   const target = skillDir(skillsDir, id)
@@ -156,8 +160,4 @@ function commonTopDir(paths: string[]): string {
   const first = paths[0].replace(/\\/g, '/').split('/')[0]
   if (!first || first.includes('.')) return ''
   return paths.every((p) => p.replace(/\\/g, '/').startsWith(`${first}/`)) ? `${first}/` : ''
-}
-
-function opts(cfg: PluginConfig): FetchOptions {
-  return { timeoutMs: cfg.timeoutMs, userAgent: cfg.userAgent }
 }

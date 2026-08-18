@@ -91,7 +91,6 @@ window.__ModuleLoader__.load({
 .sh-fade{animation:sh-in .18s ease}
 .sh-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--dsw-alias-border-l2,#eee)}
 .sh-row:first-child{border-top:0}
-.sh-row-actions{display:flex;gap:6px;flex:none}
 .sh-cfg-item{list-style:none}
 .sh-cfg{border:1px solid var(--dsw-alias-border-l2,#e5e7eb);background:var(--dsw-alias-bg-layer-3,#fff);border-radius:12px;box-sizing:border-box}
 .sh-cfg.open{background:var(--dsw-alias-bg-layer-2,#fafafa)}
@@ -118,16 +117,7 @@ window.__ModuleLoader__.load({
 @keyframes sh-in{from{opacity:0}to{opacity:1}}
 .sh-mkt{display:flex;flex-direction:column;gap:14px;width:100%;max-width:760px;padding-bottom:24px;color:var(--dsw-alias-label-primary,#17191c);font-family:var(--dsw-font-family,inherit)}
 .sh-mkt *{box-sizing:border-box}
-.sh-mkt-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-.sh-mkt-brand{display:flex;align-items:center;gap:7px;margin-bottom:5px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;font-weight:600;letter-spacing:.08em}
-.sh-mkt-dot{width:7px;height:7px;border-radius:999px;background:var(--dsw-alias-state-business-primary,#4d6bfe)}
-.sh-mkt-title{margin:0;font-size:20px;line-height:28px;font-weight:600;letter-spacing:-.01em}
-.sh-mkt-copy{max-width:600px;margin:5px 0 0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px}
-.sh-mkt-scope{display:flex;align-items:center;gap:4px;width:fit-content;max-width:100%;padding:3px;overflow-x:auto;border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
-.sh-mkt-scope-btn,.sh-mkt-filter{flex:none;border:0;background:transparent;color:var(--dsw-alias-label-tertiary,#7b8088);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
-.sh-mkt-scope-btn{height:30px;padding:0 12px;border-radius:8px}
-.sh-mkt-scope-btn:hover,.sh-mkt-scope-btn.on{color:var(--dsw-alias-label-primary,#17191c)}
-.sh-mkt-scope-btn.on{background:var(--dsw-alias-bg-layer-3,#fff);box-shadow:var(--dsw-shadow-lv1,0 1px 3px rgb(20 24 32 / 10%))}
+.sh-mkt-filter{flex:none;height:30px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--dsw-alias-label-tertiary,#7b8088);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .sh-mkt-search{display:flex;align-items:center;gap:8px}
 .sh-mkt-field{position:relative;flex:1;min-width:0;color:var(--dsw-alias-label-tertiary,#7b8088)}
 .sh-mkt-field svg{position:absolute;top:10px;left:12px;width:16px;height:16px;pointer-events:none}
@@ -139,11 +129,9 @@ window.__ModuleLoader__.load({
 .sh-mkt-go:hover,.sh-mkt-install:hover:not(:disabled){opacity:.82}
 .sh-mkt-filters{display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .sh-mkt-filters::-webkit-scrollbar{display:none}
-.sh-mkt-filter{height:30px;padding:0 10px;border-radius:8px}
 .sh-mkt-filter:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
 .sh-mkt-filter.on{background:var(--dsw-specific-sidebar-nav-item-active,#ebeef2);color:var(--dsw-alias-label-primary,#17191c);font-weight:500}
 .sh-mkt-results{display:flex;align-items:baseline;justify-content:flex-start;gap:12px;padding:0 2px}
-.sh-mkt-results strong{font-size:13px;line-height:20px;font-weight:600}
 .sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
 .sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
@@ -170,6 +158,34 @@ window.__ModuleLoader__.load({
 .sh-mkt-more-left{color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-weight:400;font-variant-numeric:tabular-nums}
 .sh-mkt-more svg{flex:none;width:14px;height:14px}
 @media (max-width:680px){.sh-mkt-grid{grid-template-columns:minmax(0,1fr)}.sh-mkt-search{align-items:stretch;flex-direction:column}.sh-mkt-go{width:100%}}
+.sh-plaza-wrap{width:100%}
+.sh-plaza-wrap.rail{display:flex;justify-content:center}
+.sh-plaza-trigger{box-sizing:border-box;display:flex;align-items:center;gap:8px;width:calc(100% + 4px);height:42px;margin:4px -2px;padding:0 10px 0 8px;border:0;border-radius:12px;background:transparent;color:var(--dsw-alias-label-primary,inherit);font:inherit;font-size:14px;line-height:22px;cursor:pointer;overflow:hidden}
+.sh-plaza-wrap.rail .sh-plaza-trigger{width:36px;height:36px;margin:8px 0 10px;padding:0;justify-content:center;border-radius:50%;gap:0}
+.sh-plaza-trigger:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
+.sh-plaza-trigger svg{flex:none;width:16px;height:16px}
+.sh-plaza-wrap.rail .sh-plaza-trigger svg{width:18px;height:18px}
+.sh-plaza-trigger.on,.sh-plaza-trigger[aria-expanded=true]{background:var(--dsw-specific-sidebar-nav-item-active,#ebeef2)}
+.sh-plaza-trigger span{white-space:nowrap;overflow:hidden}
+.sh-plaza-page{position:fixed;z-index:40;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base,#fff);color:var(--dsw-alias-label-primary,#17191c)}
+.sh-plaza-top{display:flex;align-items:center;gap:16px;flex:none;padding:10px 20px;border-bottom:1px solid var(--dsw-alias-border-l2,#e2e4e8);background:var(--dsw-alias-bg-base,#fff)}
+.sh-plaza-tabs{display:flex;align-items:center;gap:16px;padding:0;border:0;background:inherit}
+.sh-plaza-tab{height:30px;padding:0;border:0;border-radius:0;background:inherit;color:var(--dsw-alias-label-tertiary,#7b8088);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.sh-plaza-tab:hover{color:var(--dsw-alias-label-primary,#17191c)}
+.sh-plaza-tab.on{background:inherit;color:var(--dsw-alias-state-business-primary,#4d6bfe);box-shadow:none}
+.sh-plaza-close{margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#d1d5db);background:var(--dsw-alias-bg-layer-3,#fff);cursor:pointer;font-size:18px;line-height:1;color:var(--dsw-alias-label-secondary,#4b5563)}
+.sh-plaza-close:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
+.sh-plaza-body{flex:1;min-height:0;overflow:auto;padding:18px 20px 32px}
+.sh-plaza-body .sh-mkt{max-width:none;width:100%}
+.sh-plaza-body .sh-cards,.sh-plaza-body .sh-mkt-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1400px){.sh-plaza-body .sh-cards,.sh-plaza-body .sh-mkt-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:980px){.sh-plaza-body .sh-cards,.sh-plaza-body .sh-mkt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.sh-plaza-body .sh-cards,.sh-plaza-body .sh-mkt-grid{grid-template-columns:1fr}}
+.sh-plaza-body .sh-card{min-height:112px;padding:16px;gap:14px}
+.sh-plaza-body .sh-icon{width:48px;height:48px;border-radius:12px;font-size:14px}
+.sh-plaza-body .sh-title{font-size:15px;line-height:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sh-plaza-body .sh-desc{-webkit-line-clamp:2;font-size:13px;line-height:20px}
+.sh-plaza-body .sh-mkt-card{min-height:220px;padding:16px}
 `;
 
     const CSS_ID = "skillhub-style";
@@ -238,12 +254,7 @@ window.__ModuleLoader__.load({
     const ZH = {
       locale: "zh",
       "cfg.desc": "搜索 API、安装目录与结果数量。默认装到 ~/.dsh/skills。",
-      "cfg.installed": "查看已安装",
-      "cfg.update": "更新",
-      "cfg.updating": "更新中",
       "cfg.updateHint": "当前 {cur} · 最新 {latest}",
-      "cfg.updateOk": "已更新到 {tag}，请重启 dsh web 并强制刷新",
-      "cfg.updateLatest": "已是最新 {tag}",
       "cfg.unsaved": "未保存",
       "cfg.collapse": "收起",
       "cfg.expand": "展开",
@@ -254,9 +265,6 @@ window.__ModuleLoader__.load({
       "cfg.discard": "放弃修改",
       "cfg.save": "保存",
       "cfg.saving": "保存中",
-      "installed.title": "已安装的技能",
-      "installed.count": "{n} 个",
-      "installed.empty": "还没有安装技能。点搜索卡片即可安装。",
       "installed.hint": "已安装 {n} 个技能",
       "installed.none": "还没有安装技能",
       "action.detail": "详情",
@@ -316,13 +324,8 @@ window.__ModuleLoader__.load({
       "cat.professional": "行业专业",
       "cat.it-ops-security": "IT 运维与安全",
       "cat.life-service": "生活服务",
-      "mkt.title": "插件市场",
-      "mkt.copy": "浏览 SkillHub 收录的 DSH 插件，并把安装请求交给当前任务审核执行。",
       "mkt.searchPlaceholder": "输入关键词",
       "mkt.search": "搜索",
-      "mkt.verifiedScope": "DSH 插件",
-      "mkt.allScope": "Topic 仓库",
-      "mkt.results": "推荐插件",
       "mkt.repos": "已为你找到 {n} 个插件",
       "mkt.loading": "正在读取 SkillHub",
       "mkt.error": "连接失败：{m}",
@@ -339,16 +342,16 @@ window.__ModuleLoader__.load({
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
       "mkt.catAll": "全部",
+      "plaza.title": "插件广场",
+      "plaza.skills": "技能",
+      "plaza.plugins": "插件",
+      "plaza.noSession": "请先打开一个会话",
+      "plaza.back": "返回对话",
     };
     const EN = {
       locale: "en",
       "cfg.desc": "Search API, install directory, and result count. Defaults to ~/.dsh/skills.",
-      "cfg.installed": "View installed",
-      "cfg.update": "Update",
-      "cfg.updating": "Updating",
       "cfg.updateHint": "Current {cur} · Latest {latest}",
-      "cfg.updateOk": "Updated to {tag}. Restart dsh web and hard-refresh.",
-      "cfg.updateLatest": "Already on latest {tag}",
       "cfg.unsaved": "Unsaved",
       "cfg.collapse": "Collapse",
       "cfg.expand": "Expand",
@@ -359,9 +362,6 @@ window.__ModuleLoader__.load({
       "cfg.discard": "Discard",
       "cfg.save": "Save",
       "cfg.saving": "Saving",
-      "installed.title": "Installed skills",
-      "installed.count": "{n}",
-      "installed.empty": "No skills installed yet. Open a search card to install one.",
       "installed.hint": "{n} skills installed",
       "installed.none": "No skills installed",
       "action.detail": "Details",
@@ -421,13 +421,8 @@ window.__ModuleLoader__.load({
       "cat.professional": "Professional",
       "cat.it-ops-security": "IT & Security",
       "cat.life-service": "Lifestyle",
-      "mkt.title": "Plugin Market",
-      "mkt.copy": "Browse DSH plugins listed by SkillHub and send install requests to the current task for review.",
       "mkt.searchPlaceholder": "Enter keywords",
       "mkt.search": "Search",
-      "mkt.verifiedScope": "DSH plugins",
-      "mkt.allScope": "Topic repositories",
-      "mkt.results": "Recommended plugins",
       "mkt.repos": "Found {n} plugins for you",
       "mkt.loading": "Loading SkillHub",
       "mkt.error": "Connection failed: {m}",
@@ -444,6 +439,11 @@ window.__ModuleLoader__.load({
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
       "mkt.catAll": "All",
+      "plaza.title": "Plugin Plaza",
+      "plaza.skills": "Skills",
+      "plaza.plugins": "Plugins",
+      "plaza.noSession": "Open a session first",
+      "plaza.back": "Back to chat",
     };
 
     const I18nCtx = React.createContext(null);
@@ -929,89 +929,6 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function asInstalledCard(it) {
-      return {
-        slug: it.slug,
-        name: it.name,
-        description: it.description || "",
-        version: it.version,
-        installed: true,
-        pageUrl: "https://skillhub.cn/skills/" + it.slug,
-      };
-    }
-
-    function InstalledModal({ onClose, onUninstalled }) {
-      const tr = useTr();
-      const [items, setItems] = useState(null);
-      const [err, setErr] = useState("");
-      const [open, setOpen] = useState(null);
-      const [toast, setToast] = useState("");
-      const [busy, setBusy] = useState("");
-      useEffect(() => {
-        let live = true;
-        api("list", {})
-          .then((d) => { if (live) setItems(d.items || []); })
-          .catch((e) => { if (live) { setItems([]); setErr(e.message || String(e)); } });
-        return () => { live = false; };
-      }, []);
-      const uninstall = async (it) => {
-        setBusy(it.slug);
-        try {
-          await api("uninstall", { slug: it.slug });
-          setItems((cur) => (cur || []).filter((x) => x.slug !== it.slug));
-          onUninstalled?.(it);
-          setToast(tr("toast.uninstalled", { name: it.name }));
-          if (open && open.slug === it.slug) setOpen(null);
-        } catch (e) {
-          setToast(e.message || String(e));
-        } finally {
-          setBusy("");
-        }
-      };
-      return h(React.Fragment, null,
-        h(Overlay, { onClose },
-          h("div", { className: "sh-drawer sh-fade", role: "dialog", "aria-modal": "true", "aria-label": tr("installed.title") },
-            h("button", { type: "button", className: "sh-close", onClick: onClose, "aria-label": tr("action.close") }, "×"),
-            h("div", { className: "sh-head" },
-              h("div", { style: { minWidth: 0, flex: 1 } },
-                h("h2", null, tr("installed.title")),
-                h("div", { className: "sh-hint", style: { margin: 0 } }, items ? tr("installed.count", { n: items.length }) : tr("loading")),
-              ),
-            ),
-            h("div", { className: "sh-body" },
-              err ? h("div", { className: "sh-err" }, err) : null,
-              items && !items.length && !err ? h("p", { className: "sh-hint" }, tr("installed.empty")) : null,
-              (items || []).map((it) => h("div", { key: it.slug, className: "sh-row" },
-                h("div", { style: { minWidth: 0 } },
-                  h("div", { className: "sh-title" }, it.name),
-                  h("div", { className: "sh-slug" }, it.slug + (it.version ? " · v" + it.version : "")),
-                ),
-                h("div", { className: "sh-row-actions" },
-                  h("button", { type: "button", className: "sh-mini", onClick: () => setOpen(asInstalledCard(it)) }, tr("action.detail")),
-                  h("button", {
-                    type: "button",
-                    className: "sh-mini",
-                    disabled: busy === it.slug,
-                    onClick: () => uninstall(it),
-                  }, busy === it.slug ? tr("action.uninstalling") : tr("action.uninstall")),
-                ),
-              )),
-            ),
-            toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
-          ),
-        ),
-        open ? h(Drawer, {
-          item: open,
-          onClose: () => setOpen(null),
-          onUninstalled: (it) => {
-            setItems((cur) => (cur || []).filter((x) => x.slug !== it.slug));
-            onUninstalled?.(it);
-            setOpen(null);
-          },
-        }) : null,
-      );
-    }
-
     function parseToolArgs(props) {
       const block = props?.block;
       const raw = (block && "kind" in block ? block.call?.argsRaw : block?.argsRaw) || "";
@@ -1396,7 +1313,7 @@ window.__ModuleLoader__.load({
       useEffect(() => {
         let live = true;
         if (page === 1) setStatus("loading");
-        api("plugins", { q: submitted, scope: "verified", category, sort: "stars", page, pageSize: 24 })
+        api("plugins", { q: submitted, scope: "verified", category, sort: "stars", page, pageSize: 48 })
           .then((d) => {
             if (!live) return;
             setItems((cur) => page === 1 ? (d.items || []) : cur.concat(d.items || []));
@@ -1493,7 +1410,10 @@ window.__ModuleLoader__.load({
                       setSending(id);
                       setFeedback("");
                       install(plugin).then(
-                        () => setFeedback(tr("mkt.sent", { name: plugin.fullName || id })),
+                        () => {
+                          setFeedback(tr("mkt.sent", { name: plugin.fullName || id }));
+                          if (typeof props.onSent === "function") props.onSent();
+                        },
                         (e) => setFeedback(e.message || String(e)),
                       ).finally(() => setSending(""));
                     },
@@ -1515,24 +1435,272 @@ window.__ModuleLoader__.load({
       );
     }
 
+    const SKILL_CAT_KEYS = [
+      "office-efficiency", "content-creation", "dev-programming", "data-analysis",
+      "design-media", "ai-agent", "knowledge-management", "business-ops",
+      "education", "professional", "it-ops-security", "life-service",
+    ];
+
+    function PlazaIcon() {
+      return h("svg", { viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" },
+        h("rect", { x: "1.75", y: "1.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
+        h("rect", { x: "8.75", y: "1.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
+        h("rect", { x: "1.75", y: "8.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
+        h("rect", { x: "8.75", y: "8.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
+      );
+    }
+
+    function SkillPlaza() {
+      const tr = useTr();
+      const pageSize = 48;
+      const [query, setQuery] = useState("");
+      const [submitted, setSubmitted] = useState("");
+      const [category, setCategory] = useState("");
+      const [page, setPage] = useState(1);
+      const [items, setItems] = useState([]);
+      const [total, setTotal] = useState(0);
+      const [hasMore, setHasMore] = useState(false);
+      const [status, setStatus] = useState("loading");
+      const [err, setErr] = useState("");
+      const [open, setOpen] = useState(null);
+      useEffect(() => {
+        let live = true;
+        if (page === 1) setStatus("loading");
+        api("search", { query: submitted, category, limit: pageSize, offset: (page - 1) * pageSize })
+          .then((d) => {
+            if (!live) return;
+            const next = d.items || [];
+            setItems((cur) => page === 1 ? next : cur.concat(next));
+            setTotal(Number(d.total) || 0);
+            setHasMore(!!d.hasMore);
+            setStatus("ready");
+            setErr("");
+          })
+          .catch((e) => {
+            if (!live) return;
+            if (page === 1) {
+              setItems([]);
+              setTotal(0);
+              setHasMore(false);
+            }
+            setStatus("error");
+            setErr(e.message || String(e));
+          });
+        return () => { live = false; };
+      }, [submitted, category, page]);
+      const mark = (item, installed) => {
+        setItems((cur) => cur.map((it) => it.slug === item.slug ? { ...it, installed } : it));
+        setOpen((cur) => cur && cur.slug === item.slug ? { ...cur, installed } : cur);
+      };
+      const remaining = Math.max(0, total - items.length);
+      return h("div", { className: "sh-mkt" },
+        h("form", {
+          className: "sh-mkt-search",
+          onSubmit: (e) => { e.preventDefault(); setPage(1); setSubmitted(query.trim()); },
+        },
+          h("div", { className: "sh-mkt-field" },
+            h(SearchIcon),
+            h("input", {
+              type: "search",
+              value: query,
+              placeholder: tr("mkt.searchPlaceholder"),
+              onChange: (e) => setQuery(e.currentTarget.value),
+            }),
+          ),
+          h("button", { type: "submit", className: "sh-mkt-go" }, tr("mkt.search")),
+        ),
+        h("div", { className: "sh-mkt-filters" },
+          h("button", {
+            type: "button",
+            className: "sh-mkt-filter" + (!category ? " on" : ""),
+            onClick: () => { setCategory(""); setPage(1); },
+          }, tr("mkt.catAll")),
+          SKILL_CAT_KEYS.map((key) => h("button", {
+            key,
+            type: "button",
+            className: "sh-mkt-filter" + (category === key ? " on" : ""),
+            onClick: () => { setCategory(key); setPage(1); },
+          }, tr("cat." + key))),
+        ),
+        status === "ready" ? h("div", { className: "sh-mkt-results" },
+          h("p", { className: "sh-mkt-summary" }, tr("search.hint", { n: total || items.length })),
+        ) : null,
+        status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
+        status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
+        status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("search.empty")) : null,
+        items.length ? h(Cards, { items, onOpen: setOpen }) : null,
+        status === "ready" && (hasMore || remaining > 0) ? h("button", {
+          type: "button",
+          className: "sh-mkt-more",
+          onClick: () => setPage((n) => n + 1),
+        },
+          h("span", null, tr("mkt.more")),
+          remaining ? h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: remaining })) : null,
+          h(ChevronDown),
+        ) : null,
+        open ? h(Drawer, {
+          item: open,
+          onClose: () => setOpen(null),
+          onInstalled: (it) => mark(it, true),
+          onUninstalled: (it) => mark(it, false),
+        }) : null,
+      );
+    }
+
+    function conversationRoot() {
+      return typeof document === "undefined" ? null : document.querySelector("[data-phase]");
+    }
+
+    function conversationBox() {
+      const el = conversationRoot();
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top, left: r.left, width: r.width, height: r.height };
+    }
+
+    function useConversationBox(active) {
+      const [box, setBox] = useState(null);
+      const layout = React.useLayoutEffect || useEffect;
+      layout(() => {
+        if (!active) {
+          setBox(null);
+          return;
+        }
+        const update = () => setBox(conversationBox());
+        update();
+        const root = conversationRoot();
+        const ro = root && typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+        if (root && ro) ro.observe(root);
+        window.addEventListener("resize", update);
+        window.addEventListener("scroll", update, true);
+        return () => {
+          if (ro) ro.disconnect();
+          window.removeEventListener("resize", update);
+          window.removeEventListener("scroll", update, true);
+        };
+      }, [active]);
+      return box;
+    }
+
+    function PlazaView({ sessions, t, onClose, box }) {
+      useEffect(() => {
+        ensureCss();
+        const onKey = (e) => {
+          if (e.key !== "Escape") return;
+          e.preventDefault();
+          onClose();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+      }, [onClose]);
+      const tr = typeof t === "function" ? t : lookup;
+      const [tab, setTab] = useState("plugins");
+      return h(I18nProvider, { t: tr },
+        h("div", {
+          className: "sh-plaza-page",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": tr("plaza.title"),
+          style: {
+            top: box.top,
+            left: box.left,
+            width: box.width,
+            height: box.height,
+          },
+        },
+          h("div", { className: "sh-plaza-top" },
+            h("div", { className: "sh-plaza-tabs", role: "tablist" },
+              h("button", {
+                type: "button",
+                role: "tab",
+                className: "sh-plaza-tab" + (tab === "plugins" ? " on" : ""),
+                "aria-selected": tab === "plugins",
+                onClick: () => setTab("plugins"),
+              }, tr("plaza.plugins")),
+              h("button", {
+                type: "button",
+                role: "tab",
+                className: "sh-plaza-tab" + (tab === "skills" ? " on" : ""),
+                "aria-selected": tab === "skills",
+                onClick: () => setTab("skills"),
+              }, tr("plaza.skills")),
+            ),
+            h("button", {
+              type: "button",
+              className: "sh-plaza-close",
+              onClick: onClose,
+              "aria-label": tr("plaza.back"),
+              title: tr("plaza.back"),
+            }, "×"),
+          ),
+          h("div", { className: "sh-plaza-body" },
+            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { sessions, t: tr, onSent: onClose }),
+          ),
+        ),
+      );
+    }
+
+    function PlazaAction({ wide, sessions, t }) {
+      useEffect(() => ensureCss(), []);
+      const tr = typeof t === "function" ? t : lookup;
+      const [open, setOpen] = useState(false);
+      const [hint, setHint] = useState("");
+      const close = React.useCallback(() => setOpen(false), []);
+      const box = useConversationBox(open);
+      useEffect(() => {
+        if (!open) return;
+        if (conversationRoot()) return;
+        setOpen(false);
+        setHint(tr("plaza.noSession"));
+      }, [open, box, tr]);
+      const panel = open && box && typeof document !== "undefined"
+        ? createPortal(h(PlazaView, { sessions, t: tr, onClose: close, box }), document.body)
+        : null;
+      return h(I18nProvider, { t: tr },
+        h("div", { className: "sh-plaza-wrap" + (wide ? "" : " rail") },
+          h("button", {
+            type: "button",
+            className: "sh-plaza-trigger" + (open ? " on" : ""),
+            "aria-label": tr("plaza.title"),
+            "aria-expanded": open,
+            onClick: () => {
+              if (open) {
+                close();
+                setHint("");
+                return;
+              }
+              if (!conversationBox()) {
+                setHint(tr("plaza.noSession"));
+                return;
+              }
+              setOpen(true);
+              setHint("");
+            },
+          },
+            h(PlazaIcon),
+            wide ? h("span", null, tr("plaza.title")) : null,
+          ),
+          hint ? h(Toast, { text: hint, onDone: () => setHint("") }) : null,
+          panel,
+        ),
+      );
+    }
+
     const inject = ["slots", "sessions"];
     function apply(ctx) {
-      const slots = (ctx && ctx.slots) || (ctx && typeof ctx.get === "function" && ctx.get("slots"));
+      const slots = ctx.slots;
+      const sessions = ctx.sessions;
       if (!slots) return;
-      const sessions = (ctx && ctx.sessions) || (ctx && typeof ctx.get === "function" && ctx.get("sessions"));
-      if (typeof ctx.inject === "function") {
-        ctx.inject(["locale"], (c) => {
-          const loc = c.locale;
-          if (!loc || typeof loc.register !== "function") return;
-          c.effect(() => {
-            try {
-              return loc.register("skillhub", { zh: ZH, en: EN });
-            } catch {
-              return () => {};
-            }
-          }, "skillhub-locale");
-        });
-      }
+      ctx.inject(["locale"], (c) => {
+        if (!c.locale || typeof c.locale.register !== "function") return;
+        c.effect(() => {
+          try {
+            return c.locale.register("skillhub", { zh: ZH, en: EN });
+          } catch {
+            return () => {};
+          }
+        }, "skillhub-locale");
+      });
       ctx.effect(() => ensureCss(), "skillhub-style");
       slots.inject("tool.call.toolview", () => slots.register(
         { name: "tool.call.toolview", key: "skillhub_search", locale: "skillhub" },
@@ -1546,14 +1714,14 @@ window.__ModuleLoader__.load({
         { name: "settings.plugin.item", key: "skillhub", locale: "skillhub" },
         ConfigCard,
       ));
-      slots.inject("settings.plugins.tab", () => slots.register(
-        { name: "settings.plugins.tab", id: "skillhub-market", order: 5, label: () => lookup("mkt.title"), locale: "skillhub" },
-        function MarketTab(tabProps) {
-          return h(Marketplace, { ...tabProps, sessions });
+      slots.inject("sidebar.footer.action", () => slots.register(
+        { name: "sidebar.footer.action", id: "skillhub-plaza", order: 8, label: () => lookup("plaza.title"), locale: "skillhub" },
+        function PlazaEntry(actionProps) {
+          return h(PlazaAction, { ...actionProps, sessions });
         },
       ));
     }
 
-    return { inject, apply, SearchToolView, ListToolView, Marketplace };
+    return { inject, apply };
   },
 });

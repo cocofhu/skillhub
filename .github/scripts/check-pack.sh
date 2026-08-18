@@ -34,6 +34,8 @@ must=(
   lib/config-store.js
   lib/skill-detail.js
   lib/self-update.js
+  lib/plugin-market.js
+  lib/local-api.js
   lib/categories.js
 )
 

@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dshHome } from './config-store.js'
@@ -122,7 +122,7 @@ export async function getUpdateStatus(
     const profile = deps.readProfilePackage(profileDir)
     source = detectSource(profile.dependencies?.skillhub)
   } catch {
-    source = existsSync(profileDir) ? 'unknown' : 'unknown'
+    source = 'unknown'
   }
   const latest = await fetchLatestRelease(opts, deps, signal)
   const upToDate = compareSemver(currentVersion, latest.version) >= 0 && source !== 'link'
