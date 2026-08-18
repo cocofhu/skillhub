@@ -8,7 +8,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.4](https://github.com/cocofhu/skillhub/releases/tag/v0.2.4) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.5](https://github.com/cocofhu/skillhub/releases/tag/v0.2.5) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -72,7 +72,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 ### 设置里的插件市场
 
-打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
+打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **详情** 打开该插件的 GitHub 仓库；点 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
 
 对话里的技能搜索 / zip 安装不受影响。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
 

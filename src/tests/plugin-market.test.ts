@@ -13,7 +13,10 @@ import {
   parsePluginCategory,
   parsePluginRef,
   pluginCategoriesUrl,
+  pluginGithubUrl,
+  pluginInitial,
   pluginPageUrl,
+  sanitizePluginAvatarUrl,
   sanitizePluginScope,
   sanitizePluginSort,
 } from '../plugin-market.js'
@@ -75,9 +78,12 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
     categoryKey: 'web-tools',
     installability: 'verified',
     repositoryUrl: 'https://github.com/liustack/modlens',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
   })
   assert.equal(ok?.installability, 'verified')
   assert.equal(ok?.categoryKey, 'web-tools')
+  assert.equal(ok?.repositoryUrl, 'https://github.com/liustack/modlens')
+  assert.equal(ok?.avatarUrl, 'https://avatars.githubusercontent.com/u/1?v=4')
   assert.equal(mapMarketPlugin({ owner: '../x', name: 'n' }), null)
   assert.equal(mapMarketPlugin({ owner: 'o', name: 'n', installability: 'candidate' })?.installability, 'unsupported')
   assert.equal(mapMarketPlugin({
@@ -85,7 +91,13 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
     name: 'n',
     categoryKey: 'office-efficiency',
     repositoryUrl: 'https://github.com/o/n',
+    avatarUrl: 'http://insecure.example/a.png',
   })?.categoryKey, '')
+  assert.equal(mapMarketPlugin({
+    owner: 'o',
+    name: 'n',
+    avatarUrl: 'javascript:alert(1)',
+  })?.avatarUrl, '')
 })
 
 test('createInstallPrompt zh includes install-plan and forbids force/pnpm', () => {
@@ -128,6 +140,31 @@ test('installPlanUrl and pluginPageUrl encode owner/name', () => {
   assert.equal(pluginPageUrl('https://skillhub.cn/', 'o', 'n'), 'https://skillhub.cn/plugins/o/n')
 })
 
+test('sanitizePluginAvatarUrl keeps https images and drops junk', () => {
+  assert.equal(sanitizePluginAvatarUrl('https://cdn.example/a.png'), 'https://cdn.example/a.png')
+  assert.equal(sanitizePluginAvatarUrl('http://cdn.example/a.png'), '')
+  assert.equal(sanitizePluginAvatarUrl('javascript:alert(1)'), '')
+  assert.equal(sanitizePluginAvatarUrl('https://x.example/a.png "onload='), '')
+})
+
+test('pluginInitial uses the first letter of the plugin name', () => {
+  assert.equal(pluginInitial({ owner: 'liustack', name: 'modlens' }), 'M')
+  assert.equal(pluginInitial({ owner: 'deepseek-ai', name: '' }), 'D')
+  assert.equal(pluginInitial({ owner: '作者', name: '趣味换装' }), '趣')
+})
+
+test('pluginGithubUrl prefers repositoryUrl and falls back to github.com/owner/name', () => {
+  assert.equal(
+    pluginGithubUrl({ owner: 'liustack', name: 'modlens', repositoryUrl: 'https://github.com/liustack/modlens' }),
+    'https://github.com/liustack/modlens',
+  )
+  assert.equal(
+    pluginGithubUrl({ owner: 'liustack', name: 'modlens', repositoryUrl: 'https://example.com/not-github' }),
+    'https://github.com/liustack/modlens',
+  )
+  assert.equal(pluginGithubUrl({ owner: 'o', name: 'n' }), 'https://github.com/o/n')
+})
+
 test('listPlugins maps catalog payload and returns webBase', async () => {
   const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn', webBase: 'https://skillhub.cn' })
   let seen = ''
@@ -146,6 +183,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
         categoryKey: 'web-tools',
         installability: 'verified',
         repositoryUrl: 'https://github.com/liustack/modlens',
+        avatarUrl: 'https://cdn.example/modlens.png',
       }],
     } as T
   })
@@ -157,6 +195,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
   assert.equal(page.webBase, 'https://skillhub.cn')
   assert.equal(page.apiBase, 'https://api.skillhub.cn')
   assert.equal(page.items[0].name, 'modlens')
+  assert.equal(page.items[0].avatarUrl, 'https://cdn.example/modlens.png')
 })
 
 test('pluginCategoriesUrl hits /api/v1/plugins/categories', () => {
