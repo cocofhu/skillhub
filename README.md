@@ -1,13 +1,14 @@
 # skillhub
 
 [![CI](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml?query=branch%3Amain)
+[![npm](https://img.shields.io/npm/v/@cocofhu/skillhub.svg)](https://www.npmjs.com/package/@cocofhu/skillhub)
 [![Release](https://img.shields.io/github/v/release/cocofhu/skillhub?display_name=tag)](https://github.com/cocofhu/skillhub/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.1](https://github.com/cocofhu/skillhub/releases/tag/v0.2.1) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.2](https://github.com/cocofhu/skillhub/releases/tag/v0.2.2) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -41,40 +42,19 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-推荐从 npm 安装（预构建，不需要 `allowBuilds`）：
+从 [npm](https://www.npmjs.com/package/@cocofhu/skillhub) 安装（预构建，不需要 `allowBuilds`）：
 
 ```sh
 dsh plugin --profile web add @cocofhu/skillhub
 ```
 
-也可以安装已发布的 GitHub tag：
-
-```sh
-dsh plugin --profile web add github:cocofhu/skillhub#v0.2.1
-```
-
-跟踪默认分支（可能含未发布改动）：
-
-```sh
-dsh plugin --profile web add github:cocofhu/skillhub
-```
-
-pnpm ≥10 首次从 **git** 安装时会拒绝运行 `prepare`。按 `dsh` 提示把精确 key 写入 profile 的 `pnpm-workspace.yaml`，例如：
-
-```yaml
-allowBuilds:
-  "@cocofhu/skillhub@github:cocofhu/skillhub#v0.2.1": true
-```
-
-然后重新执行 `dsh plugin add`。只允许你信任的来源。从 npm 安装不需要这一步。
-
-本地开发安装：
+本地开发：
 
 ```sh
 dsh plugin --profile web add /absolute/path/to/skillhub
 ```
 
-安装后重启 `dsh web`，并强制刷新浏览器。`dsh web` 请绑定 `127.0.0.1`，不要监听 `0.0.0.0`。
+安装后重启 `dsh web`，并强制刷新浏览器。`dsh web` 请绑定 `127.0.0.1`，不要监听 `0.0.0.0`。不要用 `github:cocofhu/skillhub` 安装：git 源会跑 `prepare`，pnpm 会要求手写 `allowBuilds`。npm 上的无前缀名 `skillhub` 是另一个项目，请用带 scope 的 `@cocofhu/skillhub`。
 
 ## 使用
 
@@ -189,7 +169,7 @@ pnpm build
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 设置里没有插件市场 | 打开 **设置 → 插件** 的「插件市场」标签；重启 `dsh web` 并强制刷新 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
-| pnpm 拒绝 `prepare` | 改用 `dsh plugin add @cocofhu/skillhub`；若必须走 git，按 `dsh` 提示把精确 key 写入 `allowBuilds` |
+| pnpm 拒绝 `prepare` | 用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
 
 ## 安全
 
