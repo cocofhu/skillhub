@@ -100,7 +100,7 @@ jobs:
           pnpm build
           node --check lib/host.js
           node --check lib/install.js
-          grep -q 'id: "skillhub"' lib/client.js
+          grep -q 'id: "@cocofhu/skillhub"' lib/client.js
 
       - name: Verify package contents
         run: bash .github/scripts/check-pack.sh

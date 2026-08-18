@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-08-18
+
+### Fixed
+
+- 客户端 `__ModuleLoader__.load` 的 `id` 改为 `@cocofhu/skillhub`，与 npm 包名一致，避免 Web 报 loaded without registering
+
 ## [0.2.3] - 2026-08-18
 
 ### Fixed
