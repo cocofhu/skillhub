@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-08-18
+
+### Changed
+
+- 插件广场结果文案改为「发现 GitHub MIT 开源的共 {n} 个 DeepSeek Harness Plugin」
+
 ## [0.2.8] - 2026-08-18
 
 ### Fixed
