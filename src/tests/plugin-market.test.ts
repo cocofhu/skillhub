@@ -13,9 +13,6 @@ import {
   parsePluginCategory,
   parsePluginRef,
   pluginCategoriesUrl,
-  pluginGithubUrl,
-  pluginInitial,
-  pluginPageUrl,
   sanitizePluginAvatarUrl,
   sanitizePluginScope,
   sanitizePluginSort,
@@ -132,12 +129,11 @@ test('createInstallPrompt en includes install-plan and forbids force/pnpm', () =
   assert.match(prompt, /pnpm install\/add/)
 })
 
-test('installPlanUrl and pluginPageUrl encode owner/name', () => {
+test('installPlanUrl encodes owner/name', () => {
   assert.equal(
     installPlanUrl('https://api.skillhub.cn', 'o', 'n'),
     'https://api.skillhub.cn/api/v1/plugins/o/n/install-plan',
   )
-  assert.equal(pluginPageUrl('https://skillhub.cn/', 'o', 'n'), 'https://skillhub.cn/plugins/o/n')
 })
 
 test('sanitizePluginAvatarUrl keeps https images and drops junk', () => {
@@ -145,24 +141,6 @@ test('sanitizePluginAvatarUrl keeps https images and drops junk', () => {
   assert.equal(sanitizePluginAvatarUrl('http://cdn.example/a.png'), '')
   assert.equal(sanitizePluginAvatarUrl('javascript:alert(1)'), '')
   assert.equal(sanitizePluginAvatarUrl('https://x.example/a.png "onload='), '')
-})
-
-test('pluginInitial uses the first letter of the plugin name', () => {
-  assert.equal(pluginInitial({ owner: 'liustack', name: 'modlens' }), 'M')
-  assert.equal(pluginInitial({ owner: 'deepseek-ai', name: '' }), 'D')
-  assert.equal(pluginInitial({ owner: '作者', name: '趣味换装' }), '趣')
-})
-
-test('pluginGithubUrl prefers repositoryUrl and falls back to github.com/owner/name', () => {
-  assert.equal(
-    pluginGithubUrl({ owner: 'liustack', name: 'modlens', repositoryUrl: 'https://github.com/liustack/modlens' }),
-    'https://github.com/liustack/modlens',
-  )
-  assert.equal(
-    pluginGithubUrl({ owner: 'liustack', name: 'modlens', repositoryUrl: 'https://example.com/not-github' }),
-    'https://github.com/liustack/modlens',
-  )
-  assert.equal(pluginGithubUrl({ owner: 'o', name: 'n' }), 'https://github.com/o/n')
 })
 
 test('listPlugins maps catalog payload and returns webBase', async () => {

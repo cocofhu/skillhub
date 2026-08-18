@@ -72,11 +72,6 @@ export function parsePluginCategory(raw: unknown): string | undefined {
   return PLUGIN_CATEGORY_KEYS.includes(key) ? key : undefined
 }
 
-export function pluginCategoryLabel(key: string | undefined): string {
-  if (!key) return ''
-  return PLUGIN_CATEGORIES[key] || key
-}
-
 export function sanitizePluginScope(raw: unknown): PluginScope {
   return raw === 'all' ? 'all' : 'verified'
 }
@@ -85,17 +80,17 @@ export function sanitizePluginSort(raw: unknown): PluginSort {
   return raw === 'updated' ? 'updated' : 'stars'
 }
 
-export function pluginPageSize(raw: unknown): number {
+function pluginPageSize(raw: unknown): number {
   const n = Math.floor(Number(raw) || 24)
   return Math.max(1, Math.min(100, n))
 }
 
-export function pluginPage(raw: unknown): number {
+function pluginPage(raw: unknown): number {
   const n = Math.floor(Number(raw) || 1)
   return Math.max(1, n)
 }
 
-export function trimBase(raw: string): string {
+function trimBase(raw: string): string {
   return String(raw || '').replace(/\/$/, '')
 }
 
@@ -108,28 +103,10 @@ export function pluginCategoriesUrl(apiBase: string): string {
   return `${trimBase(apiBase)}/api/v1/plugins/categories`
 }
 
-export function pluginPageUrl(webBase: string, owner: string, name: string): string {
-  const ref = parsePluginRef(owner, name)
-  return `${trimBase(webBase)}/plugins/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
-}
-
-export function pluginGithubUrl(plugin: { owner: unknown; name: unknown; repositoryUrl?: unknown }): string {
-  const repo = String(plugin.repositoryUrl || '').trim()
-  if (/^https:\/\/github\.com\//i.test(repo)) return repo.slice(0, 300)
-  const ref = parsePluginRef(plugin.owner, plugin.name)
-  return `https://github.com/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.name)}`
-}
-
 export function sanitizePluginAvatarUrl(raw: unknown): string {
   const url = String(raw || '').trim()
   if (!/^https:\/\//i.test(url) || url.length > 500 || /[\s<>"'`]/.test(url)) return ''
   return url
-}
-
-export function pluginInitial(plugin: { owner?: unknown; name?: unknown }): string {
-  const raw = String(plugin.name || plugin.owner || '')
-  const ch = raw.match(/[A-Za-z0-9]|[\u4e00-\u9fff]/)
-  return (ch ? ch[0] : '?').toUpperCase()
 }
 
 export function buildPluginsUrl(apiBase: string, query: PluginListQuery = {}): string {
@@ -174,7 +151,8 @@ export function createInstallPrompt(
   const ref = parsePluginRef(plugin.owner, plugin.name)
   const fullName = String(plugin.fullName || ref.fullName).trim() || ref.fullName
   const plan = installPlanUrl(options.apiBase, ref.owner, ref.name)
-  if (options.locale === 'en') {
+  const locale: PromptLocale = options.locale === 'en' ? 'en' : 'zh'
+  if (locale === 'en') {
     return [
       `Install the DSH plugin ${fullName}. `,
       `First read ${plan}. `,

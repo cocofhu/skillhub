@@ -8,7 +8,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.5](https://github.com/cocofhu/skillhub/releases/tag/v0.2.5) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.6](https://github.com/cocofhu/skillhub/releases/tag/v0.2.6) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -31,7 +31,7 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 - 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
 - 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
-- 设置 **插件 → 插件市场**：搜索 DSH 插件，把安装请求交给当前任务审核执行
+- 侧栏底部 **插件广场**：在聊天区打开独立面板，浏览 SkillHub 技能与 DSH 插件
 - 界面跟随 Harness 中英文
 
 ## 环境要求
@@ -70,11 +70,13 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 搜索完成后对话中会显示可点击卡片；点开详情后再安装。不要让 Agent 打印安装命令或 curl。
 
-### 设置里的插件市场
+### 插件广场
 
-打开 **设置 → 插件 → 插件市场** 可搜索 SkillHub 收录的 DSH 插件（与站点 Plugins 页同源）。点 **详情** 打开该插件的 GitHub 仓库；点 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。
+侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
 
-对话里的技能搜索 / zip 安装不受影响。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
+点插件的 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
+
+对话里的技能搜索 / zip 安装不受影响。
 
 ### Agent 工具
 
@@ -144,8 +146,9 @@ pnpm build
 
 | 文件 | 作用 |
 | --- | --- |
-| `src/host.ts` | 工具注册与本机 `/skillhub` API |
-| `src/client.js` | 搜索卡片、详情弹窗、设置页、插件市场 |
+| `src/host.ts` | Cordis 入口：工具注册、systemPrompt、settings |
+| `src/local-api.ts` | 本机 `/skillhub` HTTP（搜索、安装、广场、详情、更新） |
+| `src/client.js` | 搜索卡片、详情弹窗、设置页、插件广场 |
 | `src/api.ts` | 搜索与技能卡片映射 |
 | `src/plugin-market.ts` | DSH 插件目录查询与审核安装提示词 |
 | `src/install.ts` | zip 下载、解压、安装 / 卸载 |
@@ -167,7 +170,7 @@ pnpm build
 | 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
-| 设置里没有插件市场 | 打开 **设置 → 插件** 的「插件市场」标签；重启 `dsh web` 并强制刷新 |
+| 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
 

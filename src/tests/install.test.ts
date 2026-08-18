@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { withDefaults } from '../config-store.js'
-import { installSkill, listInstalled, normalizeZipFiles, parseFrontmatter, parseVersion, safeRelPath, skillDir, uninstallSkill } from '../install.js'
+import { installSkill, installedSlugs, listInstalled, normalizeZipFiles, parseFrontmatter, parseVersion, safeRelPath, skillDir, uninstallSkill } from '../install.js'
 import { unzipToFiles } from '../unzip.js'
 import { makeDeflatedZip, makeDescriptorZip } from './helpers/zip.js'
 import type { PluginConfig } from '../types.js'
@@ -94,6 +94,8 @@ test('atomic install and uninstall', async () => {
   const listed = await listInstalled(dir)
   assert.equal(listed.length, 1)
   assert.equal(listed[0].slug, 'demo-skill')
+  const slugs = await installedSlugs(dir)
+  assert.equal(slugs.has('demo-skill'), true)
   await uninstallSkill('demo-skill', dir)
   assert.equal((await listInstalled(dir)).length, 0)
   await rm(dir, { recursive: true, force: true })

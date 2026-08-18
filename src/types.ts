@@ -104,7 +104,6 @@ export interface SkillHubSkillRaw {
   version?: string
   iconUrl?: string | null
   ownerName?: string
-  verified?: boolean
   publisher?: {
     name?: string
     verified?: boolean
