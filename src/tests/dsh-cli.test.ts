@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -7,6 +7,7 @@ import {
   addDshPlugin,
   cmdCommandLine,
   dshArgv,
+  isPrepareBlocked,
   isSafePluginTarget,
   nodeExecutable,
   pluginArgsFor,
@@ -17,6 +18,8 @@ import {
   rewritePnpmError,
   runCommand,
   runDshPlugin,
+  withDangerouslyAllowAllBuilds,
+  writeDangerouslyAllowAllBuilds,
 } from '../dsh-cli.js'
 
 test('dshArgv reuses the launching CLI entry', () => {
@@ -91,11 +94,32 @@ test('quoteCmdArg and cmdCommandLine quote cmd metacharacters', () => {
 
 test('rewritePnpmError maps known pnpm traps', () => {
   assert.match(rewritePnpmError(new Error('ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED')).message, /构建脚本/)
-  assert.match(rewritePnpmError(new Error('needs to execute build scripts')).message, /allowBuilds/)
+  assert.match(rewritePnpmError(new Error('needs to execute build scripts')).message, /dangerouslyAllowAllBuilds/)
   assert.match(rewritePnpmError(new Error('ERR_PNPM_PUBLIC_HOIST_PATTERN_DIFF')).message, /不同主版本/)
   const other = new Error('nope')
   assert.equal(rewritePnpmError(other), other)
   assert.equal(rewritePnpmError('raw').message, 'raw')
+})
+
+test('withDangerouslyAllowAllBuilds is idempotent and flips false to true', () => {
+  assert.equal(withDangerouslyAllowAllBuilds(''), 'dangerouslyAllowAllBuilds: true\n')
+  assert.equal(
+    withDangerouslyAllowAllBuilds('packages:\n  - .\n'),
+    'packages:\n  - .\n\ndangerouslyAllowAllBuilds: true\n',
+  )
+  const allowed = 'packages:\n  - .\n\ndangerouslyAllowAllBuilds: true\n'
+  assert.equal(withDangerouslyAllowAllBuilds(allowed), allowed)
+  assert.equal(
+    withDangerouslyAllowAllBuilds('dangerouslyAllowAllBuilds: false\n'),
+    'dangerouslyAllowAllBuilds: true\n',
+  )
+  const created = mkdtempSync(join(tmpdir(), 'skillhub-allow-create-'))
+  try {
+    assert.equal(writeDangerouslyAllowAllBuilds(created), true)
+    assert.match(readFileSync(join(created, 'pnpm-workspace.yaml'), 'utf8'), /dangerouslyAllowAllBuilds: true/)
+  } finally {
+    rmSync(created, { recursive: true, force: true })
+  }
 })
 
 test('runDshPlugin spawns dsh plugin add with the pinned source', async () => {
@@ -156,9 +180,38 @@ test('addDshPlugin retries once after a hoist-pattern failure', async () => {
   ])
 })
 
-test('addDshPlugin rewrites prepare and leftover hoist errors', async () => {
+test('addDshPlugin allows prepare scripts and retries', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-allow-'))
+  try {
+    writeFileSync(join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - .\n')
+    const seen: string[][] = []
+    let n = 0
+    const log = await addDshPlugin('github:o/n#abcdef0', {
+      profileDir: dir,
+      runDshPlugin: async (profile, args) => {
+        seen.push([profile, ...args])
+        n += 1
+        if (n === 1) throw new Error('ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED needs to execute build scripts')
+        return 'allowed'
+      },
+    })
+    assert.equal(log, 'allowed')
+    assert.deepEqual(seen, [
+      ['web', 'add', 'github:o/n#abcdef0'],
+      ['web', 'add', 'github:o/n#abcdef0'],
+    ])
+    assert.match(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8'), /dangerouslyAllowAllBuilds: true/)
+    assert.equal(writeDangerouslyAllowAllBuilds(dir), false)
+    assert.equal(isPrepareBlocked('ERR_PNPM_IGNORED_BUILDS: Ignored build scripts: esbuild'), true)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('addDshPlugin rewrites leftover hoist and prepare errors', async () => {
   await assert.rejects(
     () => addDshPlugin('github:o/n#abcdef0', {
+      allowAllBuilds: () => undefined,
       runDshPlugin: async () => {
         throw new Error('The git-hosted package "x@1" needs to execute build scripts')
       },
@@ -174,6 +227,29 @@ test('addDshPlugin rewrites prepare and leftover hoist errors', async () => {
     }),
     /不同主版本/,
   )
+})
+
+test('addDshPlugin allows prepare after a hoist rebuild', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-hoist-allow-'))
+  try {
+    writeFileSync(join(dir, 'pnpm-workspace.yaml'), 'packages:\n  - .\n')
+    let adds = 0
+    const log = await addDshPlugin('github:o/n#abcdef0', {
+      profileDir: dir,
+      runDshPlugin: async (_profile, args) => {
+        if (args[0] === 'install') return 'rebuilt'
+        adds += 1
+        if (adds === 1) throw new Error('ERR_PNPM_PUBLIC_HOIST_PATTERN_DIFF in modules')
+        if (adds === 2) throw new Error('ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED')
+        return 'allowed'
+      },
+    })
+    assert.equal(log, 'allowed')
+    assert.equal(adds, 3)
+    assert.match(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8'), /dangerouslyAllowAllBuilds: true/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('runCommand captures stdout and rejects non-zero exit', async () => {
