@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-08-20
+
 ### Changed
 
 - 插件广场点安装改为宿主直接执行 `dsh plugin add`（先读 install-plan 并校验 pinned github commit），不再把审核提示词发给当前任务
