@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-08-20
+
+### Changed
+
+- 插件广场安装 git 源时，若 pnpm 拦截 `prepare` / 构建脚本，会写入 web profile 的 `dangerouslyAllowAllBuilds: true` 并自动重试，无需手改 `allowBuilds`
+
 ## [0.2.12] - 2026-08-20
 
 ### Fixed

@@ -4,7 +4,7 @@
  */
 
 import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { dshHome } from './config-store.js'
 import { createProgressTracker, type ProgressPhase } from './ndjson.js'
@@ -157,10 +157,38 @@ export function publicInstallStatus(): {
   }
 }
 
+export function isPrepareBlocked(text: string): boolean {
+  return /needs to execute build scripts|allowBuilds|ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED|ERR_PNPM_IGNORED_BUILDS/i.test(text)
+}
+
+export function withDangerouslyAllowAllBuilds(yaml: string): string {
+  if (/(?:^|\n)dangerouslyAllowAllBuilds:\s*true\s*(?:\n|$)/.test(yaml)) return yaml
+  if (/(?:^|\n)dangerouslyAllowAllBuilds:\s*/m.test(yaml)) {
+    return yaml.replace(/^dangerouslyAllowAllBuilds:\s*.*$/m, 'dangerouslyAllowAllBuilds: true')
+  }
+  if (yaml.trim() === '') return 'dangerouslyAllowAllBuilds: true\n'
+  return `${yaml.replace(/\s*$/u, '\n')}\ndangerouslyAllowAllBuilds: true\n`
+}
+
+export function writeDangerouslyAllowAllBuilds(profileDirectory: string): boolean {
+  const file = join(profileDirectory, 'pnpm-workspace.yaml')
+  let yaml = ''
+  try {
+    yaml = readFileSync(file, 'utf8')
+  } catch {
+    /* created below */
+  }
+  const next = withDangerouslyAllowAllBuilds(yaml)
+  if (next === yaml) return false
+  mkdirSync(profileDirectory, { recursive: true })
+  writeFileSync(file, next)
+  return true
+}
+
 export function rewritePnpmError(err: unknown): Error {
   const text = err instanceof Error ? err.message : String(err)
-  if (/needs to execute build scripts|allowBuilds|ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED/i.test(text)) {
-    return new Error('该插件需要构建脚本（prepare），pnpm 默认拦截。请改用 npm 包安装，或在 profile 的 pnpm-workspace.yaml 中配置 allowBuilds。')
+  if (isPrepareBlocked(text)) {
+    return new Error('该插件需要构建脚本（prepare），pnpm 默认拦截。广场安装会写入 profile 的 dangerouslyAllowAllBuilds 并重试；若仍失败请检查 web profile 是否可写。')
   }
   if (/ERR_PNPM_PUBLIC_HOIST_PATTERN_DIFF/.test(text)) {
     return new Error('当前 profile 的 node_modules 由不同主版本的 pnpm 生成，安装前需要先重建依赖。')
@@ -204,9 +232,24 @@ export async function runDshPlugin(
 
 export async function addDshPlugin(
   source: string,
-  deps: { runDshPlugin?: PluginRunner } = {},
+  deps: {
+    runDshPlugin?: PluginRunner
+    profileDir?: string
+    allowAllBuilds?: (profileDirectory: string) => void
+  } = {},
 ): Promise<string> {
   const run = deps.runDshPlugin ?? runDshPlugin
+  const allowAllBuilds = deps.allowAllBuilds ?? writeDangerouslyAllowAllBuilds
+  const retryAfterPrepare = async (err: unknown): Promise<string> => {
+    const text = err instanceof Error ? err.message : String(err)
+    if (!isPrepareBlocked(text)) throw rewritePnpmError(err)
+    allowAllBuilds(deps.profileDir ?? webProfileDir())
+    try {
+      return await run(WEB_PROFILE, ['add', source])
+    } catch (retryErr) {
+      throw rewritePnpmError(retryErr)
+    }
+  }
   try {
     return await run(WEB_PROFILE, ['add', source])
   } catch (err) {
@@ -216,10 +259,10 @@ export async function addDshPlugin(
       try {
         return await run(WEB_PROFILE, ['add', source])
       } catch (retryErr) {
-        throw rewritePnpmError(retryErr)
+        return await retryAfterPrepare(retryErr)
       }
     }
-    throw rewritePnpmError(err)
+    return await retryAfterPrepare(err)
   }
 }
 

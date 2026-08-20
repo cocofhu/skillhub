@@ -8,7 +8,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.12](https://github.com/cocofhu/skillhub/releases/tag/v0.2.12) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.13](https://github.com/cocofhu/skillhub/releases/tag/v0.2.13) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -74,7 +74,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
 
-点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；装完会提示重启，并提供 **立即重启**（同源页面即可，含轻量云等反向代理；若 `dsh web` 由 systemd 托管则走 `systemctl restart`）。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
+点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；若 pnpm 拦截 git 源的 `prepare`，会写入 web profile 的 `dangerouslyAllowAllBuilds` 并自动重试。装完会提示重启，并提供 **立即重启**（同源页面即可，含轻量云等反向代理；若 `dsh web` 由 systemd 托管则走 `systemctl restart`）。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
 
 ### Agent 工具
 
@@ -172,9 +172,9 @@ pnpm build
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
-| 广场点安装失败 | 确认当前是 `dsh web` 拉起的进程，且 web profile 可写；git 源若被 pnpm 拦截 prepare，改用 npm 包 |
+| 广场点安装失败 | 确认当前是 `dsh web` 拉起的进程，且 web profile 可写 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
-| pnpm 拒绝 `prepare` | 用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
+| pnpm 拒绝 `prepare` | 广场安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
 
 ## 安全
 
