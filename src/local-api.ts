@@ -108,7 +108,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       })
     }
     if (method === 'pluginRestart') {
-      if (!trustedRestartRequest(req)) return sendJson(res, 403, { ok: false, error: 'restart is limited to same-origin loopback requests' })
+      if (!trustedRestartRequest(req)) return sendJson(res, 403, { ok: false, error: 'restart is limited to same-origin requests' })
       if (isPluginInstallBusy() || progress.active) return sendJson(res, 409, { ok: false, error: 'cannot restart while a plugin operation is running' })
       if (restarting) return sendJson(res, 409, { ok: false, error: 'restart already scheduled' })
       restarting = true
