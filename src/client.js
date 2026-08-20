@@ -135,7 +135,9 @@ window.__ModuleLoader__.load({
 .sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
 .sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-mkt-card.on{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 45%,var(--dsw-alias-border-l2,#e2e4e8))}
 .sh-mkt-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-mkt-card.on:hover{border-color:var(--dsw-alias-state-success-primary,#279c62)}
 .sh-mkt-head{display:flex;align-items:center;gap:10px}
 .sh-mkt-head-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px;justify-content:center}
 .sh-mkt-avatar{flex:none;width:36px;height:36px;border-radius:9px;object-fit:cover;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);background:linear-gradient(135deg,#c7d2fe,#fbcfe8)}
@@ -144,6 +146,7 @@ window.__ModuleLoader__.load({
 .sh-mkt-owner{min-width:0;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:14px;text-overflow:ellipsis;white-space:nowrap}
 .sh-mkt-badge{flex:none;min-height:18px;display:inline-flex;align-items:center;border-radius:5px;padding:1px 6px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px}
 .sh-mkt-badge.ok{background:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 10%,transparent);color:var(--dsw-alias-state-success-primary,#279c62)}
+.sh-mkt-badge.on{background:color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 12%,transparent);color:var(--dsw-alias-state-business-primary,#4d6bfe)}
 .sh-mkt-name{margin:0;overflow-wrap:anywhere;font-size:15px;line-height:18px;font-weight:600}
 .sh-mkt-desc{display:-webkit-box;overflow:hidden;margin:10px 0 0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;line-height:18px;-webkit-box-orient:vertical;-webkit-line-clamp:3}
 .sh-mkt-meta{display:flex;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:17px}
@@ -151,6 +154,21 @@ window.__ModuleLoader__.load({
 .sh-mkt-details{flex:1;color:var(--dsw-alias-label-secondary,#4b5058);font-size:12px;font-weight:500;text-decoration:none;position:relative;z-index:1}
 .sh-mkt-install{position:relative;z-index:1;min-height:30px;padding:0 10px;font-size:12px}
 .sh-mkt-install:disabled{opacity:.4;cursor:default}
+.sh-mkt-install.done{opacity:1;color:var(--dsw-alias-state-success-primary,#047857);background:transparent;cursor:default}
+.sh-mkt-progress{display:flex;flex-direction:column;gap:8px;margin:0 2px;padding:10px 12px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-secondary,#4b5058);font-size:12px}
+.sh-mkt-progress-row{display:flex;align-items:center;gap:10px;min-width:0}
+.sh-mkt-progress-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sh-mkt-progress-pct{flex:none;font-weight:600;font-variant-numeric:tabular-nums}
+.sh-mkt-bar{width:100%;height:4px;border-radius:99px;overflow:hidden;background:var(--dsw-alias-border-l2,#e2e4e8)}
+.sh-mkt-bar-fill{height:100%;border-radius:99px;background:var(--dsw-alias-state-business-primary,#4d6bfe);transition:width .6s ease}
+.sh-mkt-bar-fill.wave{width:30%;animation:shBarSlide 1.2s ease-in-out infinite}
+@keyframes shBarSlide{0%{margin-left:-30%}100%{margin-left:100%}}
+@media (prefers-reduced-motion:reduce){.sh-mkt-bar-fill.wave{animation:none;width:40%}}
+.sh-mkt-banner{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;margin:0 2px 10px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 28%,var(--dsw-alias-border-l2,#e2e4e8));border-radius:10px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-mkt-banner-text{flex:1;min-width:0;font-size:13px;line-height:18px}
+.sh-mkt-banner-text b{font-weight:600}
+.sh-mkt-restart{flex:none;height:30px;padding:0 12px;border:0;border-radius:8px;background:var(--dsw-alias-label-primary,#17191c);color:var(--dsw-alias-bg-layer-3,#fff);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.sh-mkt-restart:disabled{opacity:.5;cursor:default}
 .sh-mkt-status{margin:0;padding:32px 12px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;text-align:center}
 .sh-mkt-more{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:8px;min-height:40px;margin-top:2px;padding:0 16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-secondary,#4b5058);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s,color .16s}
 .sh-mkt-more:hover{background:var(--dsw-alias-bg-layer-3,#fff);border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%));color:var(--dsw-alias-label-primary,#17191c)}
@@ -333,11 +351,21 @@ window.__ModuleLoader__.load({
       "mkt.details": "详情",
       "mkt.verified": "已验证",
       "mkt.unsupported": "不可直接安装",
-      "mkt.sending": "正在发送",
+      "mkt.sending": "正在安装",
       "mkt.install": "安装",
-      "mkt.sent": "已把 {name} 的审核安装请求发送给当前 DSH 任务。",
-      "mkt.noTask": "请先打开一个 DSH 任务",
-      "mkt.unavailableTask": "当前 DSH 任务不可用",
+      "mkt.installed": "已安装",
+      "mkt.sent": "已安装 {name}，请重启 dsh web。",
+      "mkt.progressHint": "首次安装需要下载与解析依赖，大插件可能要 1–3 分钟",
+      "mkt.phaseResolving": "解析依赖",
+      "mkt.phaseDownloading": "下载中",
+      "mkt.phaseLinking": "链接依赖",
+      "mkt.phaseBuilding": "运行构建脚本",
+      "mkt.packagesDone": "已处理 {n} 个包",
+      "mkt.restartBanner": "已安装 {name}，请重启 dsh web 后生效",
+      "mkt.restartNow": "立即重启",
+      "mkt.restarting": "正在重启…",
+      "mkt.restartFail": "重启失败：{m}",
+      "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 dsh web",
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
       "mkt.catAll": "全部",
@@ -429,11 +457,21 @@ window.__ModuleLoader__.load({
       "mkt.details": "Details",
       "mkt.verified": "Verified",
       "mkt.unsupported": "Direct install unavailable",
-      "mkt.sending": "Sending",
+      "mkt.sending": "Installing",
       "mkt.install": "Install",
-      "mkt.sent": "Sent the review-first install request for {name} to the current DSH task.",
-      "mkt.noTask": "Open a DSH task before installing",
-      "mkt.unavailableTask": "The current DSH task is unavailable",
+      "mkt.installed": "Installed",
+      "mkt.sent": "Installed {name}. Restart dsh web to apply.",
+      "mkt.progressHint": "First installs download and resolve dependencies — large plugins can take 1–3 minutes",
+      "mkt.phaseResolving": "Resolving dependencies",
+      "mkt.phaseDownloading": "Downloading",
+      "mkt.phaseLinking": "Linking",
+      "mkt.phaseBuilding": "Running build scripts",
+      "mkt.packagesDone": "Processed {n} packages",
+      "mkt.restartBanner": "Installed {name} — restart dsh web to apply",
+      "mkt.restartNow": "Restart now",
+      "mkt.restarting": "Restarting…",
+      "mkt.restartFail": "Restart failed: {m}",
+      "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart dsh web yourself",
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
       "mkt.catAll": "All",
@@ -1262,22 +1300,46 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function queueInstallPrompt(sessions, locale) {
-      return async (plugin) => {
-        const current = sessions && sessions.list && sessions.list.getSnapshot && sessions.list.getSnapshot().current;
-        if (!current) throw new Error(locale === "en" ? EN["mkt.noTask"] : ZH["mkt.noTask"]);
-        const binding = sessions.binding && sessions.binding(current);
-        if (!binding || !binding.session || typeof binding.session.prompt !== "function") {
-          throw new Error(locale === "en" ? EN["mkt.unavailableTask"] : ZH["mkt.unavailableTask"]);
-        }
-        const body = await api("pluginInstallPrompt", {
-          owner: plugin.owner,
-          name: plugin.name,
-          fullName: plugin.fullName,
-          locale,
-        });
-        await binding.session.prompt([{ type: "text", text: body.prompt }], "queue");
-      };
+    function installMarketPlugin(plugin) {
+      return api("pluginInstall", {
+        owner: plugin.owner,
+        name: plugin.name,
+        fullName: plugin.fullName,
+      });
+    }
+
+    function phaseLabel(phase, tr) {
+      if (phase === "resolving") return tr("mkt.phaseResolving");
+      if (phase === "downloading") return tr("mkt.phaseDownloading");
+      if (phase === "linking") return tr("mkt.phaseLinking");
+      if (phase === "building") return tr("mkt.phaseBuilding");
+      return "";
+    }
+
+    function progressCopy(status, tr) {
+      if (status && status.phase) {
+        const bits = [phaseLabel(status.phase, tr)];
+        if (status.currentPackage) bits.push(status.currentPackage);
+        if (Number(status.done) > 0) bits.push(tr("mkt.packagesDone", { n: status.done }));
+        if (Number(status.seconds) > 0) bits.push(status.seconds + "s");
+        return bits.filter(Boolean).join(" · ");
+      }
+      const line = status && status.lastLine;
+      if (line) return line + (status.seconds ? "  (" + status.seconds + "s)" : "");
+      return tr("mkt.progressHint");
+    }
+
+    function progressPercent(status) {
+      if (!status || !status.active) return null;
+      if (typeof status.size === "number" && status.size > 0 && typeof status.downloaded === "number") {
+        return Math.max(4, Math.min(96, Math.round(status.downloaded / status.size * 100)));
+      }
+      const m = /resolved (\d+), reused (\d+), downloaded (\d+), added (\d+)/.exec(status.lastLine || "");
+      if (m && Number(m[1]) > 0) {
+        const done = Number(m[2]) + Number(m[3]) + Number(m[4]);
+        return Math.max(4, Math.min(96, Math.round(done / Number(m[1]) * 100)));
+      }
+      return null;
     }
 
     function Marketplace(props) {
@@ -1295,7 +1357,11 @@ window.__ModuleLoader__.load({
       const [sending, setSending] = useState("");
       const [feedback, setFeedback] = useState("");
       const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
-      const install = React.useMemo(() => queueInstallPrompt(props.sessions, locale), [props.sessions, locale]);
+      const [bootId, setBootId] = useState("");
+      const [liveStatus, setLiveStatus] = useState(null);
+      const [pendingRestart, setPendingRestart] = useState("");
+      const [restarting, setRestarting] = useState(false);
+      const install = installMarketPlugin;
       useEffect(() => {
         let live = true;
         api("pluginCategories", {})
@@ -1305,6 +1371,10 @@ window.__ModuleLoader__.load({
             if (items.length) setCats(items);
           })
           .catch(() => {});
+        api("pluginInstallStatus", {}).then((d) => {
+          if (!live) return;
+          if (d.boot) setBootId(d.boot);
+        }).catch(() => {});
         return () => { live = false; };
       }, []);
       useEffect(() => {
@@ -1329,6 +1399,20 @@ window.__ModuleLoader__.load({
           });
         return () => { live = false; };
       }, [submitted, category, page]);
+      useEffect(() => {
+        if (!sending && !restarting) return;
+        let live = true;
+        const tick = () => {
+          api("pluginInstallStatus", {}).then((d) => {
+            if (!live) return;
+            setLiveStatus(d);
+            if (d.boot) setBootId((cur) => cur || d.boot);
+          }).catch(() => {});
+        };
+        tick();
+        const timer = setInterval(tick, 800);
+        return () => { live = false; clearInterval(timer); };
+      }, [sending, restarting]);
       const catLabelFor = (key) => {
         if (!key) return "";
         if (locale === "en" && MARKET_CAT_EN[key]) return MARKET_CAT_EN[key];
@@ -1339,6 +1423,52 @@ window.__ModuleLoader__.load({
         const repo = String(plugin.repositoryUrl || "").trim();
         if (/^https:\/\/github\.com\//i.test(repo)) return repo;
         return "https://github.com/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
+      };
+      const pct = sending ? progressPercent(liveStatus) : null;
+      const startRestart = () => {
+        if (restarting) return;
+        setRestarting(true);
+        setFeedback("");
+        const previous = bootId;
+        const deadline = Date.now() + 60000;
+        const awaitNewBoot = () => {
+          const poll = () => {
+            api("pluginInstallStatus", {}).then((d) => {
+              if (typeof d.boot === "string" && previous && d.boot !== previous) {
+                location.reload();
+                return;
+              }
+              retry();
+            }).catch(retry);
+          };
+          const retry = () => {
+            if (Date.now() > deadline) {
+              setRestarting(false);
+              setFeedback(tr("mkt.restartTimeout"));
+              return;
+            }
+            setTimeout(poll, 1500);
+          };
+          poll();
+        };
+        const requestRestart = (left) => {
+          api("pluginRestart", {}).then(() => {
+            awaitNewBoot();
+          }).catch((e) => {
+            const msg = e && e.message ? String(e.message) : String(e);
+            if (/cannot restart while|HTTP 409/.test(msg) && left > 0) {
+              setTimeout(() => requestRestart(left - 1), 1500);
+              return;
+            }
+            if (/Failed to fetch|NetworkError|HTTP 5/i.test(msg)) {
+              awaitNewBoot();
+              return;
+            }
+            setRestarting(false);
+            setFeedback(tr("mkt.restartFail", { m: msg }));
+          });
+        };
+        requestRestart(10);
       };
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
@@ -1373,7 +1503,28 @@ window.__ModuleLoader__.load({
           status === "ready" ? h("div", { className: "sh-mkt-results" },
             h("p", { className: "sh-mkt-summary" }, tr("mkt.repos", { n: total })),
           ) : null,
-          feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px" } }, feedback) : null,
+          sending ? h("div", { className: "sh-mkt-progress" },
+            h("div", { className: "sh-mkt-progress-row" },
+              h("span", { className: "sh-mkt-progress-text" }, progressCopy(liveStatus, tr)),
+              pct != null ? h("span", { className: "sh-mkt-progress-pct" }, pct + "%") : null,
+            ),
+            h("div", { className: "sh-mkt-bar" },
+              h("div", {
+                className: "sh-mkt-bar-fill" + (pct == null ? " wave" : ""),
+                style: pct != null ? { width: pct + "%" } : undefined,
+              }),
+            ),
+          ) : null,
+          pendingRestart && !sending ? h("div", { className: "sh-mkt-banner" },
+            h("span", { className: "sh-mkt-banner-text" }, tr("mkt.restartBanner", { name: pendingRestart })),
+            h("button", {
+              type: "button",
+              className: "sh-mkt-restart",
+              disabled: restarting,
+              onClick: startRestart,
+            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")),
+          ) : null,
+          feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px", textAlign: "left" } }, feedback) : null,
           status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
           status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
           status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("mkt.empty")) : null,
@@ -1381,13 +1532,16 @@ window.__ModuleLoader__.load({
             items.map((plugin) => {
               const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
               const verified = plugin.installability === "verified";
-              return h("article", { key: id, className: "sh-mkt-card" },
+              const installed = !!plugin.installed;
+              const busy = !!sending;
+              return h("article", { key: id, className: "sh-mkt-card" + (installed ? " on" : "") },
                 h("div", { className: "sh-mkt-head" },
                   h(MarketAvatar, { plugin }),
                   h("div", { className: "sh-mkt-head-main" },
                     h("div", { className: "sh-mkt-top" },
                       h("p", { className: "sh-mkt-owner" }, plugin.owner),
-                      h("span", { className: "sh-mkt-badge" + (verified ? " ok" : "") }, verified ? tr("mkt.verified") : tr("mkt.unsupported")),
+                      h("span", { className: "sh-mkt-badge" + (installed ? " on" : verified ? " ok" : "") },
+                        installed ? tr("mkt.installed") : (verified ? tr("mkt.verified") : tr("mkt.unsupported"))),
                     ),
                     h("div", { className: "sh-mkt-name" }, plugin.name),
                   ),
@@ -1401,20 +1555,25 @@ window.__ModuleLoader__.load({
                   h("a", { className: "sh-mkt-details", href: detailHref(plugin), target: "_blank", rel: "noreferrer" }, tr("mkt.details")),
                   h("button", {
                     type: "button",
-                    className: "sh-mkt-install",
-                    disabled: !verified || sending === id,
+                    className: "sh-mkt-install" + (installed ? " done" : ""),
+                    disabled: !verified || busy || restarting || installed,
                     onClick: () => {
                       setSending(id);
                       setFeedback("");
+                      setPendingRestart("");
+                      setLiveStatus(null);
                       install(plugin).then(
                         () => {
-                          setFeedback(tr("mkt.sent", { name: plugin.fullName || id }));
-                          if (typeof props.onSent === "function") props.onSent();
+                          setItems((cur) => cur.map((it) => {
+                            const iid = it.fullName || (it.owner + "/" + it.name);
+                            return iid === id ? { ...it, installed: true } : it;
+                          }));
+                          setPendingRestart(plugin.fullName || id);
                         },
                         (e) => setFeedback(e.message || String(e)),
                       ).finally(() => setSending(""));
                     },
-                  }, !verified ? tr("mkt.unsupported") : (sending === id ? tr("mkt.sending") : tr("mkt.install"))),
+                  }, !verified ? tr("mkt.unsupported") : installed ? tr("mkt.installed") : (sending === id ? tr("mkt.sending") : tr("mkt.install"))),
                 ),
               );
             }),
@@ -1579,7 +1738,7 @@ window.__ModuleLoader__.load({
       return box;
     }
 
-    function PlazaView({ sessions, t, onClose, box }) {
+    function PlazaView({ t, onClose, box }) {
       useEffect(() => {
         ensureCss();
         const onKey = (e) => {
@@ -1631,7 +1790,7 @@ window.__ModuleLoader__.load({
             }, "×"),
           ),
           h("div", { className: "sh-plaza-body" },
-            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { sessions, t: tr, onSent: onClose }),
+            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { t: tr }),
           ),
         ),
       );
@@ -1684,7 +1843,7 @@ window.__ModuleLoader__.load({
         return () => document.removeEventListener("pointerdown", onPointer, true);
       }, [open, close]);
       const panel = open && box && typeof document !== "undefined"
-        ? createPortal(h(PlazaView, { sessions, t: tr, onClose: close, box }), document.body)
+        ? createPortal(h(PlazaView, { t: tr, onClose: close, box }), document.body)
         : null;
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-plaza-wrap" + (wide ? "" : " rail") },

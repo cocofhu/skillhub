@@ -2,12 +2,16 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { clamp, fetchSkillCard, parseSlug, searchSkills } from './api.js'
 import { parseCategory } from './categories.js'
 import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay } from './config-store.js'
+import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
-import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
+import { installMarketPlugin, isPluginInstallBusy, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
+import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { PluginConfig, SkillCard } from './types.js'
+
+let restarting = false
 
 export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginConfig): Promise<void> {
   try {
@@ -83,19 +87,38 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       })
       return sendJson(res, 200, { ok: true, ...result })
     }
-    if (method === 'pluginInstallPrompt') {
-      const prompt = createInstallPrompt(
+    if (method === 'pluginInstall') {
+      const result = await withPluginInstallLock(() => installMarketPlugin(
         {
           owner: body.owner ?? url.searchParams.get('owner'),
           name: body.name ?? url.searchParams.get('name'),
           fullName: body.fullName ?? url.searchParams.get('fullName'),
         },
-        {
-          locale: body.locale ?? url.searchParams.get('locale'),
-          apiBase: cfg.apiBase,
-        },
-      )
-      return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
+        cfg,
+      ))
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstallStatus') {
+      return sendJson(res, 200, {
+        ok: true,
+        ...publicInstallStatus(),
+        busy: isPluginInstallBusy() || progress.active,
+        restart: true,
+        boot: BOOT_ID,
+      })
+    }
+    if (method === 'pluginRestart') {
+      if (!trustedRestartRequest(req)) return sendJson(res, 403, { ok: false, error: 'restart is limited to same-origin loopback requests' })
+      if (isPluginInstallBusy() || progress.active) return sendJson(res, 409, { ok: false, error: 'cannot restart while a plugin operation is running' })
+      if (restarting) return sendJson(res, 409, { ok: false, error: 'restart already scheduled' })
+      restarting = true
+      try {
+        const result = scheduleRestart(servingPort(req))
+        return sendJson(res, 202, { ok: true, pid: result.pid, helperPid: result.helperPid })
+      } catch (err) {
+        restarting = false
+        throw err
+      }
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))

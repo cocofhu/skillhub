@@ -74,9 +74,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
 
-点插件的 **安装** 不会立刻执行 `dsh plugin add`，只会把审核安装提示词排入当前任务：Agent 先读 install-plan，核对仓库、commit、清单和权限后再安装。没有打开任务时，安装按钮会提示先开一个 DSH 任务。
-
-对话里的技能搜索 / zip 安装不受影响。
+点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；装完会提示重启，并提供 **立即重启**。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
 
 ### Agent 工具
 
@@ -128,7 +126,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | DSH 插件目录 | `GET /api/v1/plugins` |
 | 插件安装计划 | `GET /api/v1/plugins/{owner}/{name}/install-plan` |
 
-上游请求有超时；安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。
+上游请求有超时；技能 zip 安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。广场安装 DSH 插件会在本机执行 `dsh plugin add`，写入当前 web profile。
 
 ## 开发
 
@@ -150,7 +148,10 @@ pnpm build
 | `src/local-api.ts` | 本机 `/skillhub` HTTP（搜索、安装、广场、详情、更新） |
 | `src/client.js` | 搜索卡片、详情弹窗、设置页、插件广场 |
 | `src/api.ts` | 搜索与技能卡片映射 |
-| `src/plugin-market.ts` | DSH 插件目录查询与审核安装提示词 |
+| `src/plugin-market.ts` | DSH 插件目录查询与 install-plan 安装 |
+| `src/dsh-cli.ts` | 复用当前 dsh 进程执行 `dsh plugin add`，解析 pnpm ndjson 进度 |
+| `src/ndjson.ts` | pnpm `--reporter=ndjson` 进度解析 |
+| `src/restart.ts` | 同源环回一键重启当前 dsh web |
 | `src/install.ts` | zip 下载、解压、安装 / 卸载 |
 | `src/skill-detail.ts` | 版本历史与 TRACE 评测 |
 | `src/unzip.ts` | zip 解压（含 data descriptor） |
@@ -171,12 +172,13 @@ pnpm build
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
+| 广场点安装失败 | 确认当前是 `dsh web` 拉起的进程，且 web profile 可写；git 源若被 pnpm 拦截 prepare，改用 npm 包 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
 
 ## 安全
 
-安装第三方技能等于在本机落下可被 Agent 读取的文件。请只安装你信任的来源，并留意详情页的安全标记与评测。
+安装第三方技能等于在本机落下可被 Agent 读取的文件。广场安装 DSH 插件会把第三方代码装进 web profile。请只安装已验证且你信任的来源。
 
 漏洞请按 [SECURITY.md](SECURITY.md) 私下报告，不要发公开 Issue。
 

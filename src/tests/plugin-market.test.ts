@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import { withDefaults } from '../config-store.js'
 import {
   buildPluginsUrl,
-  createInstallPrompt,
+  fetchInstallPlan,
   fallbackPluginCategories,
+  installMarketPlugin,
   installPlanUrl,
   listPluginCategories,
   listPlugins,
@@ -13,9 +17,15 @@ import {
   parsePluginCategory,
   parsePluginRef,
   pluginCategoriesUrl,
+  resolveInstallSource,
   sanitizePluginAvatarUrl,
   sanitizePluginScope,
   sanitizePluginSort,
+  githubRepoFromSpec,
+  isMarketPluginInstalled,
+  isPluginInstallBusy,
+  readInstalledPlugins,
+  withPluginInstallLock,
 } from '../plugin-market.js'
 
 test('parsePluginRef accepts GitHub owner/name', () => {
@@ -81,6 +91,7 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
   assert.equal(ok?.categoryKey, 'web-tools')
   assert.equal(ok?.repositoryUrl, 'https://github.com/liustack/modlens')
   assert.equal(ok?.avatarUrl, 'https://avatars.githubusercontent.com/u/1?v=4')
+  assert.equal(ok?.installed, false)
   assert.equal(mapMarketPlugin({ owner: '../x', name: 'n' }), null)
   assert.equal(mapMarketPlugin({ owner: 'o', name: 'n', installability: 'candidate' })?.installability, 'unsupported')
   assert.equal(mapMarketPlugin({
@@ -97,36 +108,137 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
   })?.avatarUrl, '')
 })
 
-test('createInstallPrompt zh includes install-plan and forbids force/pnpm', () => {
-  const prompt = createInstallPrompt(
-    { owner: 'liustack', name: 'modlens', fullName: 'liustack/modlens' },
-    { locale: 'zh', apiBase: 'https://api.skillhub.cn' },
-  )
-  assert.match(prompt, /https:\/\/api\.skillhub\.cn\/api\/v1\/plugins\/liustack\/modlens\/install-plan/)
-  assert.match(prompt, /精确 commit/)
-  assert.match(prompt, /dsh\.bundle\.patch/)
-  assert.match(prompt, /pnpm store/)
-  assert.match(prompt, /两步修复序列/)
-  assert.match(prompt, /不要对 add 使用 --force/)
-  assert.match(prompt, /不要修改 DeepSeek Harness 源码/)
-  assert.match(prompt, /不要在 profile 中直接运行 pnpm install\/add/)
-  assert.doesNotMatch(prompt, /dsh-hub\.cc/)
+test('resolveInstallSource accepts pinned github plan', () => {
+  const sha = 'cb481974e1154afffd3835689284d3d28e57c7e1'
+  const source = resolveInstallSource({
+    command: `dsh plugin --profile web add github:liustack/modlens#${sha}`,
+    plugin: {
+      fullName: 'liustack/modlens',
+      headSha: sha,
+      repositoryUrl: 'https://github.com/liustack/modlens',
+    },
+    profile: 'web',
+    source: `github:liustack/modlens#${sha}`,
+  }, { owner: 'liustack', name: 'modlens', fullName: 'liustack/modlens' })
+  assert.equal(source, `github:liustack/modlens#${sha}`)
 })
 
-test('createInstallPrompt en includes install-plan and forbids force/pnpm', () => {
-  const prompt = createInstallPrompt(
-    { owner: 'liustack', name: 'modlens' },
-    { locale: 'en', apiBase: 'https://api.skillhub.cn/' },
+test('resolveInstallSource is case-insensitive for GitHub names', () => {
+  const sha = '1f93efe85360560e3da49726d7a55af659e771fe'
+  const source = resolveInstallSource({
+    source: `github:ccch1mneyyy/dsh-tui#${sha}`,
+    plugin: { fullName: 'ccch1mneyyy/dsh-tui', headSha: sha, repositoryUrl: 'https://github.com/ccch1mneyyy/dsh-TUI' },
+  }, { owner: 'ccch1mneyyy', name: 'dsh-TUI', fullName: 'ccch1mneyyy/dsh-TUI' })
+  assert.equal(source, `github:ccch1mneyyy/dsh-tui#${sha}`)
+})
+
+test('resolveInstallSource accepts .git URLs and short SHA prefixes', () => {
+  const sha = 'abcdef0'
+  const expected = { owner: 'o', name: 'n', fullName: 'o/n' }
+  assert.equal(resolveInstallSource({
+    source: `github:o/n#${sha}`,
+    plugin: { headSha: 'abcdef0123456789', repositoryUrl: 'https://github.com/o/n.git/' },
+  }, expected), `github:o/n#${sha}`)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, command: 'dsh plugin add -f pkg' }, expected), /-f|--force/)
+})
+
+test('resolveInstallSource can parse command when source is missing', () => {
+  const sha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  const source = resolveInstallSource({
+    command: `dsh plugin --profile web add github:o/n#${sha}`,
+  }, { owner: 'o', name: 'n', fullName: 'o/n' })
+  assert.equal(source, `github:o/n#${sha}`)
+})
+
+test('resolveInstallSource rejects force, other profile, and mismatched repo', () => {
+  const sha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+  const expected = { owner: 'o', name: 'n', fullName: 'o/n' }
+  assert.throws(() => resolveInstallSource(null, expected), /安装计划无效/)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, command: 'dsh plugin --profile web add --force github:o/n' }, expected), /--force/)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, profile: 'desktop' }, expected), /web profile/)
+  assert.throws(() => resolveInstallSource({ source: `github:evil/n#${sha}` }, expected), /仓库与所选插件不一致/)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, plugin: { fullName: 'evil/n' } }, expected), /fullName/)
+  assert.throws(() => resolveInstallSource({
+    source: `github:o/n#${sha}`,
+    plugin: { headSha: 'cccccccccccccccccccccccccccccccccccccccc' },
+  }, expected), /commit/)
+  assert.throws(() => resolveInstallSource({
+    source: `github:o/n#${sha}`,
+    plugin: { repositoryUrl: 'https://github.com/evil/n' },
+  }, expected), /仓库地址/)
+  assert.throws(() => resolveInstallSource({ command: 'echo hi' }, expected), /没有可用的 source/)
+  assert.throws(() => resolveInstallSource({ source: 'npm:left-pad' }, expected), /pinned github/)
+})
+
+test('installMarketPlugin fetches the plan then runs dsh plugin add', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const sha = 'dddddddddddddddddddddddddddddddddddddddd'
+  let seenUrl = ''
+  const seen: string[][] = []
+  const result = await installMarketPlugin({ owner: 'liustack', name: 'modlens' }, cfg, {
+    fetchJson: async <T>(url: string) => {
+      seenUrl = url
+      return {
+        source: `github:liustack/modlens#${sha}`,
+        plugin: { fullName: 'liustack/modlens', headSha: sha, repositoryUrl: 'https://github.com/liustack/modlens' },
+        command: `dsh plugin --profile web add github:liustack/modlens#${sha}`,
+        profile: 'web',
+      } as T
+    },
+    runDshPlugin: async (profile, args) => {
+      seen.push([profile, ...args])
+      return 'installed ok'
+    },
+  })
+  assert.equal(seenUrl, 'https://api.skillhub.cn/api/v1/plugins/liustack/modlens/install-plan')
+  assert.deepEqual(seen, [['web', 'add', `github:liustack/modlens#${sha}`]])
+  assert.equal(result.restartedHint, true)
+  assert.equal(result.source, `github:liustack/modlens#${sha}`)
+})
+
+test('fetchInstallPlan hits install-plan URL', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn/' })
+  const body = await fetchInstallPlan(cfg, 'o', 'n', async <T>(url: string) => {
+    assert.equal(url, 'https://api.skillhub.cn/api/v1/plugins/o/n/install-plan')
+    return { source: 'github:o/n#abcdef0' } as T
+  })
+  assert.equal((body as { source: string }).source, 'github:o/n#abcdef0')
+})
+
+test('withPluginInstallLock runs installs one at a time', async () => {
+  const order: string[] = []
+  const first = withPluginInstallLock(async () => {
+    await new Promise((r) => setTimeout(r, 30))
+    assert.equal(isPluginInstallBusy(), true)
+    order.push('a')
+    return 1
+  })
+  const second = withPluginInstallLock(async () => {
+    order.push('b')
+    return 2
+  })
+  assert.deepEqual(await Promise.all([first, second]), [1, 2])
+  assert.deepEqual(order, ['a', 'b'])
+  const failed = withPluginInstallLock(async () => {
+    throw new Error('nope')
+  })
+  const afterFail = withPluginInstallLock(async () => 'ok')
+  await assert.rejects(failed, /nope/)
+  assert.equal(await afterFail, 'ok')
+  assert.equal(isPluginInstallBusy(), false)
+})
+
+test('installMarketPlugin does not spawn when the plan is for another repo', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  await assert.rejects(
+    () => installMarketPlugin({ owner: 'o', name: 'n' }, cfg, {
+      fetchJson: async <T>() => ({ source: 'github:evil/n#abcdef0' }) as T,
+      runDshPlugin: async () => {
+        throw new Error('should not run')
+      },
+    }),
+    /仓库与所选插件不一致/,
   )
-  assert.match(prompt, /Install the DSH plugin liustack\/modlens/)
-  assert.match(prompt, /\/install-plan/)
-  assert.match(prompt, /exact commit/)
-  assert.match(prompt, /dsh\.bundle\.patch/)
-  assert.match(prompt, /pnpm-store/)
-  assert.match(prompt, /two-step/)
-  assert.match(prompt, /do not trial-and-error or pass --force to add/i)
-  assert.match(prompt, /Do not modify DeepSeek Harness source/)
-  assert.match(prompt, /pnpm install\/add/)
 })
 
 test('installPlanUrl encodes owner/name', () => {
@@ -164,7 +276,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
         avatarUrl: 'https://cdn.example/modlens.png',
       }],
     } as T
-  })
+  }, {})
   assert.match(seen, /https:\/\/api\.skillhub\.cn\/api\/v1\/plugins\?/)
   assert.match(seen, /q=mod/)
   assert.match(seen, /scope=verified/)
@@ -174,6 +286,63 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
   assert.equal(page.apiBase, 'https://api.skillhub.cn')
   assert.equal(page.items[0].name, 'modlens')
   assert.equal(page.items[0].avatarUrl, 'https://cdn.example/modlens.png')
+  assert.equal(page.items[0].installed, false)
+})
+
+test('githubRepoFromSpec reads pinned github and https specs', () => {
+  assert.equal(githubRepoFromSpec('github:ganyuanran/aegis#d5bda9fb9df0f94587283954f1c155816abe9002'), 'ganyuanran/aegis')
+  assert.equal(githubRepoFromSpec('github:cocofhu/skillhub#feat/plaza-host-plugin-install'), 'cocofhu/skillhub')
+  assert.equal(githubRepoFromSpec('https://github.com/ganyuanran/aegis.git'), 'ganyuanran/aegis')
+  assert.equal(githubRepoFromSpec('^1.2.3'), null)
+  assert.equal(githubRepoFromSpec('link:/tmp/skillhub'), null)
+})
+
+test('isMarketPluginInstalled matches the profile github spec', () => {
+  const plugin = {
+    owner: 'GanyuanRan',
+    name: 'Aegis',
+    fullName: 'ganyuanran/aegis',
+    repositoryUrl: 'https://github.com/GanyuanRan/Aegis',
+  }
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:ganyuanran/aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:GanYuanRan/Aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled({ ...plugin, repositoryUrl: '' }, { other: 'github:ganyuanran/aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: '^1.0.0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { '@ganyuanran/aegis': '^1.0.0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { other: 'github:evil/aegis#abcdef0' }), false)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:evil/aegis#abcdef0' }), false)
+})
+
+test('listPlugins marks plugins already in the profile', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const page = await listPlugins(cfg, {}, async <T>() => ({
+    items: [
+      { owner: 'GanyuanRan', name: 'Aegis', fullName: 'ganyuanran/aegis', installability: 'verified', repositoryUrl: 'https://github.com/GanyuanRan/Aegis' },
+      { owner: 'liustack', name: 'modlens', fullName: 'liustack/modlens', installability: 'verified' },
+    ],
+  } as T), {
+    aegis: 'github:ganyuanran/aegis#d5bda9fb9df0f94587283954f1c155816abe9002',
+  })
+  assert.equal(page.items[0].installed, true)
+  assert.equal(page.items[1].installed, false)
+})
+
+test('readInstalledPlugins reads profile dependencies', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-profile-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      dependencies: {
+        aegis: 'github:ganyuanran/aegis#abcdef0',
+        skip: 1,
+      },
+    }))
+    assert.deepEqual(readInstalledPlugins(dir), { aegis: 'github:ganyuanran/aegis#abcdef0' })
+    writeFileSync(join(dir, 'package.json'), '{}')
+    assert.deepEqual(readInstalledPlugins(dir), {})
+    assert.deepEqual(readInstalledPlugins(join(dir, 'missing')), {})
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('pluginCategoriesUrl hits /api/v1/plugins/categories', () => {

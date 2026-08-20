@@ -35,6 +35,9 @@ must=(
   lib/skill-detail.js
   lib/self-update.js
   lib/plugin-market.js
+  lib/dsh-cli.js
+  lib/ndjson.js
+  lib/restart.js
   lib/local-api.js
   lib/categories.js
 )
