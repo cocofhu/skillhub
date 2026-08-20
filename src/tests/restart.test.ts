@@ -9,31 +9,48 @@ import {
   trustedRestartRequest,
 } from '../restart.js'
 
-test('servingPort reads the Host header', () => {
+test('servingPort reads loopback Host and ignores public proxy ports', () => {
   assert.equal(servingPort({ headers: { host: '127.0.0.1:3080' } }), 3080)
+  assert.equal(servingPort({ headers: { host: 'localhost:3081' } }), 3081)
   assert.equal(servingPort({ headers: { host: 'localhost' } }), null)
   assert.equal(servingPort({ headers: {} }), null)
   assert.equal(servingPort({ headers: { host: '127.0.0.1:99999' } }), null)
   assert.equal(servingPort({ headers: { host: '127.0.0.1:0' } }), null)
+  assert.equal(servingPort({ headers: { host: '43.160.246.58:34073' } }), null)
 })
 
-test('trustedRestartRequest accepts same-origin loopback and refuses the rest', () => {
+test('trustedRestartRequest accepts same-origin UI clicks, including reverse proxies', () => {
   const ok = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080' }
   const req = (headers: Record<string, string>, remoteAddress = '127.0.0.1') =>
     ({ headers, socket: { remoteAddress } }) as Parameters<typeof trustedRestartRequest>[0]
   assert.equal(trustedRestartRequest(req(ok)), true)
   assert.equal(trustedRestartRequest(req(ok, '::1')), true)
   assert.equal(trustedRestartRequest(req(ok, '::ffff:127.0.0.1')), true)
-  assert.equal(trustedRestartRequest(req(ok, '192.168.1.5')), false)
-  assert.equal(trustedRestartRequest(req({ ...ok, forwarded: 'for=1.2.3.4' })), false)
-  assert.equal(trustedRestartRequest(req({ ...ok, 'x-forwarded-for': '1.2.3.4' })), false)
-  assert.equal(trustedRestartRequest(req({ ...ok, 'x-real-ip': '1.2.3.4' })), false)
+  assert.equal(trustedRestartRequest(req(ok, '192.168.1.5')), true)
+  assert.equal(trustedRestartRequest(req({ ...ok, forwarded: 'for=1.2.3.4' })), true)
+  assert.equal(trustedRestartRequest(req({ ...ok, 'x-forwarded-for': '1.2.3.4', 'x-real-ip': '1.2.3.4' })), true)
+  assert.equal(trustedRestartRequest(req({
+    host: '127.0.0.1:3080',
+    origin: 'https://43.160.246.58:34073',
+    'x-forwarded-host': '43.160.246.58:34073',
+    'x-forwarded-for': '1.2.3.4',
+  }, '10.0.0.2')), true)
+  assert.equal(trustedRestartRequest(req({
+    host: '43.160.246.58:34073',
+    origin: 'https://43.160.246.58:34073',
+    'x-forwarded-for': '1.2.3.4',
+  })), true)
+  assert.equal(trustedRestartRequest(req({
+    host: '127.0.0.1:3080',
+    origin: 'https://43.160.246.58:34073',
+    'x-forwarded-host': '43.160.246.58',
+  })), true)
   assert.equal(trustedRestartRequest(req({ host: '127.0.0.1:3080' })), false)
   assert.equal(trustedRestartRequest(req({ ...ok, origin: 'http://evil.example' })), false)
   assert.equal(trustedRestartRequest(req({ ...ok, origin: 'not a url' })), false)
   assert.equal(trustedRestartRequest(req({ ...ok, origin: 'file://127.0.0.1:3080' })), false)
   assert.equal(trustedRestartRequest(req({ origin: 'http://127.0.0.1:3080' })), false)
-  assert.equal(trustedRestartRequest({ headers: ok, socket: {} } as Parameters<typeof trustedRestartRequest>[0]), false)
+  assert.equal(trustedRestartRequest({ headers: ok, socket: {} } as Parameters<typeof trustedRestartRequest>[0]), true)
 })
 
 test('respawnInvocation wraps win32 in hidden PowerShell and keeps POSIX detached', () => {

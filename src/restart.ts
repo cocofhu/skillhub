@@ -2,8 +2,11 @@
  * Self-restart: relaunch the DSH invocation that booted this host so a
  * freshly installed plugin loads without leaving the UI.
  *
- * Safety: same-origin loopback only, no forwarding headers, refuse while a
- * plugin operation is running. Ported from dsh-market.
+ * Safety: same-origin browser request (Origin matches Host or
+ * X-Forwarded-Host). Loopback without proxy headers still passes. Reverse
+ * proxies (Tencent Cloud path prefix, LAN HTTPS) set X-Forwarded-For, so
+ * those headers must not by themselves reject a same-origin UI click.
+ * Ported from dsh-market, then relaxed for proxied Web hosts.
  */
 
 import { spawn } from 'node:child_process'
@@ -12,9 +15,40 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { dshArgv, nodeExecutable } from './dsh-cli.js'
 
+function headerString(raw: string | string[] | undefined): string | undefined {
+  if (raw === undefined) return undefined
+  const value = Array.isArray(raw) ? raw[0] : raw
+  const trimmed = String(value || '').trim()
+  return trimmed === '' ? undefined : trimmed.split(',')[0]!.trim()
+}
+
+function parseHost(raw: string): { hostname: string; port: string } | null {
+  try {
+    const parsed = new URL(raw.includes('://') ? raw : `http://${raw}`)
+    return { hostname: parsed.hostname.toLowerCase(), port: parsed.port }
+  } catch {
+    return null
+  }
+}
+
+function isLoopbackHost(host: string): boolean {
+  const parsed = parseHost(host)
+  if (parsed === null) return false
+  return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '::1'
+}
+
+function hostsMatch(originHost: string, candidate: string): boolean {
+  const a = parseHost(originHost)
+  const b = parseHost(candidate)
+  if (a === null || b === null) return false
+  if (a.hostname !== b.hostname) return false
+  if (a.port !== '' && b.port !== '' && a.port !== b.port) return false
+  return true
+}
+
 export function servingPort(request: Pick<IncomingMessage, 'headers'>): number | null {
-  const host = request.headers.host
-  if (host === undefined) return null
+  const host = headerString(request.headers.host)
+  if (host === undefined || !isLoopbackHost(host)) return null
   const match = /:(\d{1,5})$/u.exec(host)
   if (match === null) return null
   const port = Number(match[1])
@@ -22,20 +56,20 @@ export function servingPort(request: Pick<IncomingMessage, 'headers'>): number |
 }
 
 export function trustedRestartRequest(request: Pick<IncomingMessage, 'headers' | 'socket'>): boolean {
-  const address = request.socket.remoteAddress
-  if (address !== '127.0.0.1' && address !== '::1' && address !== '::ffff:127.0.0.1') return false
-  if (request.headers.forwarded !== undefined
-    || request.headers['x-forwarded-for'] !== undefined
-    || request.headers['x-real-ip'] !== undefined) return false
-  const origin = request.headers.origin
-  const host = request.headers.host
-  if (origin === undefined || host === undefined) return false
+  const origin = headerString(request.headers.origin)
+  if (origin === undefined) return false
+  let from: string
   try {
     const parsed = new URL(origin)
-    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === host
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+    from = parsed.host
   } catch {
     return false
   }
+  const host = headerString(request.headers.host)
+  const forwardedHost = headerString(request.headers['x-forwarded-host'])
+  const candidates = [host, forwardedHost].filter((value): value is string => value !== undefined)
+  return candidates.some((candidate) => hostsMatch(from, candidate))
 }
 
 export function restartLaunch(): { file: string; args: string[]; cwd: string; viaShell: boolean } {
