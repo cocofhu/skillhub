@@ -333,11 +333,9 @@ window.__ModuleLoader__.load({
       "mkt.details": "详情",
       "mkt.verified": "已验证",
       "mkt.unsupported": "不可直接安装",
-      "mkt.sending": "正在发送",
+      "mkt.sending": "正在安装",
       "mkt.install": "安装",
-      "mkt.sent": "已把 {name} 的审核安装请求发送给当前 DSH 任务。",
-      "mkt.noTask": "请先打开一个 DSH 任务",
-      "mkt.unavailableTask": "当前 DSH 任务不可用",
+      "mkt.sent": "已安装 {name}，请重启 dsh web 并强制刷新浏览器。",
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
       "mkt.catAll": "全部",
@@ -429,11 +427,9 @@ window.__ModuleLoader__.load({
       "mkt.details": "Details",
       "mkt.verified": "Verified",
       "mkt.unsupported": "Direct install unavailable",
-      "mkt.sending": "Sending",
+      "mkt.sending": "Installing",
       "mkt.install": "Install",
-      "mkt.sent": "Sent the review-first install request for {name} to the current DSH task.",
-      "mkt.noTask": "Open a DSH task before installing",
-      "mkt.unavailableTask": "The current DSH task is unavailable",
+      "mkt.sent": "Installed {name}. Restart dsh web and hard-refresh the browser.",
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
       "mkt.catAll": "All",
@@ -1262,22 +1258,12 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function queueInstallPrompt(sessions, locale) {
-      return async (plugin) => {
-        const current = sessions && sessions.list && sessions.list.getSnapshot && sessions.list.getSnapshot().current;
-        if (!current) throw new Error(locale === "en" ? EN["mkt.noTask"] : ZH["mkt.noTask"]);
-        const binding = sessions.binding && sessions.binding(current);
-        if (!binding || !binding.session || typeof binding.session.prompt !== "function") {
-          throw new Error(locale === "en" ? EN["mkt.unavailableTask"] : ZH["mkt.unavailableTask"]);
-        }
-        const body = await api("pluginInstallPrompt", {
-          owner: plugin.owner,
-          name: plugin.name,
-          fullName: plugin.fullName,
-          locale,
-        });
-        await binding.session.prompt([{ type: "text", text: body.prompt }], "queue");
-      };
+    function installMarketPlugin(plugin) {
+      return api("pluginInstall", {
+        owner: plugin.owner,
+        name: plugin.name,
+        fullName: plugin.fullName,
+      });
     }
 
     function Marketplace(props) {
@@ -1295,7 +1281,7 @@ window.__ModuleLoader__.load({
       const [sending, setSending] = useState("");
       const [feedback, setFeedback] = useState("");
       const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
-      const install = React.useMemo(() => queueInstallPrompt(props.sessions, locale), [props.sessions, locale]);
+      const install = installMarketPlugin;
       useEffect(() => {
         let live = true;
         api("pluginCategories", {})
@@ -1409,7 +1395,6 @@ window.__ModuleLoader__.load({
                       install(plugin).then(
                         () => {
                           setFeedback(tr("mkt.sent", { name: plugin.fullName || id }));
-                          if (typeof props.onSent === "function") props.onSent();
                         },
                         (e) => setFeedback(e.message || String(e)),
                       ).finally(() => setSending(""));
@@ -1579,7 +1564,7 @@ window.__ModuleLoader__.load({
       return box;
     }
 
-    function PlazaView({ sessions, t, onClose, box }) {
+    function PlazaView({ t, onClose, box }) {
       useEffect(() => {
         ensureCss();
         const onKey = (e) => {
@@ -1631,7 +1616,7 @@ window.__ModuleLoader__.load({
             }, "×"),
           ),
           h("div", { className: "sh-plaza-body" },
-            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { sessions, t: tr, onSent: onClose }),
+            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { t: tr }),
           ),
         ),
       );
@@ -1684,7 +1669,7 @@ window.__ModuleLoader__.load({
         return () => document.removeEventListener("pointerdown", onPointer, true);
       }, [open, close]);
       const panel = open && box && typeof document !== "undefined"
-        ? createPortal(h(PlazaView, { sessions, t: tr, onClose: close, box }), document.body)
+        ? createPortal(h(PlazaView, { t: tr, onClose: close, box }), document.body)
         : null;
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-plaza-wrap" + (wide ? "" : " rail") },

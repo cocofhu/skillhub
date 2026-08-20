@@ -4,7 +4,7 @@ import { parseCategory } from './categories.js'
 import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay } from './config-store.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
-import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
+import { installMarketPlugin, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { PluginConfig, SkillCard } from './types.js'
@@ -83,19 +83,16 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       })
       return sendJson(res, 200, { ok: true, ...result })
     }
-    if (method === 'pluginInstallPrompt') {
-      const prompt = createInstallPrompt(
+    if (method === 'pluginInstall') {
+      const result = await withPluginInstallLock(() => installMarketPlugin(
         {
           owner: body.owner ?? url.searchParams.get('owner'),
           name: body.name ?? url.searchParams.get('name'),
           fullName: body.fullName ?? url.searchParams.get('fullName'),
         },
-        {
-          locale: body.locale ?? url.searchParams.get('locale'),
-          apiBase: cfg.apiBase,
-        },
-      )
-      return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
+        cfg,
+      ))
+      return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))

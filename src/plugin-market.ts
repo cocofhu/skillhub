@@ -1,11 +1,11 @@
-import { fetchJson } from './http.js'
 import { fetchOpts } from './api.js'
+import { addDshPlugin, type PluginRunner } from './dsh-cli.js'
+import { fetchJson } from './http.js'
 import type { PluginConfig } from './types.js'
 
 export type PluginScope = 'verified' | 'all'
 export type PluginSort = 'stars' | 'updated'
 export type PluginInstallability = 'verified' | 'unsupported'
-export type PromptLocale = 'zh' | 'en'
 
 /** Plugin 一级类目，与 Skill 的 `categories.ts` 无关。非法 key 会让目录接口 400。 */
 export const PLUGIN_CATEGORIES: Record<string, string> = {
@@ -144,30 +144,117 @@ export function mapMarketPlugin(raw: unknown): MarketPlugin | null {
   }
 }
 
-export function createInstallPrompt(
-  plugin: { owner: unknown; name: unknown; fullName?: unknown },
-  options: { locale?: unknown; apiBase: string },
-): string {
-  const ref = parsePluginRef(plugin.owner, plugin.name)
-  const fullName = String(plugin.fullName || ref.fullName).trim() || ref.fullName
-  const plan = installPlanUrl(options.apiBase, ref.owner, ref.name)
-  const locale: PromptLocale = options.locale === 'en' ? 'en' : 'zh'
-  if (locale === 'en') {
-    return [
-      `Install the DSH plugin ${fullName}. `,
-      `First read ${plan}. `,
-      'Before execution, verify the repository, exact commit, DSH bundle manifest (dsh.bundle.patch), lifecycle scripts, and permissions. Stop and explain why if the plugin is not verified as installable. ',
-      'Resolve the current profile directory before execution. If it is outside the writable sandbox, request one host permission scoped to dsh plugin for that profile before the compatibility preflight. ',
-      "Follow the install plan's pnpm-store compatibility preflight and run only its normal install command or its two-step incompatible-store recovery sequence. Do not trial-and-error or pass --force to add. Do not modify DeepSeek Harness source or run pnpm install/add directly in the profile. Run a minimal startup check, then report success or failure.",
-    ].join('')
+const GITHUB_PIN = /^github:([A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100})#([0-9a-f]{7,40})$/i
+
+export interface InstallPlan {
+  source: string
+  command?: string
+  profile?: string
+  plugin?: {
+    fullName?: string
+    headSha?: string
+    repositoryUrl?: string
   }
-  return [
-    `请安装 DSH 插件 ${fullName}。`,
-    `先读取 ${plan} 获取安装计划。`,
-    '在执行前核对仓库、精确 commit、DSH bundle 清单（dsh.bundle.patch）、生命周期脚本和权限；若插件未通过可安装性验证，请停止并说明原因。',
-    '执行前确认当前 profile 目录；若目录不在沙箱可写范围，在兼容预检前一次性申请仅覆盖该 profile 的 dsh plugin 命令及目录的主机权限。',
-    '先执行安装计划中的 pnpm store 兼容预检，再只执行普通安装命令，或 store 不兼容时的两步修复序列；不要先试错，也不要对 add 使用 --force。不要修改 DeepSeek Harness 源码，也不要在 profile 中直接运行 pnpm install/add。完成后运行最小启动验证，并回报成功或失败。',
-  ].join('')
+}
+
+export interface PluginInstallResult {
+  fullName: string
+  source: string
+  restartedHint: boolean
+  log: string
+}
+
+export interface PluginInstallDeps {
+  fetchJson: typeof fetchJson
+  runDshPlugin: PluginRunner
+}
+
+let installChain = Promise.resolve()
+
+export function withPluginInstallLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = installChain.then(fn, fn)
+  installChain = run.then(() => undefined, () => undefined)
+  return run
+}
+
+export function resolveInstallSource(
+  raw: unknown,
+  expected: { owner: string; name: string; fullName: string },
+): string {
+  if (!raw || typeof raw !== 'object') throw new Error('安装计划无效')
+  const plan = raw as Record<string, unknown>
+  const command = String(plan.command || '')
+  if (/(?:^|\s)--force(?:\s|$)/.test(command) || /(?:^|\s)-f(?:\s|$)/.test(command)) {
+    throw new Error('拒绝带 --force 的安装计划')
+  }
+  const profile = String(plan.profile || 'web').trim() || 'web'
+  if (profile !== 'web') throw new Error('仅支持 web profile')
+  let source = String(plan.source || '').trim()
+  if (!source) {
+    const matched = /^dsh plugin --profile web add (\S+)$/.exec(command.trim())
+    if (!matched) throw new Error('安装计划没有可用的 source')
+    source = matched[1]
+  }
+  const pin = GITHUB_PIN.exec(source)
+  if (!pin) throw new Error('安装计划 source 不是 pinned github 规格')
+  const repo = pin[1]
+  const sha = pin[2]
+  const expectedRepo = `${expected.owner}/${expected.name}`
+  if (repo.toLowerCase() !== expectedRepo.toLowerCase()) {
+    throw new Error('安装计划仓库与所选插件不一致')
+  }
+  const plugin = plan.plugin && typeof plan.plugin === 'object' ? plan.plugin as Record<string, unknown> : {}
+  const fullName = String(plugin.fullName || '').trim()
+  if (fullName && fullName.toLowerCase() !== expectedRepo.toLowerCase() && fullName.toLowerCase() !== expected.fullName.toLowerCase()) {
+    throw new Error('安装计划 fullName 与所选插件不一致')
+  }
+  const headSha = String(plugin.headSha || '').trim()
+  if (headSha && headSha.toLowerCase() !== sha.toLowerCase()) {
+    const a = headSha.toLowerCase()
+    const b = sha.toLowerCase()
+    if (!a.startsWith(b) && !b.startsWith(a)) throw new Error('安装计划 commit 与 source 不一致')
+  }
+  const repoUrl = String(plugin.repositoryUrl || '').trim()
+  if (repoUrl) {
+    const ok = new RegExp(
+      `^https://github\\.com/${escapeRegExp(expected.owner)}/${escapeRegExp(expected.name)}(?:\\.git)?/?$`,
+      'i',
+    ).test(repoUrl)
+    if (!ok) throw new Error('安装计划仓库地址与所选插件不一致')
+  }
+  return source
+}
+
+export async function fetchInstallPlan(
+  cfg: PluginConfig,
+  owner: unknown,
+  name: unknown,
+  fetchJsonImpl: typeof fetchJson = fetchJson,
+): Promise<unknown> {
+  const ref = parsePluginRef(owner, name)
+  return fetchJsonImpl(installPlanUrl(cfg.apiBase, ref.owner, ref.name), fetchOpts(cfg))
+}
+
+export async function installMarketPlugin(
+  plugin: { owner: unknown; name: unknown; fullName?: unknown },
+  cfg: PluginConfig,
+  deps: Partial<PluginInstallDeps> = {},
+): Promise<PluginInstallResult> {
+  const fetchImpl = deps.fetchJson ?? fetchJson
+  const ref = parsePluginRef(plugin.owner, plugin.name)
+  const plan = await fetchInstallPlan(cfg, ref.owner, ref.name, fetchImpl)
+  const source = resolveInstallSource(plan, ref)
+  const log = await addDshPlugin(source, deps.runDshPlugin ? { runDshPlugin: deps.runDshPlugin } : {})
+  return {
+    fullName: ref.fullName,
+    source,
+    restartedHint: true,
+    log: log.slice(-4000),
+  }
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 export function fallbackPluginCategories(): PluginCategory[] {
