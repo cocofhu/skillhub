@@ -6,10 +6,15 @@
  * X-Forwarded-Host). Loopback without proxy headers still passes. Reverse
  * proxies (Tencent Cloud path prefix, LAN HTTPS) set X-Forwarded-For, so
  * those headers must not by themselves reject a same-origin UI click.
- * Ported from dsh-market, then relaxed for proxied Web hosts.
+ *
+ * Supervised hosts: systemd KillMode=control-group reaps a detached helper
+ * when this process exits, and Restart=on-failure does not bring the unit
+ * back after SIGTERM. Ask systemd to restart the unit instead of respawning
+ * `dsh web` ourselves.
  */
 
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import type { IncomingMessage } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -103,6 +108,44 @@ export interface RestartResult {
   helperPid: number | undefined
   logOut: string
   logErr: string
+  via: 'helper' | 'systemd'
+}
+
+export function readProcCgroup(
+  readFile: (path: string, encoding: 'utf8') => string = (path, encoding) => readFileSync(path, encoding),
+): string {
+  try {
+    return readFile('/proc/self/cgroup', 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+export function systemdUnitName(cgroupText: string): string | null {
+  for (const line of cgroupText.split(/\r?\n/u)) {
+    if (line.trim() === '') continue
+    const path = line.includes(':') ? line.slice(line.lastIndexOf(':') + 1) : line
+    const parts = path.split('/').filter(Boolean)
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const part = parts[i]!
+      if (!part.endsWith('.service')) continue
+      if (/^user@\d+\.service$/u.test(part)) continue
+      return part
+    }
+  }
+  return null
+}
+
+export function systemdRestartArgv(opts: { cgroup: string; uid: number }): { file: string; args: string[] } | null {
+  const unit = systemdUnitName(opts.cgroup)
+  if (unit === null) return null
+  if (opts.cgroup.includes('/user.slice/')) {
+    return { file: 'systemctl', args: ['--user', 'restart', '--no-block', unit] }
+  }
+  if (opts.uid === 0) {
+    return { file: 'systemctl', args: ['restart', '--no-block', unit] }
+  }
+  return { file: 'sudo', args: ['-n', 'systemctl', 'restart', '--no-block', unit] }
 }
 
 export function restartHelperSource(
@@ -170,8 +213,26 @@ export function scheduleRestart(
     kill?: typeof process.kill
     setTimeout?: typeof setTimeout
     pid?: number
+    cgroup?: string
+    uid?: number
   } = {},
 ): RestartResult {
+  const pid = deps.pid ?? process.pid
+  const systemd = systemdRestartArgv({
+    cgroup: deps.cgroup ?? readProcCgroup(),
+    uid: deps.uid ?? (typeof process.getuid === 'function' ? process.getuid() : 1),
+  })
+  if (systemd !== null) {
+    ;(deps.setTimeout ?? setTimeout)(() => {
+      const helper = (deps.spawn ?? spawn)(systemd.file, systemd.args, {
+        detached: true,
+        stdio: 'ignore',
+        env: process.env,
+      })
+      helper.unref()
+    }, 500)
+    return { pid, helperPid: undefined, logOut: '', logErr: '', via: 'systemd' }
+  }
   const launch = (deps.restartLaunch ?? restartLaunch)()
   const spawned = respawnInvocation(launch)
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
@@ -187,7 +248,6 @@ export function scheduleRestart(
     },
   )
   helper.unref()
-  const pid = deps.pid ?? process.pid
   ;(deps.setTimeout ?? setTimeout)(() => (deps.kill ?? process.kill)(pid, 'SIGTERM'), 500)
-  return { pid, helperPid: helper.pid, logOut, logErr }
+  return { pid, helperPid: helper.pid, logOut, logErr, via: 'helper' }
 }

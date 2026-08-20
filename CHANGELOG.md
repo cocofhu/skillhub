@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-08-20
+
+### Fixed
+
+- 插件广场「立即重启」在 systemd 托管的 `dsh web`（如腾讯云 `deepseek-harness.service`）上改为 `systemctl restart`，不再 SIGTERM 后被 cgroup 一起杀掉且无法拉起
+
 ## [0.2.11] - 2026-08-20
 
 ### Fixed

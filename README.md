@@ -8,7 +8,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.11](https://github.com/cocofhu/skillhub/releases/tag/v0.2.11) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.12](https://github.com/cocofhu/skillhub/releases/tag/v0.2.12) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -74,7 +74,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
 
-点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；装完会提示重启，并提供 **立即重启**（同源页面即可，含轻量云等反向代理）。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
+点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；装完会提示重启，并提供 **立即重启**（同源页面即可，含轻量云等反向代理；若 `dsh web` 由 systemd 托管则走 `systemctl restart`）。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
 
 ### Agent 工具
 

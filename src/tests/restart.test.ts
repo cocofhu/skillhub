@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  readProcCgroup,
   respawnInvocation,
   restartHelperSource,
   restartLaunch,
   scheduleRestart,
   servingPort,
+  systemdRestartArgv,
+  systemdUnitName,
   trustedRestartRequest,
 } from '../restart.js'
 
@@ -118,8 +121,10 @@ test('scheduleRestart spawns a helper then SIGTERMs the host later', () => {
       return 0 as unknown as NodeJS.Timeout
     }) as typeof setTimeout,
     pid: 1234,
+    cgroup: '',
   })
   assert.equal(result.pid, 1234)
+  assert.equal(result.via, 'helper')
   assert.equal(result.helperPid, 77)
   assert.match(result.logOut, /skillhub-restart-/)
   assert.match(result.logErr, /skillhub-restart-/)
@@ -131,4 +136,80 @@ test('scheduleRestart spawns a helper then SIGTERMs the host later', () => {
   assert.equal(killed, undefined)
   timeouts[0]?.fn()
   assert.deepEqual(killed, { pid: 1234, signal: 'SIGTERM' })
+})
+
+test('systemdUnitName reads the innermost service and skips user@', () => {
+  assert.equal(systemdUnitName('0::/system.slice/deepseek-harness.service\n'), 'deepseek-harness.service')
+  assert.equal(
+    systemdUnitName('1:name=systemd:/system.slice/deepseek-harness.service'),
+    'deepseek-harness.service',
+  )
+  assert.equal(
+    systemdUnitName('0::/user.slice/user-1000.slice/user@1000.service/app.slice/dsh.service'),
+    'dsh.service',
+  )
+  assert.equal(systemdUnitName('0::/user.slice/user-1000.slice/user@1000.service'), null)
+  assert.equal(systemdUnitName('0::/docker/0123456789abcdef'), null)
+  assert.equal(systemdUnitName(''), null)
+})
+
+test('systemdRestartArgv uses passwordless sudo for system units', () => {
+  const system = '0::/system.slice/deepseek-harness.service'
+  assert.deepEqual(systemdRestartArgv({ cgroup: system, uid: 1000 }), {
+    file: 'sudo',
+    args: ['-n', 'systemctl', 'restart', '--no-block', 'deepseek-harness.service'],
+  })
+  assert.deepEqual(systemdRestartArgv({ cgroup: system, uid: 0 }), {
+    file: 'systemctl',
+    args: ['restart', '--no-block', 'deepseek-harness.service'],
+  })
+  assert.deepEqual(systemdRestartArgv({
+    cgroup: '0::/user.slice/user-1000.slice/user@1000.service/app.slice/dsh.service',
+    uid: 1000,
+  }), {
+    file: 'systemctl',
+    args: ['--user', 'restart', '--no-block', 'dsh.service'],
+  })
+  assert.equal(systemdRestartArgv({ cgroup: '', uid: 1000 }), null)
+})
+
+test('scheduleRestart asks systemd to restart the unit and does not SIGTERM', () => {
+  const timeouts: Array<{ fn: () => void; ms: number }> = []
+  let killed: { pid: number; signal: NodeJS.Signals } | undefined
+  let unrefed = false
+  const spawned: { file: string; args: string[] }[] = []
+  const result = scheduleRestart(3080, {
+    spawn: ((file: string, args: string[]) => {
+      spawned.push({ file, args })
+      return { pid: 88, unref() { unrefed = true } }
+    }) as typeof import('node:child_process').spawn,
+    kill: ((pid: number, signal?: NodeJS.Signals) => {
+      killed = { pid, signal: signal ?? 'SIGTERM' }
+      return true
+    }) as typeof process.kill,
+    setTimeout: ((fn: () => void, ms?: number) => {
+      timeouts.push({ fn, ms: Number(ms) })
+      return 0 as unknown as NodeJS.Timeout
+    }) as typeof setTimeout,
+    pid: 1234,
+    uid: 1000,
+    cgroup: '0::/system.slice/deepseek-harness.service',
+  })
+  assert.equal(result.via, 'systemd')
+  assert.equal(result.helperPid, undefined)
+  assert.equal(result.logOut, '')
+  assert.equal(spawned.length, 0)
+  assert.equal(killed, undefined)
+  timeouts[0]?.fn()
+  assert.deepEqual(spawned[0], {
+    file: 'sudo',
+    args: ['-n', 'systemctl', 'restart', '--no-block', 'deepseek-harness.service'],
+  })
+  assert.equal(unrefed, true)
+  assert.equal(killed, undefined)
+})
+
+test('readProcCgroup returns empty when /proc/self/cgroup is missing', () => {
+  assert.equal(readProcCgroup(() => { throw new Error('ENOENT') }), '')
+  assert.equal(readProcCgroup(() => '0::/system.slice/foo.service\n'), '0::/system.slice/foo.service\n')
 })

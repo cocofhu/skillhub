@@ -114,7 +114,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       restarting = true
       try {
         const result = scheduleRestart(servingPort(req))
-        return sendJson(res, 202, { ok: true, pid: result.pid, helperPid: result.helperPid })
+        return sendJson(res, 202, { ok: true, pid: result.pid, helperPid: result.helperPid, via: result.via })
       } catch (err) {
         restarting = false
         throw err
