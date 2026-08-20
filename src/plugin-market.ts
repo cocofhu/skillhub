@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fetchOpts } from './api.js'
-import { addDshPlugin, type PluginRunner } from './dsh-cli.js'
+import { addDshPlugin, webProfileDir, type PluginRunner } from './dsh-cli.js'
 import { fetchJson } from './http.js'
 import type { PluginConfig } from './types.js'
 
@@ -35,6 +37,7 @@ export interface MarketPlugin {
   installability: PluginInstallability
   repositoryUrl: string
   avatarUrl: string
+  installed: boolean
 }
 
 export interface PluginListQuery {
@@ -138,6 +141,7 @@ export function mapMarketPlugin(raw: unknown): MarketPlugin | null {
       installability: r.installability === 'verified' ? 'verified' : 'unsupported',
       repositoryUrl: /^https:\/\/github\.com\//i.test(repo) ? repo.slice(0, 300) : '',
       avatarUrl: sanitizePluginAvatarUrl(r.avatarUrl),
+      installed: false,
     }
   } catch {
     return null
@@ -145,6 +149,58 @@ export function mapMarketPlugin(raw: unknown): MarketPlugin | null {
 }
 
 const GITHUB_PIN = /^github:([A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100})#([0-9a-f]{7,40})$/i
+const GITHUB_REPO = /(?:^github:|^https:\/\/github\.com\/)([A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100})(?:\.git)?(?:#|$)/i
+
+export function githubRepoFromSpec(spec: string): string | null {
+  const matched = GITHUB_REPO.exec(String(spec || '').trim())
+  if (!matched) return null
+  return matched[1].replace(/\.git$/i, '').toLowerCase()
+}
+
+export function readInstalledPlugins(profileDir: string = webProfileDir()): Record<string, string> {
+  try {
+    const raw = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { dependencies?: unknown }
+    if (!raw.dependencies || typeof raw.dependencies !== 'object') return {}
+    const out: Record<string, string> = {}
+    for (const [name, spec] of Object.entries(raw.dependencies as Record<string, unknown>)) {
+      if (typeof spec === 'string' && spec !== '') out[name] = spec
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
+export function isMarketPluginInstalled(
+  plugin: Pick<MarketPlugin, 'owner' | 'name' | 'fullName' | 'repositoryUrl'>,
+  installed: Record<string, string>,
+): boolean {
+  const aliases = new Set([
+    `${plugin.owner}/${plugin.name}`.toLowerCase(),
+    plugin.fullName.toLowerCase(),
+  ])
+  const fromUrl = githubRepoFromSpec(plugin.repositoryUrl)
+  if (fromUrl) aliases.add(fromUrl)
+  let npmNameHit = false
+  for (const [pkg, spec] of Object.entries(installed)) {
+    const repo = githubRepoFromSpec(spec)
+    if (repo && aliases.has(repo)) return true
+    if (packageNameMatches(pkg, plugin)) {
+      if (repo && !aliases.has(repo)) continue
+      npmNameHit = true
+    }
+  }
+  return npmNameHit
+}
+
+function packageNameMatches(pkg: string, plugin: Pick<MarketPlugin, 'owner' | 'name'>): boolean {
+  const lower = pkg.toLowerCase()
+  const name = plugin.name.toLowerCase()
+  if (lower === name) return true
+  if (lower === `@${plugin.owner.toLowerCase()}/${name}`) return true
+  const bare = lower.includes('/') ? lower.slice(lower.lastIndexOf('/') + 1) : lower
+  return bare === name
+}
 
 export interface InstallPlan {
   source: string
@@ -170,9 +226,22 @@ export interface PluginInstallDeps {
 }
 
 let installChain = Promise.resolve()
+let installBusy = 0
+
+export function isPluginInstallBusy(): boolean {
+  return installBusy > 0
+}
 
 export function withPluginInstallLock<T>(fn: () => Promise<T>): Promise<T> {
-  const run = installChain.then(fn, fn)
+  const guarded = async (): Promise<T> => {
+    installBusy += 1
+    try {
+      return await fn()
+    } finally {
+      installBusy -= 1
+    }
+  }
+  const run = installChain.then(guarded, guarded)
   installChain = run.then(() => undefined, () => undefined)
   return run
 }
@@ -288,13 +357,17 @@ export async function listPlugins(
   cfg: PluginConfig,
   query: PluginListQuery = {},
   fetchJsonImpl: typeof fetchJson = fetchJson,
+  installedMap: Record<string, string> = readInstalledPlugins(),
 ): Promise<PluginPage> {
   const url = buildPluginsUrl(cfg.apiBase, query)
   const body = await fetchJsonImpl<{ items?: unknown[]; total?: unknown; page?: unknown; pageSize?: unknown }>(
     url,
     fetchOpts(cfg),
   )
-  const items = (Array.isArray(body.items) ? body.items : []).map(mapMarketPlugin).filter((it): it is MarketPlugin => !!it)
+  const items = (Array.isArray(body.items) ? body.items : [])
+    .map(mapMarketPlugin)
+    .filter((it): it is MarketPlugin => !!it)
+    .map((it) => ({ ...it, installed: isMarketPluginInstalled(it, installedMap) }))
   return {
     items,
     total: Number(body.total) || items.length,

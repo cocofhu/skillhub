@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import { withDefaults } from '../config-store.js'
 import {
@@ -18,6 +21,10 @@ import {
   sanitizePluginAvatarUrl,
   sanitizePluginScope,
   sanitizePluginSort,
+  githubRepoFromSpec,
+  isMarketPluginInstalled,
+  isPluginInstallBusy,
+  readInstalledPlugins,
   withPluginInstallLock,
 } from '../plugin-market.js'
 
@@ -84,6 +91,7 @@ test('mapMarketPlugin keeps verified plugins and drops bad refs', () => {
   assert.equal(ok?.categoryKey, 'web-tools')
   assert.equal(ok?.repositoryUrl, 'https://github.com/liustack/modlens')
   assert.equal(ok?.avatarUrl, 'https://avatars.githubusercontent.com/u/1?v=4')
+  assert.equal(ok?.installed, false)
   assert.equal(mapMarketPlugin({ owner: '../x', name: 'n' }), null)
   assert.equal(mapMarketPlugin({ owner: 'o', name: 'n', installability: 'candidate' })?.installability, 'unsupported')
   assert.equal(mapMarketPlugin({
@@ -201,6 +209,7 @@ test('withPluginInstallLock runs installs one at a time', async () => {
   const order: string[] = []
   const first = withPluginInstallLock(async () => {
     await new Promise((r) => setTimeout(r, 30))
+    assert.equal(isPluginInstallBusy(), true)
     order.push('a')
     return 1
   })
@@ -216,6 +225,7 @@ test('withPluginInstallLock runs installs one at a time', async () => {
   const afterFail = withPluginInstallLock(async () => 'ok')
   await assert.rejects(failed, /nope/)
   assert.equal(await afterFail, 'ok')
+  assert.equal(isPluginInstallBusy(), false)
 })
 
 test('installMarketPlugin does not spawn when the plan is for another repo', async () => {
@@ -266,7 +276,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
         avatarUrl: 'https://cdn.example/modlens.png',
       }],
     } as T
-  })
+  }, {})
   assert.match(seen, /https:\/\/api\.skillhub\.cn\/api\/v1\/plugins\?/)
   assert.match(seen, /q=mod/)
   assert.match(seen, /scope=verified/)
@@ -276,6 +286,63 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
   assert.equal(page.apiBase, 'https://api.skillhub.cn')
   assert.equal(page.items[0].name, 'modlens')
   assert.equal(page.items[0].avatarUrl, 'https://cdn.example/modlens.png')
+  assert.equal(page.items[0].installed, false)
+})
+
+test('githubRepoFromSpec reads pinned github and https specs', () => {
+  assert.equal(githubRepoFromSpec('github:ganyuanran/aegis#d5bda9fb9df0f94587283954f1c155816abe9002'), 'ganyuanran/aegis')
+  assert.equal(githubRepoFromSpec('github:cocofhu/skillhub#feat/plaza-host-plugin-install'), 'cocofhu/skillhub')
+  assert.equal(githubRepoFromSpec('https://github.com/ganyuanran/aegis.git'), 'ganyuanran/aegis')
+  assert.equal(githubRepoFromSpec('^1.2.3'), null)
+  assert.equal(githubRepoFromSpec('link:/tmp/skillhub'), null)
+})
+
+test('isMarketPluginInstalled matches the profile github spec', () => {
+  const plugin = {
+    owner: 'GanyuanRan',
+    name: 'Aegis',
+    fullName: 'ganyuanran/aegis',
+    repositoryUrl: 'https://github.com/GanyuanRan/Aegis',
+  }
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:ganyuanran/aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:GanYuanRan/Aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled({ ...plugin, repositoryUrl: '' }, { other: 'github:ganyuanran/aegis#abcdef0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: '^1.0.0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { '@ganyuanran/aegis': '^1.0.0' }), true)
+  assert.equal(isMarketPluginInstalled(plugin, { other: 'github:evil/aegis#abcdef0' }), false)
+  assert.equal(isMarketPluginInstalled(plugin, { aegis: 'github:evil/aegis#abcdef0' }), false)
+})
+
+test('listPlugins marks plugins already in the profile', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const page = await listPlugins(cfg, {}, async <T>() => ({
+    items: [
+      { owner: 'GanyuanRan', name: 'Aegis', fullName: 'ganyuanran/aegis', installability: 'verified', repositoryUrl: 'https://github.com/GanyuanRan/Aegis' },
+      { owner: 'liustack', name: 'modlens', fullName: 'liustack/modlens', installability: 'verified' },
+    ],
+  } as T), {
+    aegis: 'github:ganyuanran/aegis#d5bda9fb9df0f94587283954f1c155816abe9002',
+  })
+  assert.equal(page.items[0].installed, true)
+  assert.equal(page.items[1].installed, false)
+})
+
+test('readInstalledPlugins reads profile dependencies', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-profile-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      dependencies: {
+        aegis: 'github:ganyuanran/aegis#abcdef0',
+        skip: 1,
+      },
+    }))
+    assert.deepEqual(readInstalledPlugins(dir), { aegis: 'github:ganyuanran/aegis#abcdef0' })
+    writeFileSync(join(dir, 'package.json'), '{}')
+    assert.deepEqual(readInstalledPlugins(dir), {})
+    assert.deepEqual(readInstalledPlugins(join(dir, 'missing')), {})
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('pluginCategoriesUrl hits /api/v1/plugins/categories', () => {

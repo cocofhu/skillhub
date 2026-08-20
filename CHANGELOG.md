@@ -7,6 +7,8 @@
 ### Changed
 
 - 插件广场点安装改为宿主直接执行 `dsh plugin add`（先读 install-plan 并校验 pinned github commit），不再把审核提示词发给当前任务
+- 安装过程显示 pnpm 进度条；装完出现「立即重启」按钮，可一键重启当前 `dsh web`（仅同源环回请求）
+- 插件广场对照 web profile 已装依赖，已安装的插件显示「已安装」且不再提供安装按钮
 
 ## [0.2.9] - 2026-08-18
 

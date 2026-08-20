@@ -10,6 +10,9 @@ import {
   isSafePluginTarget,
   nodeExecutable,
   pluginArgsFor,
+  preparePluginArgs,
+  progress,
+  publicInstallStatus,
   quoteCmdArg,
   rewritePnpmError,
   runCommand,
@@ -106,7 +109,7 @@ test('runDshPlugin spawns dsh plugin add with the pinned source', async () => {
     profileDir: '/tmp/no-workspace',
   })
   assert.equal(log, 'ok')
-  assert.deepEqual(seen[0], { file: 'dsh', args: ['plugin', '--profile', 'web', 'add', 'github:o/n#abcdef0'] })
+  assert.deepEqual(seen[0], { file: 'dsh', args: ['plugin', '--profile', 'web', 'add', 'github:o/n#abcdef0', '--reporter=ndjson'] })
 })
 
 test('runDshPlugin injects -w when the profile is a workspace', async () => {
@@ -123,7 +126,7 @@ test('runDshPlugin injects -w when the profile is a workspace', async () => {
       dshArgv: () => ({ file: '/usr/bin/node', args: ['/opt/dsh/bin.js'], cwd: '/opt/dsh', viaShell: false }),
       profileDir: dir,
     })
-    assert.deepEqual(args, ['/opt/dsh/bin.js', 'plugin', '--profile', 'web', 'add', '-w', '@scope/pkg'])
+    assert.deepEqual(args, ['/opt/dsh/bin.js', 'plugin', '--profile', 'web', 'add', '-w', '@scope/pkg', '--reporter=ndjson'])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -221,3 +224,57 @@ test('runCommand surfaces stderr and spawn errors', async () => {
     /ENOENT|no such|not found/i,
   )
 })
+
+test('preparePluginArgs appends the ndjson reporter to mutating commands', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-ndjson-'))
+  try {
+    assert.deepEqual(preparePluginArgs(dir, ['add', 'pkg']), ['add', 'pkg', '--reporter=ndjson'])
+    assert.deepEqual(preparePluginArgs(dir, ['install', '--no-frozen-lockfile']), ['install', '--no-frozen-lockfile', '--reporter=ndjson'])
+    assert.deepEqual(preparePluginArgs(dir, ['list']), ['list'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('runDshPlugin feeds ndjson chunks into live install status', async () => {
+  await runDshPlugin('web', ['add', 'github:o/n#abcdef0'], {
+    runCommand: async (_file, _args, opts) => {
+      opts?.onChunk?.('Progress: fetching\n')
+      opts?.onChunk?.('{"name":"pnpm:stage"')
+      opts?.onChunk?.(',"stage":"resolution_started"}\n\n')
+      opts?.onChunk?.('{"name":"pnpm:fetching-progress","packageId":"esbuild@1","size":100,"downloaded":40}\n')
+      opts?.onChunk?.('{"name":"pnpm","level":"error","err":{"message":"nope"}}\n')
+      assert.equal(progress.active, true)
+      assert.equal(progress.lastLine, 'Progress: fetching')
+      assert.equal(progress.phase, 'downloading')
+      assert.equal(progress.downloaded, 40)
+      assert.equal(progress.error, 'nope')
+      assert.ok(publicInstallStatus().seconds >= 0)
+      return 'ok'
+    },
+    dshArgv: () => ({ file: 'dsh', args: [], cwd: '/tmp', viaShell: false }),
+    profileDir: '/tmp/no-workspace',
+  })
+  assert.equal(progress.active, false)
+  const status = publicInstallStatus()
+  assert.equal(status.ndjson, true)
+  assert.equal(status.boot.split('-').length, 2)
+  assert.equal(status.phase, 'downloading')
+})
+
+test('runCommand forwards stdout and stderr chunks to onChunk', async () => {
+  const seen: string[] = []
+  const out = await runCommand(
+    process.execPath,
+    ['-e', "process.stdout.write('chunk-a'); process.stderr.write('chunk-b')"],
+    {
+      cwd: process.cwd(),
+      timeoutMs: 5000,
+      onChunk: (text) => seen.push(text),
+    },
+  )
+  assert.match(out, /chunk-a/)
+  assert.match(out, /chunk-b/)
+  assert.equal(seen.join(''), 'chunk-achunk-b')
+})
+

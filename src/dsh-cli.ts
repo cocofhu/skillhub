@@ -7,12 +7,14 @@ import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { dshHome } from './config-store.js'
+import { createProgressTracker, type ProgressPhase } from './ndjson.js'
 
 export const WEB_PROFILE = 'web'
 export const INSTALL_TIMEOUT_MS = Number(process.env.SKILLHUB_INSTALL_TIMEOUT_MS) || 15 * 60 * 1000
 
 const TARGET_RE = /^[A-Za-z0-9@:./_#+-]+$/
 const CMD_METACHARS = /[\s"&|<>^()%!]/
+const NDJSON_COMMANDS = new Set(['add', 'remove', 'install'])
 
 export type PluginRunner = (profile: string, pluginArgs: string[]) => Promise<string>
 
@@ -30,7 +32,40 @@ export interface RunCommandOptions {
   env?: NodeJS.ProcessEnv
   viaShell?: boolean
   detached?: boolean
+  onChunk?: (text: string) => void
 }
+
+export interface InstallProgress {
+  active: boolean
+  target: string
+  startedAt: number
+  lastLine: string
+  phase: ProgressPhase
+  done: number
+  total: number | null
+  currentPackage: string | null
+  downloaded: number | null
+  size: number | null
+  ndjson: boolean
+  error: string | null
+}
+
+export const progress: InstallProgress = {
+  active: false,
+  target: '',
+  startedAt: 0,
+  lastLine: '',
+  phase: null,
+  done: 0,
+  total: null,
+  currentPackage: null,
+  downloaded: null,
+  size: null,
+  ndjson: false,
+  error: null,
+}
+
+export const BOOT_ID = `${String(process.pid)}-${String(Date.now())}`
 
 export function webProfileDir(): string {
   return join(dshHome(), 'profiles', WEB_PROFILE)
@@ -83,6 +118,45 @@ export function pluginArgsFor(profileDirectory: string, pluginArgs: readonly str
   return [args[0], '-w', ...args.slice(1)]
 }
 
+export function preparePluginArgs(profileDirectory: string, pluginArgs: readonly string[]): string[] {
+  const args = pluginArgsFor(profileDirectory, pluginArgs)
+  const command = args[0]
+  if (command !== undefined && NDJSON_COMMANDS.has(command)) return [...args, '--reporter=ndjson']
+  return args
+}
+
+export function publicInstallStatus(): {
+  active: boolean
+  target: string
+  seconds: number
+  lastLine: string
+  phase: ProgressPhase
+  done: number
+  total: number | null
+  currentPackage: string | null
+  downloaded: number | null
+  size: number | null
+  ndjson: boolean
+  error: string | null
+  boot: string
+} {
+  return {
+    active: progress.active,
+    target: progress.target,
+    seconds: progress.active ? Math.round((Date.now() - progress.startedAt) / 1000) : 0,
+    lastLine: progress.lastLine,
+    phase: progress.phase,
+    done: progress.done,
+    total: progress.total,
+    currentPackage: progress.currentPackage,
+    downloaded: progress.downloaded,
+    size: progress.size,
+    ndjson: progress.ndjson,
+    error: progress.error,
+    boot: BOOT_ID,
+  }
+}
+
 export function rewritePnpmError(err: unknown): Error {
   const text = err instanceof Error ? err.message : String(err)
   if (/needs to execute build scripts|allowBuilds|ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED/i.test(text)) {
@@ -107,15 +181,25 @@ export async function runDshPlugin(
   const target = pluginArgs[pluginArgs.length - 1] ?? ''
   if (!isSafePluginTarget(target)) throw new Error(`拒绝不安全的安装目标: ${target}`)
   const argv = (deps.dshArgv ?? dshArgv)()
-  const args = pluginArgsFor(deps.profileDir ?? webProfileDir(), pluginArgs)
+  const prepared = preparePluginArgs(deps.profileDir ?? webProfileDir(), pluginArgs)
+  const tracker = beginProgress(target)
+  const feed = makeProgressFeeder(tracker)
   const run = deps.runCommand ?? runCommand
-  return run(argv.file, [...argv.args, 'plugin', '--profile', profile, ...args], {
-    cwd: argv.cwd,
-    timeoutMs: INSTALL_TIMEOUT_MS,
-    env: { CI: 'true' },
-    viaShell: argv.viaShell,
-    detached: process.platform !== 'win32',
-  })
+  try {
+    return await run(argv.file, [...argv.args, 'plugin', '--profile', profile, ...prepared], {
+      cwd: argv.cwd,
+      timeoutMs: INSTALL_TIMEOUT_MS,
+      env: { CI: 'true' },
+      viaShell: argv.viaShell,
+      detached: process.platform !== 'win32',
+      onChunk: (text) => {
+        feed(text)
+        syncProgress(tracker)
+      },
+    })
+  } finally {
+    progress.active = false
+  }
 }
 
 export async function addDshPlugin(
@@ -171,8 +255,16 @@ export function runCommand(
       finish(new Error('命令已取消'))
     }
     options.signal?.addEventListener('abort', onAbort, { once: true })
-    child.stdout?.on('data', (chunk: Buffer) => { out = (out + chunk.toString()).slice(-256 * 1024) })
-    child.stderr?.on('data', (chunk: Buffer) => { out = (out + chunk.toString()).slice(-256 * 1024) })
+    child.stdout?.on('data', (chunk: Buffer) => {
+      const text = chunk.toString()
+      out = (out + text).slice(-256 * 1024)
+      options.onChunk?.(text)
+    })
+    child.stderr?.on('data', (chunk: Buffer) => {
+      const text = chunk.toString()
+      out = (out + text).slice(-256 * 1024)
+      options.onChunk?.(text)
+    })
     child.on('error', (err) => finish(err))
     child.on('close', (code) => {
       if (code === 0) finish()
@@ -210,4 +302,48 @@ function killChild(child: ChildProcess): void {
   } catch {
     /* already gone */
   }
+}
+
+function beginProgress(target: string): ReturnType<typeof createProgressTracker> {
+  progress.active = true
+  progress.target = target
+  progress.startedAt = Date.now()
+  progress.lastLine = ''
+  progress.phase = null
+  progress.done = 0
+  progress.total = null
+  progress.currentPackage = null
+  progress.downloaded = null
+  progress.size = null
+  progress.ndjson = false
+  progress.error = null
+  return createProgressTracker()
+}
+
+function makeProgressFeeder(tracker: ReturnType<typeof createProgressTracker>): (chunk: string) => void {
+  let lineBuffer = ''
+  return (chunk: string): void => {
+    lineBuffer += chunk
+    let nl: number
+    while ((nl = lineBuffer.indexOf('\n')) !== -1) {
+      const line = lineBuffer.slice(0, nl)
+      lineBuffer = lineBuffer.slice(nl + 1)
+      const trimmed = line.trim()
+      if (trimmed === '') continue
+      tracker.feed(trimmed)
+      if (!trimmed.startsWith('{')) progress.lastLine = trimmed.slice(0, 200)
+    }
+  }
+}
+
+function syncProgress(tracker: ReturnType<typeof createProgressTracker>): void {
+  const snap = tracker.snapshot
+  progress.phase = snap.phase
+  progress.done = snap.done
+  progress.total = snap.total
+  progress.currentPackage = snap.currentPackage
+  progress.downloaded = snap.downloaded
+  progress.size = snap.size
+  progress.ndjson = snap.seen
+  if (snap.error !== null) progress.error = snap.error
 }
