@@ -225,6 +225,11 @@ export async function runDshPlugin(
         syncProgress(tracker)
       },
     })
+  } catch (err) {
+    // 超时/失败时也把原因写入状态端点，轮询侧才能看到错误终态（progress.error 仅由 ndjson 同步时才被赋值）
+    const text = err instanceof Error ? err.message : String(err)
+    if (progress.error === null) progress.error = text.slice(0, 800)
+    throw err
   } finally {
     progress.active = false
   }

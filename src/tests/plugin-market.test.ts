@@ -371,13 +371,16 @@ test('listPluginCategories uses catalog payload and falls back', async () => {
   assert.equal(fallback.length, 7)
 })
 
-test('pluginPaging maps offset/limit to catalog page/pageSize', () => {
-  assert.deepEqual(pluginPaging(0, undefined, 12), { page: 1, pageSize: 12, offset: 0 })
-  assert.deepEqual(pluginPaging(12, 12, 12), { page: 2, pageSize: 12, offset: 12 })
-  assert.deepEqual(pluginPaging(24, undefined, 12), { page: 3, pageSize: 12, offset: 24 })
-  assert.deepEqual(pluginPaging(-5, 0, 24), { page: 1, pageSize: 24, offset: 0 })
-  assert.deepEqual(pluginPaging(48, 200, 24), { page: 1, pageSize: 100, offset: 48 })
-  assert.deepEqual(pluginPaging('12', '12', 12), { page: 2, pageSize: 12, offset: 12 })
+test('pluginPaging maps offset/limit to catalog page/pageSize with in-page skip', () => {
+  assert.deepEqual(pluginPaging(0, undefined, 12), { page: 1, pageSize: 12, offset: 0, skip: 0 })
+  assert.deepEqual(pluginPaging(12, 12, 12), { page: 2, pageSize: 12, offset: 12, skip: 0 })
+  assert.deepEqual(pluginPaging(24, undefined, 12), { page: 3, pageSize: 12, offset: 24, skip: 0 })
+  assert.deepEqual(pluginPaging(-5, 0, 24), { page: 1, pageSize: 24, offset: 0, skip: 0 })
+  assert.deepEqual(pluginPaging(48, 200, 24), { page: 1, pageSize: 100, offset: 48, skip: 48 })
+  assert.deepEqual(pluginPaging('12', '12', 12), { page: 2, pageSize: 12, offset: 12, skip: 0 })
+  // 未对齐 pageSize 的 offset：落回第 1 页且需要页内 skip（缺陷 D1 回归用例）
+  assert.deepEqual(pluginPaging(3, undefined, 12), { page: 1, pageSize: 12, offset: 3, skip: 3 })
+  assert.deepEqual(pluginPaging(15, undefined, 12), { page: 2, pageSize: 12, offset: 15, skip: 3 })
 })
 
 test('searchMarketPlugins maps filters, marks installed, and computes hasMore', async () => {
@@ -439,4 +442,27 @@ test('searchMarketPlugins marks the last page and defaults paging', async () => 
   assert.equal(result.category, undefined)
   assert.equal(result.sort, 'stars')
   assert.equal(result.hasMore, false)
+})
+
+test('searchMarketPlugins skips already-shown cards when offset is misaligned with pageSize (D1)', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn', maxResults: 12 })
+  let seen = ''
+  const mkItem = (i: number) => ({ owner: 'o', name: `p${i}`, fullName: `o/p${i}`, installability: 'verified' })
+  // 场景 1：total=3、已展示 3 张，offset=3 落回第 1 页 → 切片后为空且 hasMore=false（不再重复整页）
+  const exhausted = await searchMarketPlugins(cfg, { q: '浏览器自动化', offset: 3 }, async <T>(url: string) => {
+    seen = url
+    return { total: 3, page: 1, pageSize: 12, items: [mkItem(1), mkItem(2), mkItem(3)] } as T
+  }, {})
+  assert.match(seen, /page=1/)
+  assert.equal(exhausted.offset, 3)
+  assert.deepEqual(exhausted.items, [])
+  assert.equal(exhausted.hasMore, false)
+  // 场景 2：offset=5、pageSize=12、目录返回整页 12 条 → 只返回第 6 条起的 7 条，不与已展示重复
+  const misaligned = await searchMarketPlugins(cfg, { q: 'browser', offset: 5 }, async <T>() => {
+    return { total: 40, page: 1, pageSize: 12, items: Array.from({ length: 12 }, (_v, i) => mkItem(i + 1)) } as T
+  }, {})
+  assert.equal(misaligned.offset, 5)
+  assert.equal(misaligned.items.length, 7)
+  assert.deepEqual(misaligned.items.map((it) => it.name), ['p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12'])
+  assert.equal(misaligned.hasMore, true)
 })

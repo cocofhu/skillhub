@@ -363,16 +363,16 @@ export interface PluginSearchResult {
   hasMore: boolean
 }
 
-/** 把 Agent 工具的 offset/limit 映射为目录 API 的 page/pageSize。 */
+/** 把 Agent 工具的 offset/limit 映射为目录 API 的 page/pageSize（含页内 skip，offset 未对齐 pageSize 时避免重复返回整页）。 */
 export function pluginPaging(
   offset: unknown,
   limit: unknown,
   fallbackLimit: number,
-): { page: number; pageSize: number; offset: number } {
+): { page: number; pageSize: number; offset: number; skip: number } {
   const off = Math.max(0, Math.floor(Number(offset) || 0))
   const explicit = Math.floor(Number(limit))
   const size = Number.isFinite(explicit) && explicit > 0 ? Math.min(100, explicit) : Math.max(1, Math.floor(fallbackLimit) || 24)
-  return { page: Math.floor(off / size) + 1, pageSize: size, offset: off }
+  return { page: Math.floor(off / size) + 1, pageSize: size, offset: off, skip: off % size }
 }
 
 /** 聊天内插件搜索：offset 翻页 + 已安装标注，供 skillhub_plugin_search 工具复用。 */
@@ -393,15 +393,16 @@ export async function searchMarketPlugins(
     page: paging.page,
     pageSize: paging.pageSize,
   }, fetchJsonImpl, installedMap)
-  const start = (paging.page - 1) * paging.pageSize
+  // offset 未按 pageSize 对齐时（如已展示 3 张、默认 pageSize=12），页内 skip 切掉已展示部分，绝不重复返回
+  const items = paging.skip > 0 ? page.items.slice(paging.skip) : page.items
   return {
     query: String(opts.q || '').trim(),
     category,
     sort,
-    items: page.items,
+    items,
     total: page.total,
-    offset: start,
-    hasMore: start + page.items.length < page.total,
+    offset: paging.offset,
+    hasMore: paging.offset + items.length < page.total,
   }
 }
 

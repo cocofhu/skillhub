@@ -11,6 +11,11 @@
 - 装完出现「请重启 dsh web」横幅并支持一键重启（与插件广场同链路）；卡片「详情」弹窗展示完整描述、仓库链接与 install-plan 安装来源（pinned commit 规格）
 - systemPrompt 补充插件搜索 / 安装规则；客户端新增 `plg.*` 中英文案
 
+### Fixed
+
+- 聊天内插件搜索「还有吗」分页：`offset` 未按 `pageSize` 对齐时（如已展示 3 张、默认分页 12）不再重复返回整页卡片，`pluginPaging` 补页内 `skip` 切片并据实计算 `offset` / `hasMore`；翻到尽头时回复「没有了」而非「没找到」
+- 安装失败 / 超时后 `pluginInstallStatus` 现在返回错误终态（`error` 带拒绝原因），轮询侧可见失败原因；下次安装开始时自动重置
+
 ## [0.2.13] - 2026-08-20
 
 ### Changed

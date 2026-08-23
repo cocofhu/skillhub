@@ -338,6 +338,29 @@ test('runDshPlugin feeds ndjson chunks into live install status', async () => {
   assert.equal(status.phase, 'downloading')
 })
 
+test('runDshPlugin records the rejection reason into install status (D2)', async () => {
+  await assert.rejects(
+    () => runDshPlugin('web', ['add', 'github:o/n#abcdef0'], {
+      runCommand: async () => {
+        throw new Error('命令超时 900000ms')
+      },
+      dshArgv: () => ({ file: 'dsh', args: [], cwd: '/tmp', viaShell: false }),
+      profileDir: '/tmp/no-workspace',
+    }),
+    /命令超时/,
+  )
+  const status = publicInstallStatus()
+  assert.equal(status.active, false)
+  assert.equal(status.error, '命令超时 900000ms')
+  // 下一次安装开始时错误应被重置
+  await runDshPlugin('web', ['add', 'github:o/n#abcdef0'], {
+    runCommand: async () => 'ok',
+    dshArgv: () => ({ file: 'dsh', args: [], cwd: '/tmp', viaShell: false }),
+    profileDir: '/tmp/no-workspace',
+  })
+  assert.equal(publicInstallStatus().error, null)
+})
+
 test('runCommand forwards stdout and stderr chunks to onChunk', async () => {
   const seen: string[] = []
   const out = await runCommand(

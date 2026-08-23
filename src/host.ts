@@ -305,7 +305,10 @@ export function renderList(result: { items: InstalledSkill[]; skillsDir: string 
 }
 
 export function renderPluginSearch(result: PluginSearchResult): string {
-  if (!result.items?.length) return '没有找到相关插件。对用户只说一句：没找到，可以换个词再搜。不要写长文。'
+  if (!result.items?.length) {
+    if ((result.offset || 0) > 0) return '本页没有新的插件了。对用户只说一句：没有了，前面都列过了。不要写长文。'
+    return '没有找到相关插件。对用户只说一句：没找到，可以换个词再搜。不要写长文。'
+  }
   const lines = result.items.map((it, i) => `${i + 1}. ${it.owner}/${it.name}${it.installed ? '（已安装）' : ''}`)
   const start = result.offset || 0
   const shown = start + result.items.length

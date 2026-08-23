@@ -92,6 +92,20 @@ test('renderPluginSearch asks for a short empty reply', () => {
   assert.match(text, /不要写长文/)
 })
 
+test('renderPluginSearch says nothing more when an offset page is empty (D1)', () => {
+  const text = renderPluginSearch({
+    query: '浏览器自动化',
+    sort: 'stars',
+    items: [],
+    total: 3,
+    offset: 3,
+    hasMore: false,
+  })
+  assert.match(text, /没有了/)
+  assert.doesNotMatch(text, /没有找到相关插件/)
+  assert.match(text, /不要写长文/)
+})
+
 test('renderPluginSearch lists plugins, marks installed, and pages with offset', () => {
   const result: PluginSearchResult = {
     query: '浏览器自动化',
