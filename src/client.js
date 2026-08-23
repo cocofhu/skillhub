@@ -212,7 +212,6 @@ window.__ModuleLoader__.load({
 .sh-seg button.on{background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,#17191c);font-weight:600;box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
 .sh-seg .sh-count{font-size:11px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-seg button.on .sh-count{color:var(--dsw-alias-state-business-primary,#4d6bfe)}
-.sh-scope-hint{font-size:12px;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-mkt-card.local{cursor:pointer;border-radius:12px;transition:border-color .15s,box-shadow .15s,transform .15s}
 .sh-mkt-card.local:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:0 6px 18px rgb(20 24 32 / 10%);transform:translateY(-1px)}
 .sh-mkt-card.local:focus-visible{outline:2px solid color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 55%,transparent);outline-offset:2px}
@@ -226,8 +225,6 @@ window.__ModuleLoader__.load({
 .sh-ip-spec svg{flex:none;width:11px;height:11px;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-ip-spec span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sh-ip-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:12px}
-.sh-ip-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;line-height:16px;color:var(--dsw-alias-label-caption,#9ca3af)}
-.sh-ip-hint svg{width:11px;height:11px}
 .sh-ip-open{margin-left:auto;display:inline-flex;align-items:center;gap:3px;padding:2px 0;border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;line-height:16px;color:var(--dsw-alias-state-business-primary,#4d6bfe);cursor:pointer}
 .sh-ip-open svg{width:13px;height:13px;transition:transform .15s}
 .sh-mkt-card.local:hover .sh-ip-open svg{transform:translateX(2px)}
@@ -362,13 +359,6 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function LockIcon() {
-      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
-        h("rect", { x: "2.5", y: "5", width: "7", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.1" }),
-        h("path", { d: "M4 5V3.8a2 2 0 0 1 4 0V5", stroke: "currentColor", strokeWidth: "1.1" }),
-      );
-    }
-
     const ZH = {
       locale: "zh",
       "cfg.desc": "搜索 API、安装目录与结果数量。",
@@ -476,22 +466,15 @@ window.__ModuleLoader__.load({
       "plaza.back": "返回对话",
       "scope.all": "全部",
       "scope.installed": "已安装",
-      "scope.hint.local": "本机数据 · 只读预览",
-      "scope.hint.remote": "远端市场",
       "meta.files": "{n} 个文件",
       "meta.updated": "更新于 {t}",
       "stat.files": "文件数",
       "stat.size": "总大小",
       "stat.updated": "更新于",
-      "inst.summary": "已安装 {n} 个技能 · {dir} · 只读",
       "inst.error": "读取本机技能失败：{m}",
-      "inst.path": "安装路径 {p}",
-      "inst.metaOnly": "本视图只展示 Meta 信息，不浏览技能文件内容。",
-      "ip.summary": "本机 web profile 已安装 {n} 个插件 · 只读",
       "ip.empty": "web profile 还没有已安装的 dsh 插件",
       "ip.error": "读取本机插件失败：{m}",
       "ip.preview": "预览",
-      "ip.localPreview": "本地预览",
       "ip.tab.overview": "概览",
       "ip.tab.readme": "README",
       "ip.readmeTitle": "README（纯文本预览）",
@@ -617,22 +600,15 @@ window.__ModuleLoader__.load({
       "plaza.back": "Back to chat",
       "scope.all": "All",
       "scope.installed": "Installed",
-      "scope.hint.local": "Local data · read-only preview",
-      "scope.hint.remote": "Remote marketplace",
       "meta.files": "{n} files",
       "meta.updated": "Updated {t}",
       "stat.files": "Files",
       "stat.size": "Total size",
       "stat.updated": "Updated",
-      "inst.summary": "{n} skills installed · {dir} · read-only",
       "inst.error": "Failed to read local skills: {m}",
-      "inst.path": "Installed at {p}",
-      "inst.metaOnly": "This view shows metadata only; skill file contents are not browsed.",
-      "ip.summary": "{n} plugins installed in the local web profile · read-only",
       "ip.empty": "No dsh plugins installed in the web profile",
       "ip.error": "Failed to read local plugins: {m}",
       "ip.preview": "Preview",
-      "ip.localPreview": "Local preview",
       "ip.tab.overview": "Overview",
       "ip.tab.readme": "README",
       "ip.readmeTitle": "README (plain text preview)",
@@ -1537,7 +1513,6 @@ window.__ModuleLoader__.load({
             count != null ? h("span", { className: "sh-count" }, String(count)) : null,
           ),
         ),
-        h("span", { className: "sh-scope-hint" }, tr(scope === "installed" ? "scope.hint.local" : "scope.hint.remote")),
       );
     }
 
@@ -1589,7 +1564,6 @@ window.__ModuleLoader__.load({
       if (item.files != null) chips.push(h("div", { className: "sh-stat", key: "f" }, tr("stat.files") + " ", h("b", null, String(item.files))));
       if (item.totalBytes != null) chips.push(h("div", { className: "sh-stat", key: "s" }, tr("stat.size") + " ", h("b", null, fmtSize(item.totalBytes))));
       if (item.mtimeMs) chips.push(h("div", { className: "sh-stat", key: "m" }, tr("stat.updated") + " ", h("b", null, fmtTime(item.mtimeMs, tr))));
-      const path = item.path || (skillsDir ? String(skillsDir).replace(/\/+$/, "") + "/" + item.slug : "");
       const uninstall = async () => {
         setWorking(true);
         try {
@@ -1619,8 +1593,6 @@ window.__ModuleLoader__.load({
           h("div", { className: "sh-body" },
             h("p", { className: "sh-overview" }, item.description || tr("overview.empty")),
             chips.length ? h("div", { className: "sh-stats" }, chips) : null,
-            path ? h("div", { className: "sh-others" }, tr("inst.path", { p: path })) : null,
-            h("div", { className: "sh-others" }, tr("inst.metaOnly")),
           ),
           onUninstalled ? h("div", { className: "sh-foot" },
             h("button", { type: "button", className: "sh-mini", disabled: working, onClick: uninstall },
@@ -1643,9 +1615,6 @@ window.__ModuleLoader__.load({
         return () => { live = false; };
       }, []);
       return h("div", null,
-        state.status === "ready" ? h("div", { className: "sh-mkt-results" },
-          h("p", { className: "sh-mkt-summary" }, tr("inst.summary", { n: state.items.length, dir: state.skillsDir })),
-        ) : null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
         state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("inst.error", { m: state.err })) : null,
         state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("installed.none")) : null,
@@ -1706,7 +1675,6 @@ window.__ModuleLoader__.load({
           h("span", null, plugin.spec),
         ),
         h("div", { className: "sh-ip-foot" },
-          h("span", { className: "sh-ip-hint" }, h(LockIcon), tr("ip.localPreview")),
           h("button", {
             type: "button",
             className: "sh-ip-open",
@@ -1803,9 +1771,6 @@ window.__ModuleLoader__.load({
         return () => { live = false; };
       }, []);
       return h("div", null,
-        state.status === "ready" ? h("div", { className: "sh-mkt-results" },
-          h("p", { className: "sh-mkt-summary" }, tr("ip.summary", { n: state.items.length })),
-        ) : null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
         state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("ip.error", { m: state.err })) : null,
         state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("ip.empty")) : null,
