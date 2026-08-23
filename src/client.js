@@ -212,22 +212,6 @@ window.__ModuleLoader__.load({
 .sh-seg button.on{background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,#17191c);font-weight:600;box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
 .sh-seg .sh-count{font-size:11px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-seg button.on .sh-count{color:var(--dsw-alias-state-business-primary,#4d6bfe)}
-.sh-mkt-card.local{cursor:pointer;border-radius:12px;transition:border-color .15s,box-shadow .15s,transform .15s}
-.sh-mkt-card.local:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:0 6px 18px rgb(20 24 32 / 10%);transform:translateY(-1px)}
-.sh-mkt-card.local:focus-visible{outline:2px solid color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 55%,transparent);outline-offset:2px}
-.sh-mkt-card.local .sh-mkt-badge.on{position:absolute;top:12px;right:12px}
-.sh-mkt-card.local .sh-mkt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sh-ip-sub{display:flex;align-items:center;gap:6px;min-width:0;margin-top:2px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:15px}
-.sh-ip-pkg{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af)}
-.sh-ip-sub .dot{flex:none;color:var(--dsw-alias-label-caption,#9ca3af)}
-.sh-ip-ver{flex:none;color:var(--dsw-alias-label-caption,#9ca3af);font-variant-numeric:tabular-nums}
-.sh-ip-spec{display:flex;align-items:center;gap:6px;min-width:0;margin-top:10px;padding:5px 8px;border-radius:7px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;line-height:15px;color:var(--dsw-alias-label-tertiary,#7b8088)}
-.sh-ip-spec svg{flex:none;width:11px;height:11px;color:var(--dsw-alias-label-caption,#9ca3af)}
-.sh-ip-spec span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sh-ip-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:12px}
-.sh-ip-open{margin-left:auto;display:inline-flex;align-items:center;gap:3px;padding:2px 0;border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;line-height:16px;color:var(--dsw-alias-state-business-primary,#4d6bfe);cursor:pointer}
-.sh-ip-open svg{width:13px;height:13px;transition:transform .15s}
-.sh-mkt-card.local:hover .sh-ip-open svg{transform:translateX(2px)}
 .sh-card .sh-desc{-webkit-line-clamp:2;min-height:38px}
 .sh-version{flex:none;font-size:11px;color:var(--dsw-alias-label-caption,#9ca3af);font-variant-numeric:tabular-nums}
 .sh-slug-mono{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af);overflow-wrap:anywhere}
@@ -341,21 +325,6 @@ window.__ModuleLoader__.load({
       return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
         h("circle", { cx: "6", cy: "6", r: "4.5", stroke: "currentColor", strokeWidth: "1.1" }),
         h("path", { d: "M6 3.6V6l1.7 1.1", stroke: "currentColor", strokeWidth: "1.1", strokeLinecap: "round" }),
-      );
-    }
-
-    function GitBranchIcon() {
-      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
-        h("circle", { cx: "3", cy: "2.5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
-        h("circle", { cx: "3", cy: "9.5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
-        h("circle", { cx: "9", cy: "5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
-        h("path", { d: "M3 4v4M9 6.5c0 1.5-1.5 2-3 2", stroke: "currentColor", strokeWidth: "1.1", strokeLinecap: "round" }),
-      );
-    }
-
-    function ChevronRightIcon() {
-      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
-        h("path", { d: "M4.5 2.5 8 6l-3.5 3.5", stroke: "currentColor", strokeWidth: "1.3", strokeLinecap: "round", strokeLinejoin: "round" }),
       );
     }
 
@@ -474,7 +443,6 @@ window.__ModuleLoader__.load({
       "inst.error": "读取本机技能失败：{m}",
       "ip.empty": "web profile 还没有已安装的 dsh 插件",
       "ip.error": "读取本机插件失败：{m}",
-      "ip.preview": "预览",
       "ip.tab.overview": "概览",
       "ip.tab.readme": "README",
       "ip.readmeTitle": "README（纯文本预览）",
@@ -608,7 +576,6 @@ window.__ModuleLoader__.load({
       "inst.error": "Failed to read local skills: {m}",
       "ip.empty": "No dsh plugins installed in the web profile",
       "ip.error": "Failed to read local plugins: {m}",
-      "ip.preview": "Preview",
       "ip.tab.overview": "Overview",
       "ip.tab.readme": "README",
       "ip.readmeTitle": "README (plain text preview)",
@@ -701,14 +668,14 @@ window.__ModuleLoader__.load({
       return h("div", { className }, initials(item.name || item.slug));
     }
 
-    function Cards({ items, onOpen }) {
+    function Cards({ items, onOpen, footline }) {
       const tr = useTr();
       if (!items?.length) return h("div", { className: "sh-hint" }, tr("search.empty"));
       return h(
         "div",
         { className: "sh-cards" },
         items.map((item) => {
-          const meta = [
+          const meta = footline ? footline(item, tr) : [
             catLabel(item, tr),
             item.downloads ? tr("meta.downloads", { n: fmt(item.downloads, tr) }) : null,
             item.version ? "v" + item.version : null,
@@ -1603,29 +1570,40 @@ window.__ModuleLoader__.load({
       );
     }
 
+    /** 已安装技能:与「全部」相同的卡片与详情弹窗,footline 展示本地 Meta。 */
+    function installedFootline(item, tr) {
+      return [
+        item.files != null ? tr("meta.files", { n: item.files }) : null,
+        item.totalBytes != null ? fmtSize(item.totalBytes) : null,
+        item.mtimeMs ? tr("meta.updated", { t: fmtTime(item.mtimeMs, tr) }) : null,
+        item.version ? "v" + item.version : null,
+      ].filter(Boolean).join(" · ");
+    }
+
     function InstalledSkillsView() {
       const tr = useTr();
-      const [state, setState] = useState({ status: "loading", items: [], skillsDir: "", err: "" });
+      const [state, setState] = useState({ status: "loading", items: [], err: "" });
       const [open, setOpen] = useState(null);
       useEffect(() => {
         let live = true;
         api("list", {})
-          .then((d) => { if (live) setState({ status: "ready", items: d.items || [], skillsDir: d.skillsDir || "", err: "" }); })
-          .catch((e) => { if (live) setState({ status: "error", items: [], skillsDir: "", err: e.message || String(e) }); });
+          .then((d) => { if (live) setState({ status: "ready", items: (d.items || []).map((it) => ({ ...it, installed: true })), err: "" }); })
+          .catch((e) => { if (live) setState({ status: "error", items: [], err: e.message || String(e) }); });
         return () => { live = false; };
       }, []);
+      const drop = (it) => {
+        setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.slug !== it.slug) }));
+        setOpen((cur) => (cur && cur.slug === it.slug ? { ...cur, installed: false } : cur));
+      };
       return h("div", null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
         state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("inst.error", { m: state.err })) : null,
         state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("installed.none")) : null,
-        state.items.length ? h("div", { className: "sh-cards" },
-          state.items.map((it) => h(SkillMetaCard, { key: it.slug, item: it, onOpen: setOpen })),
-        ) : null,
-        open ? h(LocalSkillDrawer, {
+        state.items.length ? h(Cards, { items: state.items, onOpen: setOpen, footline: installedFootline }) : null,
+        open ? h(Drawer, {
           item: open,
-          skillsDir: state.skillsDir,
           onClose: () => setOpen(null),
-          onUninstalled: (it) => setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.slug !== it.slug) })),
+          onUninstalled: drop,
         }) : null,
       );
     }
@@ -1637,49 +1615,37 @@ window.__ModuleLoader__.load({
       return tr("ip.src.unknown");
     }
 
+    /** 已安装插件:复用「全部」市场卡片结构,详情入口打开本地 README 预览抽屉。 */
     function InstalledPluginCard({ plugin, onOpen }) {
       const tr = useTr();
       const name = plugin.name || plugin.pkg;
-      const showPkg = plugin.pkg && plugin.pkg !== name;
-      return h("article", {
-        className: "sh-mkt-card local",
-        tabIndex: 0,
-        role: "button",
-        onClick: () => onOpen(plugin),
-        onKeyDown: (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onOpen(plugin);
-          }
-        },
-      },
+      return h("article", { className: "sh-mkt-card on" },
         h("div", { className: "sh-mkt-head" },
-          h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback" }, letterOf(name)),
+          h(MarketAvatar, { plugin: { name, owner: plugin.pkg } }),
           h("div", { className: "sh-mkt-head-main" },
             h("div", { className: "sh-mkt-top" },
-              h("div", { className: "sh-mkt-name", title: name }, name),
-              h("span", { className: "sh-mkt-badge on" }, tr("action.installed")),
+              h("p", { className: "sh-mkt-owner" }, plugin.pkg),
+              h("span", { className: "sh-mkt-badge on" }, tr("mkt.installed")),
             ),
-            h("div", { className: "sh-ip-sub" },
-              showPkg ? h("span", { className: "sh-ip-pkg", title: plugin.pkg }, plugin.pkg) : null,
-              showPkg ? h("span", { className: "dot" }, "·") : null,
-              h("span", null, pluginSourceLabel(plugin, tr)),
-              plugin.version ? h("span", { className: "dot" }, "·") : null,
-              plugin.version ? h("span", { className: "sh-ip-ver" }, "v" + plugin.version) : null,
-            ),
+            h("div", { className: "sh-mkt-name" }, name),
           ),
         ),
         h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
-        h("div", { className: "sh-ip-spec", title: plugin.spec },
-          h(GitBranchIcon),
-          h("span", null, plugin.spec),
+        h("div", { className: "sh-mkt-meta" },
+          h("span", null, pluginSourceLabel(plugin, tr)),
+          plugin.version ? h("span", null, "v" + plugin.version) : null,
         ),
-        h("div", { className: "sh-ip-foot" },
+        h("div", { className: "sh-mkt-actions" },
+          h("a", {
+            className: "sh-mkt-details",
+            href: "#",
+            onClick: (e) => { e.preventDefault(); onOpen(plugin); },
+          }, tr("mkt.details")),
           h("button", {
             type: "button",
-            className: "sh-ip-open",
-            onClick: (e) => { e.stopPropagation(); onOpen(plugin); },
-          }, tr("ip.preview"), h(ChevronRightIcon)),
+            className: "sh-mkt-install done",
+            disabled: true,
+          }, tr("mkt.installed")),
         ),
       );
     }
