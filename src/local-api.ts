@@ -5,6 +5,7 @@ import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay
 import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
+import { listInstalledPlugins, readInstalledPluginReadme } from './installed-plugins.js'
 import { installMarketPlugin, isPluginInstallBusy, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
 import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
@@ -75,6 +76,16 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
     if (method === 'pluginCategories') {
       const items = await listPluginCategories(cfg)
       return sendJson(res, 200, { ok: true, items })
+    }
+    if (method === 'installedPlugins') {
+      const result = await listInstalledPlugins()
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginReadme') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await readInstalledPluginReadme(pkg)
+      return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {

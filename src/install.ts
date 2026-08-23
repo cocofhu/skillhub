@@ -3,13 +3,16 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fetchOpts, parseSlug } from './api.js'
 import { fetchBytes } from './http.js'
 import { unzipToFiles } from './unzip.js'
-import type { InstalledSkill, InstallResult, PluginConfig } from './types.js'
+import type { InstalledSkill, InstalledSkillMeta, InstallResult, PluginConfig, SkillMetaStat } from './types.js'
 
 export interface InstallDeps {
   fetchBytes: typeof fetchBytes
 }
 
 const defaultDeps: InstallDeps = { fetchBytes }
+
+/** 单技能目录统计的截断上限:超过该文件数即停止深扫并标记 truncated。 */
+export const SKILL_STAT_MAX_FILES = 2000
 
 export function safeRelPath(raw: string): string {
   const path = String(raw || '').replace(/\\/g, '/')
@@ -89,7 +92,7 @@ export function normalizeZipFiles(files: Record<string, Buffer>): Record<string,
   return out
 }
 
-export async function listInstalled(skillsDir: string): Promise<InstalledSkill[]> {
+export async function listInstalled(skillsDir: string): Promise<InstalledSkillMeta[]> {
   const root = resolve(skillsDir)
   let entries: string[] = []
   try {
@@ -97,7 +100,7 @@ export async function listInstalled(skillsDir: string): Promise<InstalledSkill[]
   } catch {
     return []
   }
-  const out: InstalledSkill[] = []
+  const out: InstalledSkillMeta[] = []
   for (const name of entries.sort()) {
     if (name.startsWith('.')) continue
     const dir = join(root, name)
@@ -107,15 +110,56 @@ export async function listInstalled(skillsDir: string): Promise<InstalledSkill[]
       const skillMd = join(dir, 'SKILL.md')
       const text = await readFile(skillMd, 'utf8')
       const meta = parseFrontmatter(text)
+      const metaStat = await statSkillDir(dir)
       out.push({
         slug: name,
         name: meta.name || name,
         description: meta.description || '',
         version: meta.version,
         path: dir,
+        ...metaStat,
       })
     } catch {
       continue
+    }
+  }
+  return out
+}
+
+/**
+ * 统计技能目录的文件数 / 总字节数 / 最新 mtime。
+ * 超过 SKILL_STAT_MAX_FILES 时停止深扫并标记 truncated;单目录损坏时返回 0 值统计,不抛错。
+ */
+export async function statSkillDir(dir: string, maxFiles: number = SKILL_STAT_MAX_FILES): Promise<SkillMetaStat> {
+  const out: SkillMetaStat = { files: 0, totalBytes: 0, mtimeMs: 0, truncated: false }
+  const queue: string[] = [dir]
+  while (queue.length) {
+    const cur = queue.shift() as string
+    let entries
+    try {
+      entries = await readdir(cur, { withFileTypes: true })
+    } catch {
+      continue
+    }
+    for (const ent of entries) {
+      const full = join(cur, ent.name)
+      try {
+        if (ent.isDirectory()) {
+          queue.push(full)
+          continue
+        }
+        if (!ent.isFile()) continue
+        const st = await stat(full)
+        out.files += 1
+        out.totalBytes += st.size
+        out.mtimeMs = Math.max(out.mtimeMs, st.mtimeMs)
+      } catch {
+        continue
+      }
+      if (out.files >= maxFiles) {
+        out.truncated = true
+        return out
+      }
     }
   }
   return out
