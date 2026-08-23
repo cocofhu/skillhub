@@ -213,11 +213,22 @@ window.__ModuleLoader__.load({
 .sh-seg .sh-count{font-size:11px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-seg button.on .sh-count{color:var(--dsw-alias-state-business-primary,#4d6bfe)}
 .sh-scope-hint{font-size:12px;color:var(--dsw-alias-label-caption,#9ca3af)}
-.sh-mkt-card.local{cursor:pointer}
-.sh-mkt-preview{flex:none;min-height:30px;padding:0 10px;font-size:12px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:8px;background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,#17191c);font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
-.sh-mkt-preview:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6);border-color:var(--dsw-alias-border-l1,#cfd2d8)}
-.sh-mkt-preview svg{width:13px;height:13px;color:var(--dsw-alias-label-tertiary,#7b8088)}
-.sh-mkt-meta .spec{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-mkt-card.local{cursor:pointer;border-radius:12px;transition:border-color .15s,box-shadow .15s,transform .15s}
+.sh-mkt-card.local:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:0 6px 18px rgb(20 24 32 / 10%);transform:translateY(-1px)}
+.sh-mkt-card.local:focus-visible{outline:2px solid color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 55%,transparent);outline-offset:2px}
+.sh-ip-sub{display:flex;align-items:center;gap:6px;min-width:0;margin-top:2px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:15px}
+.sh-ip-pkg{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-ip-sub .dot{flex:none;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-ip-ver{flex:none;color:var(--dsw-alias-label-caption,#9ca3af);font-variant-numeric:tabular-nums}
+.sh-ip-spec{display:flex;align-items:center;gap:6px;min-width:0;margin-top:10px;padding:5px 8px;border-radius:7px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;line-height:15px;color:var(--dsw-alias-label-tertiary,#7b8088)}
+.sh-ip-spec svg{flex:none;width:11px;height:11px;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-ip-spec span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-ip-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:12px}
+.sh-ip-hint{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;line-height:16px;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-ip-hint svg{width:11px;height:11px}
+.sh-ip-open{margin-left:auto;display:inline-flex;align-items:center;gap:3px;padding:2px 0;border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;line-height:16px;color:var(--dsw-alias-state-business-primary,#4d6bfe);cursor:pointer}
+.sh-ip-open svg{width:13px;height:13px;transition:transform .15s}
+.sh-mkt-card.local:hover .sh-ip-open svg{transform:translateX(2px)}
 .sh-card .sh-desc{-webkit-line-clamp:2;min-height:38px}
 .sh-version{flex:none;font-size:11px;color:var(--dsw-alias-label-caption,#9ca3af);font-variant-numeric:tabular-nums}
 .sh-slug-mono{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af);overflow-wrap:anywhere}
@@ -334,10 +345,25 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function EyeIcon() {
-      return h("svg", { viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" },
-        h("path", { d: "M1.8 8s2.3-4 6.2-4 6.2 4 6.2 4-2.3 4-6.2 4-6.2-4-6.2-4Z", stroke: "currentColor", strokeWidth: "1.3" }),
-        h("circle", { cx: "8", cy: "8", r: "1.9", stroke: "currentColor", strokeWidth: "1.3" }),
+    function GitBranchIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("circle", { cx: "3", cy: "2.5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("circle", { cx: "3", cy: "9.5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("circle", { cx: "9", cy: "5", r: "1.5", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("path", { d: "M3 4v4M9 6.5c0 1.5-1.5 2-3 2", stroke: "currentColor", strokeWidth: "1.1", strokeLinecap: "round" }),
+      );
+    }
+
+    function ChevronRightIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("path", { d: "M4.5 2.5 8 6l-3.5 3.5", stroke: "currentColor", strokeWidth: "1.3", strokeLinecap: "round", strokeLinejoin: "round" }),
+      );
+    }
+
+    function LockIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("rect", { x: "2.5", y: "5", width: "7", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("path", { d: "M4 5V3.8a2 2 0 0 1 4 0V5", stroke: "currentColor", strokeWidth: "1.1" }),
       );
     }
 
@@ -1642,8 +1668,10 @@ window.__ModuleLoader__.load({
 
     function InstalledPluginCard({ plugin, onOpen }) {
       const tr = useTr();
+      const name = plugin.name || plugin.pkg;
+      const showPkg = plugin.pkg && plugin.pkg !== name;
       return h("article", {
-        className: "sh-mkt-card on local",
+        className: "sh-mkt-card local",
         tabIndex: 0,
         role: "button",
         onClick: () => onOpen(plugin),
@@ -1655,27 +1683,33 @@ window.__ModuleLoader__.load({
         },
       },
         h("div", { className: "sh-mkt-head" },
-          h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback" }, letterOf(plugin.name || plugin.pkg)),
+          h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback" }, letterOf(name)),
           h("div", { className: "sh-mkt-head-main" },
             h("div", { className: "sh-mkt-top" },
-              h("p", { className: "sh-mkt-owner" }, plugin.pkg),
+              h("div", { className: "sh-mkt-name" }, name),
               h("span", { className: "sh-mkt-badge on" }, tr("action.installed")),
             ),
-            h("div", { className: "sh-mkt-name" }, plugin.name || plugin.pkg),
+            h("div", { className: "sh-ip-sub" },
+              showPkg ? h("span", { className: "sh-ip-pkg", title: plugin.pkg }, plugin.pkg) : null,
+              showPkg ? h("span", { className: "dot" }, "·") : null,
+              h("span", null, pluginSourceLabel(plugin, tr)),
+              plugin.version ? h("span", { className: "dot" }, "·") : null,
+              plugin.version ? h("span", { className: "sh-ip-ver" }, "v" + plugin.version) : null,
+            ),
           ),
         ),
         h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
-        h("div", { className: "sh-mkt-meta" },
-          h("span", null, pluginSourceLabel(plugin, tr) + (plugin.version ? " · v" + plugin.version : "")),
-          h("span", { className: "spec", title: plugin.spec }, plugin.spec),
+        h("div", { className: "sh-ip-spec", title: plugin.spec },
+          h(GitBranchIcon),
+          h("span", null, plugin.spec),
         ),
-        h("div", { className: "sh-mkt-actions" },
-          h("span", { className: "sh-mkt-details" }, tr("ip.localPreview")),
+        h("div", { className: "sh-ip-foot" },
+          h("span", { className: "sh-ip-hint" }, h(LockIcon), tr("ip.localPreview")),
           h("button", {
             type: "button",
-            className: "sh-mkt-preview",
+            className: "sh-ip-open",
             onClick: (e) => { e.stopPropagation(); onOpen(plugin); },
-          }, h(EyeIcon), tr("ip.preview")),
+          }, tr("ip.preview"), h(ChevronRightIcon)),
         ),
       );
     }
