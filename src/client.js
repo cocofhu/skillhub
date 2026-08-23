@@ -216,6 +216,8 @@ window.__ModuleLoader__.load({
 .sh-mkt-card.local{cursor:pointer;border-radius:12px;transition:border-color .15s,box-shadow .15s,transform .15s}
 .sh-mkt-card.local:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:0 6px 18px rgb(20 24 32 / 10%);transform:translateY(-1px)}
 .sh-mkt-card.local:focus-visible{outline:2px solid color-mix(in srgb,var(--dsw-alias-state-business-primary,#4d6bfe) 55%,transparent);outline-offset:2px}
+.sh-mkt-card.local .sh-mkt-badge.on{position:absolute;top:12px;right:12px}
+.sh-mkt-card.local .sh-mkt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sh-ip-sub{display:flex;align-items:center;gap:6px;min-width:0;margin-top:2px;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:15px}
 .sh-ip-pkg{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af)}
 .sh-ip-sub .dot{flex:none;color:var(--dsw-alias-label-caption,#9ca3af)}
@@ -1686,7 +1688,7 @@ window.__ModuleLoader__.load({
           h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback" }, letterOf(name)),
           h("div", { className: "sh-mkt-head-main" },
             h("div", { className: "sh-mkt-top" },
-              h("div", { className: "sh-mkt-name" }, name),
+              h("div", { className: "sh-mkt-name", title: name }, name),
               h("span", { className: "sh-mkt-badge on" }, tr("action.installed")),
             ),
             h("div", { className: "sh-ip-sub" },
