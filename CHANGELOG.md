@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- 对话内 DSH 插件搜索与卡片直装：新增 Agent 工具 `skillhub_plugin_search` / `skillhub_plugin_install`，聊天流渲染与技能卡片同款风格的插件卡片（已验证 / 已安装徽标、分类与星标、图标代理 + 首字母兜底）
+- 插件卡片一键直装：就地显示安装阶段与已处理包数进度条（复用插件广场 install-plan 校验链与串行锁），失败可重试，并发点击提示排队
+- 装完出现「请重启 dsh web」横幅并支持一键重启（与插件广场同链路）；卡片「详情」弹窗展示完整描述、仓库链接与 install-plan 安装来源（pinned commit 规格）
+- systemPrompt 补充插件搜索 / 安装规则；客户端新增 `plg.*` 中英文案
+
 ## [0.2.13] - 2026-08-20
 
 ### Changed

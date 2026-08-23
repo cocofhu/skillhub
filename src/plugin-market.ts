@@ -353,6 +353,58 @@ export async function listPluginCategories(
   }
 }
 
+export interface PluginSearchResult {
+  query: string
+  category?: string
+  sort: PluginSort
+  items: MarketPlugin[]
+  total: number
+  offset: number
+  hasMore: boolean
+}
+
+/** 把 Agent 工具的 offset/limit 映射为目录 API 的 page/pageSize。 */
+export function pluginPaging(
+  offset: unknown,
+  limit: unknown,
+  fallbackLimit: number,
+): { page: number; pageSize: number; offset: number } {
+  const off = Math.max(0, Math.floor(Number(offset) || 0))
+  const explicit = Math.floor(Number(limit))
+  const size = Number.isFinite(explicit) && explicit > 0 ? Math.min(100, explicit) : Math.max(1, Math.floor(fallbackLimit) || 24)
+  return { page: Math.floor(off / size) + 1, pageSize: size, offset: off }
+}
+
+/** 聊天内插件搜索：offset 翻页 + 已安装标注，供 skillhub_plugin_search 工具复用。 */
+export async function searchMarketPlugins(
+  cfg: PluginConfig,
+  opts: { q?: unknown; category?: unknown; sort?: unknown; limit?: unknown; offset?: unknown } = {},
+  fetchJsonImpl: typeof fetchJson = fetchJson,
+  installedMap: Record<string, string> = readInstalledPlugins(),
+): Promise<PluginSearchResult> {
+  const paging = pluginPaging(opts.offset, opts.limit, cfg.maxResults)
+  const category = parsePluginCategory(opts.category)
+  const sort = sanitizePluginSort(opts.sort)
+  const page = await listPlugins(cfg, {
+    q: opts.q,
+    scope: 'verified',
+    category,
+    sort,
+    page: paging.page,
+    pageSize: paging.pageSize,
+  }, fetchJsonImpl, installedMap)
+  const start = (paging.page - 1) * paging.pageSize
+  return {
+    query: String(opts.q || '').trim(),
+    category,
+    sort,
+    items: page.items,
+    total: page.total,
+    offset: start,
+    hasMore: start + page.items.length < page.total,
+  }
+}
+
 export async function listPlugins(
   cfg: PluginConfig,
   query: PluginListQuery = {},

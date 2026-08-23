@@ -15,6 +15,8 @@ import {
   mapMarketPlugin,
   mapPluginCategory,
   parsePluginCategory,
+  pluginPaging,
+  searchMarketPlugins,
   parsePluginRef,
   pluginCategoriesUrl,
   resolveInstallSource,
@@ -367,4 +369,74 @@ test('listPluginCategories uses catalog payload and falls back', async () => {
     throw new Error('offline')
   })
   assert.equal(fallback.length, 7)
+})
+
+test('pluginPaging maps offset/limit to catalog page/pageSize', () => {
+  assert.deepEqual(pluginPaging(0, undefined, 12), { page: 1, pageSize: 12, offset: 0 })
+  assert.deepEqual(pluginPaging(12, 12, 12), { page: 2, pageSize: 12, offset: 12 })
+  assert.deepEqual(pluginPaging(24, undefined, 12), { page: 3, pageSize: 12, offset: 24 })
+  assert.deepEqual(pluginPaging(-5, 0, 24), { page: 1, pageSize: 24, offset: 0 })
+  assert.deepEqual(pluginPaging(48, 200, 24), { page: 1, pageSize: 100, offset: 48 })
+  assert.deepEqual(pluginPaging('12', '12', 12), { page: 2, pageSize: 12, offset: 12 })
+})
+
+test('searchMarketPlugins maps filters, marks installed, and computes hasMore', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  let seen = ''
+  const result = await searchMarketPlugins(cfg, {
+    q: '浏览器',
+    category: 'web-tools',
+    sort: 'updated',
+    limit: 2,
+    offset: 2,
+  }, async <T>(url: string) => {
+    seen = url
+    return {
+      total: 5,
+      page: 2,
+      pageSize: 2,
+      items: [
+        { owner: 'deepseek-ai', name: 'dsh-browser', fullName: 'deepseek-ai/dsh-browser', installability: 'verified', repositoryUrl: 'https://github.com/deepseek-ai/dsh-browser' },
+        { owner: 'GanyuanRan', name: 'Aegis', fullName: 'ganyuanran/aegis', installability: 'verified', repositoryUrl: 'https://github.com/GanyuanRan/Aegis' },
+      ],
+    } as T
+  }, { dsh_browser: 'github:deepseek-ai/dsh-browser#9f2c1a4' })
+  assert.match(seen, /q=%E6%B5%8F%E8%A7%88%E5%99%A8/)
+  assert.match(seen, /category=web-tools/)
+  assert.match(seen, /sort=updated/)
+  assert.match(seen, /scope=verified/)
+  assert.match(seen, /page=2/)
+  assert.match(seen, /page_size=2/)
+  assert.equal(result.query, '浏览器')
+  assert.equal(result.category, 'web-tools')
+  assert.equal(result.sort, 'updated')
+  assert.equal(result.offset, 2)
+  assert.equal(result.total, 5)
+  assert.equal(result.hasMore, true)
+  assert.equal(result.items[0].installed, true)
+  assert.equal(result.items[1].installed, false)
+})
+
+test('searchMarketPlugins marks the last page and defaults paging', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn', maxResults: 12 })
+  let seen = ''
+  const result = await searchMarketPlugins(cfg, {}, async <T>(url: string) => {
+    seen = url
+    return {
+      total: 1,
+      page: 1,
+      pageSize: 12,
+      items: [
+        { owner: 'o', name: 'n', fullName: 'o/n', installability: 'verified' },
+      ],
+    } as T
+  }, {})
+  assert.match(seen, /page=1/)
+  assert.match(seen, /page_size=12/)
+  assert.doesNotMatch(seen, /q=/)
+  assert.doesNotMatch(seen, /category=/)
+  assert.equal(result.query, '')
+  assert.equal(result.category, undefined)
+  assert.equal(result.sort, 'stars')
+  assert.equal(result.hasMore, false)
 })

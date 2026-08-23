@@ -32,6 +32,7 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
 - 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
 - 侧栏底部 **插件广场**：在聊天区打开独立面板，浏览 SkillHub 技能与 DSH 插件
+- 对话中直接搜索 DSH 插件并展示插件卡片，支持卡片一键直装（就地进度条）、装完提示并一键重启
 - 界面跟随 Harness 中英文
 
 ## 环境要求
@@ -68,7 +69,11 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 >
 > 把刚才那个卸载掉
 
-搜索完成后对话中会显示可点击卡片；点开详情后再安装。不要让 Agent 打印安装命令或 curl。
+> 搜个浏览器自动化的 dsh 插件
+>
+> 装一下第一个插件
+
+搜索完成后对话中会显示可点击卡片；点开详情后再安装。插件卡片同样出现在对话流里，可直接点 **安装** 就地看进度，装完按横幅提示 **立即重启**。不要让 Agent 打印安装命令或 curl。
 
 ### 插件广场
 
@@ -84,6 +89,8 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | `skillhub_install` | 按 slug 安装；可传 `version` |
 | `skillhub_list` | 列出已安装技能 |
 | `skillhub_uninstall` | 卸载本地技能目录 |
+| `skillhub_plugin_search` | 搜索或浏览 DSH 插件，并展示插件卡片（支持 `query` / `category` / `sort` / `limit` / `offset` 翻页，已安装标注） |
+| `skillhub_plugin_install` | 用户点名后按 `owner` + `name` 安装 DSH 插件（同一 install-plan 校验链），装完提示重启 dsh web |
 
 ## 配置
 
