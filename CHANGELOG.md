@@ -4,8 +4,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 卸载已安装插件时先停掉运行中的 loader 入口，避免删掉文件后浏览器仍去拉 `/plugins/<name>/client.js` 报 `failed to import loader entry`
+
 ### Changed
 
+- 卸载任何已安装插件后都提示重启 dsh web（与安装后同一条横幅，文案为「已卸载 … 请重启后完全卸载」）
 - 插件广场「已安装」卡片改为紧凑布局：短标题、包名/ slug 副标题、角标「已装」、底栏来源或文件信息
 - 插件广场「已安装」点卡片打开详情，去掉卡片上的「详情」按钮；详情页底部提供卸载
 - 插件广场「已安装」抽屉的 README 支持 GitHub 常见 HTML（居中标题、徽章图、`<p align>`），仍过滤 script / javascript: 链接

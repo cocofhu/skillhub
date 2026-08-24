@@ -6,6 +6,7 @@ import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
 import { listInstalledPlugins, readInstalledPluginReadme, removeInstalledPlugin } from './installed-plugins.js'
+import { loaderHost, setLivePluginDisabled } from './live-plugin.js'
 import { renderMarkdown } from './markdown.js'
 import { installMarketPlugin, isPluginInstallBusy, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
 import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
@@ -91,8 +92,19 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
     if (method === 'pluginUninstall') {
       const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
       if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
-      const result = await withPluginInstallLock(() => removeInstalledPlugin(pkg))
-      return sendJson(res, 200, { ok: true, ...result, restart: true })
+      const result = await withPluginInstallLock(async () => {
+        // Drop the live loader fiber first so client-modules stops serving
+        // /plugins/<pkg>/client.js before dsh plugin remove deletes the files.
+        const live = await setLivePluginDisabled(pkg, true, loaderHost())
+        try {
+          const removed = await removeInstalledPlugin(pkg)
+          return { ...removed, restart: true }
+        } catch (err) {
+          if (live) await setLivePluginDisabled(pkg, false, loaderHost()).catch(() => false)
+          throw err
+        }
+      })
+      return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
