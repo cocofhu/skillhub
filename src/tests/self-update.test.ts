@@ -125,7 +125,7 @@ test('runCommand is re-exported from the CLI helper', async () => {
 test('package helpers read local package.json', async () => {
   const { packageRoot, readPackageJson, webProfileDir } = await import('../self-update.js')
   const pkg = readPackageJson(packageRoot())
-  assert.equal(pkg.name, '@cocofhu/skillhub')
+  assert.equal(pkg.name, 'skillhub-plugin')
   assert.match(pkg.version || '', /^\d+\.\d+\.\d+/)
   assert.match(webProfileDir(), /profiles\/web$/)
 })

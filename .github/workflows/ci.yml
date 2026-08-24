@@ -100,7 +100,21 @@ jobs:
           pnpm build
           node --check lib/host.js
           node --check lib/install.js
-          grep -q 'id: "@cocofhu/skillhub"' lib/client.js
+          grep -q 'id: "skillhub-plugin"' lib/client.js
+          grep -q "name: 'skillhub-plugin'" cordis.patch.yml
+          node -e "if (require('./package.json').name !== 'skillhub-plugin') process.exit(1)"
 
       - name: Verify package contents
         run: bash .github/scripts/check-pack.sh
+
+      - name: Verify scoped alias identity
+        run: |
+          node .github/scripts/set-package-identity.mjs @cocofhu/skillhub
+          node -e "if (require('./package.json').name !== '@cocofhu/skillhub') process.exit(1)"
+          grep -q 'id: "@cocofhu/skillhub"' src/client.js
+          grep -q "name: '@cocofhu/skillhub'" cordis.patch.yml
+          pnpm build
+          grep -q 'id: "@cocofhu/skillhub"' lib/client.js
+          bash .github/scripts/check-pack.sh
+          node .github/scripts/set-package-identity.mjs skillhub-plugin
+          node -e "if (require('./package.json').name !== 'skillhub-plugin') process.exit(1)"

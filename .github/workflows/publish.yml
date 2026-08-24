@@ -11,9 +11,15 @@ permissions:
 
 jobs:
   publish:
-    name: npm
+    name: npm ${{ matrix.package }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - skillhub-plugin
+          - '@cocofhu/skillhub'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -43,6 +49,12 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+      - name: Set package identity
+        run: node .github/scripts/set-package-identity.mjs ${{ matrix.package }}
+
+      - name: Rebuild after identity
+        run: pnpm build
 
       - name: Publish
         run: npm publish --access public

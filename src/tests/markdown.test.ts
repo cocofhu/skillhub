@@ -30,7 +30,7 @@ test('renderMarkdown headings lists code tables and inline', () => {
     '| `skillhub_search` | 搜索 |',
     '',
     '```sh',
-    'dsh plugin add @cocofhu/skillhub',
+    'dsh plugin add skillhub-plugin',
     '```',
     '',
     '**bold** and *em*',
@@ -41,7 +41,7 @@ test('renderMarkdown headings lists code tables and inline', () => {
   assert.match(html, /<ul><li>功能<\/li><li>安装<\/li><\/ul>/)
   assert.match(html, /<th>工具<\/th>/)
   assert.match(html, /<td><code>skillhub_search<\/code><\/td>/)
-  assert.match(html, /<pre><code>dsh plugin add @cocofhu\/skillhub<\/code><\/pre>/)
+  assert.match(html, /<pre><code>dsh plugin add skillhub-plugin<\/code><\/pre>/)
   assert.match(html, /<strong>bold<\/strong>/)
   assert.match(html, /<em>em<\/em>/)
 })

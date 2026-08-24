@@ -1,14 +1,14 @@
 # skillhub
 
 [![CI](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml?query=branch%3Amain)
-[![npm](https://img.shields.io/npm/v/@cocofhu/skillhub.svg)](https://www.npmjs.com/package/@cocofhu/skillhub)
+[![npm](https://img.shields.io/npm/v/skillhub-plugin.svg)](https://www.npmjs.com/package/skillhub-plugin)
 [![Release](https://img.shields.io/github/v/release/cocofhu/skillhub?display_name=tag)](https://github.com/cocofhu/skillhub/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.14](https://github.com/cocofhu/skillhub/releases/tag/v0.2.14) · [npm](https://www.npmjs.com/package/@cocofhu/skillhub) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.14](https://github.com/cocofhu/skillhub/releases/tag/v0.2.14) · [npm](https://www.npmjs.com/package/skillhub-plugin) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -45,7 +45,13 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 ## 安装
 
-从 [npm](https://www.npmjs.com/package/@cocofhu/skillhub) 安装（预构建，不需要 `allowBuilds`）：
+从 [npm](https://www.npmjs.com/package/skillhub-plugin) 安装（预构建，不需要 `allowBuilds`）：
+
+```sh
+dsh plugin --profile web add skillhub-plugin
+```
+
+兼容旧包名：
 
 ```sh
 dsh plugin --profile web add @cocofhu/skillhub
@@ -57,7 +63,7 @@ dsh plugin --profile web add @cocofhu/skillhub
 dsh plugin --profile web add /absolute/path/to/skillhub
 ```
 
-安装后重启 `dsh web`，并强制刷新浏览器。`dsh web` 请绑定 `127.0.0.1`，不要监听 `0.0.0.0`。不要用 `github:cocofhu/skillhub` 安装：git 源会跑 `prepare`，pnpm 会要求手写 `allowBuilds`。npm 上的无前缀名 `skillhub` 是另一个项目，请用带 scope 的 `@cocofhu/skillhub`。
+安装后重启 `dsh web`，并强制刷新浏览器。`dsh web` 请绑定 `127.0.0.1`，不要监听 `0.0.0.0`。不要用 `github:cocofhu/skillhub` 安装：git 源会跑 `prepare`，pnpm 会要求手写 `allowBuilds`。npm 上的无前缀名 `skillhub` 是另一个项目，请用 `skillhub-plugin`。
 
 ## 使用
 
@@ -194,7 +200,7 @@ pnpm build
 | 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
 | 广场点安装失败 | 确认当前是 `dsh web` 拉起的进程，且 web profile 可写 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
-| pnpm 拒绝 `prepare` | 广场安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add @cocofhu/skillhub`，不要从 git 安装 |
+| pnpm 拒绝 `prepare` | 广场安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add skillhub-plugin`，不要从 git 安装 |
 
 ## 安全
 

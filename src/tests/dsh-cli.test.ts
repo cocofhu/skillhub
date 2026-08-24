@@ -80,6 +80,7 @@ test('pluginArgsFor injects -w only at a workspace root', () => {
 test('isSafePluginTarget allows github pins and rejects metacharacters', () => {
   assert.equal(isSafePluginTarget('github:liustack/modlens#cb481974e1154afffd3835689284d3d28e57c7e1'), true)
   assert.equal(isSafePluginTarget('@cocofhu/skillhub'), true)
+  assert.equal(isSafePluginTarget('skillhub-plugin'), true)
   assert.equal(isSafePluginTarget('--no-frozen-lockfile'), true)
   assert.equal(isSafePluginTarget('foo;rm'), false)
   assert.equal(isSafePluginTarget('a b'), false)
