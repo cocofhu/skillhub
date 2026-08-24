@@ -10,7 +10,7 @@ window.__ModuleLoader__.load({
 .sh-hint{color:var(--dsw-alias-label-caption,#6b7280);font-size:12px;line-height:18px;margin:0 0 10px}
 .sh-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 @media (max-width:640px){.sh-cards{grid-template-columns:1fr}}
-.sh-card{display:flex;gap:12px;align-items:flex-start;background:var(--dsw-alias-bg-layer-3,#fff);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;padding:12px;cursor:pointer;text-align:left;width:100%;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,background .16s}
+.sh-card{display:flex;gap:12px;align-items:flex-start;background:var(--dsw-alias-bg-layer-3,#fff);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;padding:12px;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;min-width:0;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,background .16s}
 .sh-card:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(38,49,72,.06));border-color:var(--dsw-alias-label-dimmed,#c7d2fe)}
 .sh-card.on{border-color:var(--dsw-alias-state-success-primary,#86efac)}
 .sh-icon{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--dsw-alias-border-l2,#e5e7eb);flex-shrink:0;background:linear-gradient(135deg,#c7d2fe,#fbcfe8);display:grid;place-items:center;font-weight:700;font-size:12px;color:#374151}
@@ -77,7 +77,7 @@ window.__ModuleLoader__.load({
 .sh-eval-name{flex:1;min-width:0;font-size:14px;font-weight:650}
 .sh-eval-sc{font-size:14px;font-weight:650;flex:none}
 .sh-eval-bar{height:8px;border-radius:99px;background:var(--dsw-alias-bg-module-platform,#f3f4f6);overflow:hidden;margin:0 0 12px}
-.sh-eval-bar>span{display:block;height:100%;border-radius:99px}
+.sh-eval-bar>span{display:block;height:100%;border-radius:99px;background:var(--dsw-alias-button-primary-fill,#111827);transition:width .4s ease}
 .sh-eval-why{margin:0;font-size:13px;line-height:1.8;color:var(--dsw-alias-label-tertiary,#6b7280)}
 .sh-radar{display:block;margin:4px auto 0;color:var(--dsw-alias-border-l3,#cbd5e1)}
 .sh-sec-ico{width:16px;height:16px;flex:none;display:block}
@@ -89,6 +89,7 @@ window.__ModuleLoader__.load({
 .sh-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--dsw-alias-toast-bg,#111827);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:2147483646}
 .sh-err{color:var(--dsw-alias-state-error-primary,#b91c1c);font-size:12px;margin:8px 0}
 .sh-tool{margin:4px 0 8px}
+.sh-tool *{box-sizing:border-box}
 .sh-fade{animation:sh-in .18s ease}
 .sh-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--dsw-alias-border-l2,#eee)}
 .sh-row:first-child{border-top:0}
@@ -206,6 +207,13 @@ window.__ModuleLoader__.load({
 .sh-plaza-body .sh-title{font-size:15px;line-height:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sh-plaza-body .sh-desc{-webkit-line-clamp:2;font-size:13px;line-height:20px}
 .sh-plaza-body .sh-mkt-card{min-height:220px;padding:16px}
+/* —— 聊天内插件卡片：沿用 .sh-card 体系，仅新增以下几处（全部使用 dsw-alias 既有令牌） —— */
+.sh-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:8px;min-height:28px}
+.sh-mono{font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;background:var(--dsw-alias-bg-module-platform,#f7f8fa);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:8px;padding:8px 10px;word-break:break-all;color:var(--dsw-alias-label-secondary,#4b5563)}
+.sh-plg-progress{margin-top:8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.sh-plg-phase{font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#6b7280);word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sh-plg-banner{display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px 12px;border:1px solid var(--dsw-alias-state-success-primary,#86efac);border-radius:12px;background:var(--dsw-alias-state-success-tertiary,#ecfdf5);font-size:12.5px;color:var(--dsw-alias-state-success-primary,#047857)}
+.sh-plg-banner .sh-mini{margin-left:auto}
 .sh-ip-card{position:relative;box-sizing:border-box;min-width:0;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:12px;background:var(--dsw-alias-bg-layer-3,#fff);cursor:pointer;text-align:left;width:100%;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,box-shadow .16s,background .16s}
 .sh-ip-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
 .sh-ip-card:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4d6bfe);outline-offset:2px}
@@ -468,6 +476,12 @@ window.__ModuleLoader__.load({
       "plaza.plugins": "插件",
       "plaza.noSession": "请先打开一个会话",
       "plaza.back": "返回对话",
+      "plg.hint": "已为你找到 {n} 款插件 · 点击卡片查看详情并安装",
+      "plg.queued": "正在安装其他插件，请稍候",
+      "plg.retry": "重试",
+      "plg.failed": "安装失败：{m}",
+      "plg.sourceTitle": "安装来源（install-plan 校验：pinned commit · 仓库一致 · 拒绝 --force）",
+      "plg.installedHint": "已安装 · 重启 dsh web 后生效",
       "scope.all": "全部",
       "scope.installed": "已安装",
       "meta.files": "{n} 个文件",
@@ -602,6 +616,12 @@ window.__ModuleLoader__.load({
       "plaza.plugins": "Plugins",
       "plaza.noSession": "Open a session first",
       "plaza.back": "Back to chat",
+      "plg.hint": "Found {n} plugins · click a card for details and install",
+      "plg.queued": "Another plugin is installing — please wait",
+      "plg.retry": "Retry",
+      "plg.failed": "Install failed: {m}",
+      "plg.sourceTitle": "Install source (install-plan checks: pinned commit · repo match · no --force)",
+      "plg.installedHint": "Installed · restart dsh web to apply",
       "scope.all": "All",
       "scope.installed": "Installed",
       "meta.files": "{n} files",
@@ -688,6 +708,49 @@ window.__ModuleLoader__.load({
       const body = await res.json().catch(() => ({}));
       if (!res.ok || body.ok === false) throw new Error(body.error || "HTTP " + res.status);
       return body;
+    }
+
+    // 同源一键重启（广场与聊天卡片共用）：调 pluginRestart，等待 BOOT_ID 变化后整页刷新。
+    function pluginRestartFlow(tr, previousBoot, onBusy, onMessage) {
+      const deadline = Date.now() + 60000;
+      const awaitNewBoot = () => {
+        const poll = () => {
+          api("pluginInstallStatus", {}).then((d) => {
+            if (typeof d.boot === "string" && previousBoot && d.boot !== previousBoot) {
+              location.reload();
+              return;
+            }
+            retry();
+          }).catch(retry);
+        };
+        const retry = () => {
+          if (Date.now() > deadline) {
+            onBusy(false);
+            onMessage(tr("mkt.restartTimeout"));
+            return;
+          }
+          setTimeout(poll, 1500);
+        };
+        poll();
+      };
+      const requestRestart = (left) => {
+        api("pluginRestart", {}).then(() => {
+          awaitNewBoot();
+        }).catch((e) => {
+          const msg = e && e.message ? String(e.message) : String(e);
+          if (/cannot restart while|HTTP 409/.test(msg) && left > 0) {
+            setTimeout(() => requestRestart(left - 1), 1500);
+            return;
+          }
+          if (/Failed to fetch|NetworkError|HTTP 5/i.test(msg)) {
+            awaitNewBoot();
+            return;
+          }
+          onBusy(false);
+          onMessage(tr("mkt.restartFail", { m: msg }));
+        });
+      };
+      requestRestart(10);
     }
 
     function Toast({ text, onDone }) {
@@ -1460,6 +1523,23 @@ window.__ModuleLoader__.load({
       return (ch ? ch[0] : "?").toUpperCase();
     }
 
+    function pluginCatLabel(key, tr) {
+      if (!key) return "";
+      if (tr && tr("locale") === "en") return MARKET_CAT_EN[key] || key;
+      const hit = MARKET_CAT_FALLBACK.find((it) => it.key === key);
+      return (hit && hit.displayName) || key;
+    }
+
+    // \u804a\u5929\u5185\u63d2\u4ef6\u5361\u7247\u56fe\u6807\uff1a\u7ecf /skillhub/icon \u4ee3\u7406\uff0c\u5931\u8d25\u56de\u9000\u9996\u5b57\u6bcd\u5757\u3002
+    function PluginIcon({ plugin, className }) {
+      const [failed, setFailed] = useState(false);
+      const src = !failed && plugin.avatarUrl ? iconSrc(plugin.avatarUrl) : "";
+      if (src) {
+        return h("img", { className, src, alt: "", onError: () => setFailed(true) });
+      }
+      return h("div", { className, "aria-hidden": "true" }, pluginLetter(plugin));
+    }
+
     function MarketAvatar({ plugin }) {
       const [failed, setFailed] = useState(false);
       const src = !failed && plugin.avatarUrl ? iconSrc(plugin.avatarUrl) : "";
@@ -1714,7 +1794,7 @@ window.__ModuleLoader__.load({
     }
 
     /** 已安装插件预览抽屉:概览 KV + README Markdown 渲染,底部卸载。 */
-    function PluginDrawer({ plugin, onClose, onUninstalled }) {
+    function InstalledPluginDrawer({ plugin, onClose, onUninstalled }) {
       const tr = useTr();
       const [tab, setTab] = useState("overview");
       const [readme, setReadme] = useState(null);
@@ -1836,7 +1916,7 @@ window.__ModuleLoader__.load({
           state.items.map((p) => h(InstalledPluginCard, { key: p.pkg, plugin: p, onOpen: setOpen })),
         ) : null,
         state.status === "ready" && state.others > 0 ? h("div", { className: "sh-others" }, tr("ip.others", { n: state.others })) : null,
-        open ? h(PluginDrawer, { plugin: open, onClose: () => setOpen(null), onUninstalled: drop }) : null,
+        open ? h(InstalledPluginDrawer, { plugin: open, onClose: () => setOpen(null), onUninstalled: drop }) : null,
       );
     }
 
@@ -1938,46 +2018,7 @@ window.__ModuleLoader__.load({
         if (restarting) return;
         setRestarting(true);
         setFeedback("");
-        const previous = bootId;
-        const deadline = Date.now() + 60000;
-        const awaitNewBoot = () => {
-          const poll = () => {
-            api("pluginInstallStatus", {}).then((d) => {
-              if (typeof d.boot === "string" && previous && d.boot !== previous) {
-                location.reload();
-                return;
-              }
-              retry();
-            }).catch(retry);
-          };
-          const retry = () => {
-            if (Date.now() > deadline) {
-              setRestarting(false);
-              setFeedback(tr("mkt.restartTimeout"));
-              return;
-            }
-            setTimeout(poll, 1500);
-          };
-          poll();
-        };
-        const requestRestart = (left) => {
-          api("pluginRestart", {}).then(() => {
-            awaitNewBoot();
-          }).catch((e) => {
-            const msg = e && e.message ? String(e.message) : String(e);
-            if (/cannot restart while|HTTP 409/.test(msg) && left > 0) {
-              setTimeout(() => requestRestart(left - 1), 1500);
-              return;
-            }
-            if (/Failed to fetch|NetworkError|HTTP 5/i.test(msg)) {
-              awaitNewBoot();
-              return;
-            }
-            setRestarting(false);
-            setFeedback(tr("mkt.restartFail", { m: msg }));
-          });
-        };
-        requestRestart(10);
+        pluginRestartFlow(tr, bootId, setRestarting, setFeedback);
       };
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
@@ -2235,6 +2276,264 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function PluginCard({ plugin, tr, phase, pct, busy, fail, onOpen, onInstall, onRetry }) {
+      const verified = plugin.installability === "verified";
+      const installed = !!plugin.installed;
+      return h("div", {
+        className: "sh-card" + (installed ? " on" : ""),
+        role: "button",
+        tabIndex: 0,
+        onClick: onOpen,
+        onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } },
+      },
+        h(PluginIcon, { plugin, className: "sh-icon" }),
+        h("div", { className: "sh-meta" },
+          h("div", { className: "sh-top" },
+            h("div", { className: "sh-title", title: plugin.name }, plugin.name),
+            verified ? h("span", { className: "sh-badge" }, tr("mkt.verified")) : null,
+            installed ? h("span", { className: "sh-badge" }, tr("mkt.installed")) : null,
+          ),
+          plugin.description ? h("div", { className: "sh-desc" }, plugin.description) : null,
+          h("div", { className: "sh-marks" },
+            plugin.categoryKey ? h("span", { className: "sh-tag blue" }, pluginCatLabel(plugin.categoryKey, tr)) : null,
+            h("span", { className: "sh-rate" },
+              h("span", { className: "sh-stars", "aria-hidden": "true" }, "★"),
+              fmt(plugin.stars, tr),
+            ),
+            h("span", { className: "sh-tag" }, plugin.owner),
+          ),
+          h("div", { className: "sh-actions" },
+            busy ? h("span", { style: { flex: 1, minWidth: 0 } },
+              h("span", { className: "sh-plg-progress" },
+                h("span", { className: "sh-plg-phase" }, phase),
+                h("span", { className: "sh-eval-bar" }, h("span", { style: { width: (pct || 6) + "%" } })),
+              ),
+            ) : null,
+            fail ? h("span", { className: "sh-err", style: { margin: 0, flex: 1, minWidth: 0 } }, fail) : null,
+            fail ? h("button", {
+              type: "button",
+              className: "sh-mini",
+              onClick: (e) => { e.stopPropagation(); onRetry(); },
+            }, tr("plg.retry")) : null,
+            h("button", {
+              type: "button",
+              className: "sh-mini",
+              onClick: (e) => { e.stopPropagation(); onOpen(); },
+            }, tr("mkt.details")),
+            !busy && !installed && verified ? h("button", {
+              type: "button",
+              className: "sh-mini primary",
+              onClick: (e) => { e.stopPropagation(); onInstall(); },
+            }, tr("mkt.install")) : null,
+            !busy && !installed && !verified ? h("span", { className: "sh-tag" }, tr("mkt.unsupported")) : null,
+          ),
+        ),
+      );
+    }
+
+    function PluginDrawer({ plugin, tr, restarting, onClose, onInstall, onRestart }) {
+      const [source, setSource] = useState("");
+      const [repoHint, setRepoHint] = useState("");
+      useEffect(() => {
+        let live = true;
+        api("pluginInstallPlan", { owner: plugin.owner, name: plugin.name })
+          .then((d) => {
+            if (!live) return;
+            setSource(d.source || "");
+            setRepoHint(d.repositoryUrl || "");
+          })
+          .catch(() => {});
+        return () => { live = false; };
+      }, [plugin.owner, plugin.name]);
+      const verified = plugin.installability === "verified";
+      const installed = !!plugin.installed;
+      const repo = /^https:\/\/github\.com\//i.test(String(plugin.repositoryUrl || ""))
+        ? plugin.repositoryUrl
+        : repoHint || ("https://github.com/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name));
+      return h(Overlay, { onClose },
+        h("div", { className: "sh-drawer sh-fade", role: "dialog", "aria-modal": "true" },
+          h("button", { type: "button", className: "sh-close", onClick: onClose, "aria-label": tr("action.close") }, "×"),
+          h("div", { className: "sh-head" },
+            h(PluginIcon, { plugin, className: "sh-dicon" }),
+            h("div", { style: { minWidth: 0, flex: 1 } },
+              h("h2", null, plugin.name),
+              h("div", { className: "sh-marks" },
+                verified ? h("span", { className: "sh-badge" }, tr("mkt.verified")) : null,
+                plugin.categoryKey ? h("span", { className: "sh-tag blue" }, pluginCatLabel(plugin.categoryKey, tr)) : null,
+                installed ? h("span", { className: "sh-badge" }, tr("mkt.installed")) : null,
+              ),
+            ),
+          ),
+          h("div", { className: "sh-body" },
+            h("div", { className: "sh-stats" },
+              h("span", { className: "sh-stat" }, "★ " + fmt(plugin.stars, tr)),
+              h("span", { className: "sh-stat" }, plugin.owner + "/" + plugin.name),
+              h("a", { className: "sh-stat", href: repo, target: "_blank", rel: "noreferrer" }, "GitHub ↗"),
+            ),
+            h("p", { className: "sh-overview" }, plugin.description || tr("mkt.noDesc")),
+            source ? h("p", { className: "sh-hint", style: { margin: "14px 0 6px" } }, tr("plg.sourceTitle")) : null,
+            source ? h("div", { className: "sh-mono" }, "dsh plugin --profile web add " + source) : null,
+          ),
+          h("div", { className: "sh-foot" },
+            installed ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("plg.installedHint")) : null,
+            !installed && !verified ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("mkt.unsupported")) : null,
+            installed ? h("button", {
+              type: "button",
+              className: "sh-mini primary",
+              disabled: restarting,
+              onClick: onRestart,
+            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")) : null,
+            !installed && verified ? h("button", {
+              type: "button",
+              className: "sh-mini primary",
+              onClick: () => onInstall(plugin),
+            }, tr("mkt.install")) : null,
+            h("button", { type: "button", className: "sh-mini", onClick: onClose }, tr("action.close")),
+          ),
+        ),
+      );
+    }
+
+    // 聊天流插件卡片视图（key=skillhub_plugin_search）：卡片、就地安装进度、重启横幅、详情弹窗。
+    function PluginSearchToolView(props) {
+      useEffect(() => ensureCss(), []);
+      const payload = pickPayload(props);
+      const args = parseToolArgs(props);
+      const query = String(payload?.query || args.query || "").trim();
+      const fromTool = Array.isArray(payload?.items) && payload.items.length ? payload.items : null;
+      const running = !!(props?.block && !("kind" in props.block));
+      const tr0 = typeof props.t === "function" ? props.t : lookup;
+      const [items, setItems] = useState(fromTool || []);
+      const [err, setErr] = useState("");
+      const [open, setOpen] = useState(null);
+      const [toast, setToast] = useState("");
+      const [busyId, setBusyId] = useState("");
+      const [fail, setFail] = useState(null);
+      const [status, setStatus] = useState(null);
+      const [pendingRestart, setPendingRestart] = useState("");
+      const [restarting, setRestarting] = useState(false);
+      const [bootId, setBootId] = useState("");
+      useEffect(() => {
+        if (fromTool) setItems(fromTool);
+      }, [fromTool]);
+      useEffect(() => {
+        if (running) return;
+        let live = true;
+        const limit = Number(args.limit) > 0 ? Number(args.limit) : 12;
+        const page = Math.floor((Number(args.offset) || 0) / limit) + 1;
+        api("plugins", { q: query, sort: "stars", page, pageSize: limit })
+          .then((d) => {
+            if (!live) return;
+            const fresh = d.items || [];
+            if (fromTool) {
+              // 历史工具结果只合并最新 installed 标志(重启后新装的插件也能显示徽标),保留当时的卡片内容
+              const mark = new Map(fresh.map((it) => [it.fullName || it.owner + "/" + it.name, !!it.installed]));
+              setItems((cur) => cur.map((it) => {
+                const key = it.fullName || it.owner + "/" + it.name;
+                return mark.has(key) ? { ...it, installed: mark.get(key) } : it;
+              }));
+            } else {
+              setItems(fresh);
+              setErr("");
+            }
+          })
+          .catch((e) => { if (live && !fromTool) { setItems([]); setErr(e.message || String(e)); } });
+        return () => { live = false; };
+      }, [query, running, !!fromTool]);
+      useEffect(() => {
+        if (bootId) return;
+        let live = true;
+        api("pluginInstallStatus", {}).then((d) => {
+          if (live && d.boot) setBootId(d.boot);
+        }).catch(() => {});
+        return () => { live = false; };
+      }, [bootId]);
+      useEffect(() => {
+        if (!busyId) return;
+        let live = true;
+        const tick = () => {
+          api("pluginInstallStatus", {}).then((d) => {
+            if (!live) return;
+            setStatus(d);
+            if (d.boot) setBootId((cur) => cur || d.boot);
+          }).catch(() => {});
+        };
+        tick();
+        const timer = setInterval(tick, 800);
+        return () => { live = false; clearInterval(timer); };
+      }, [busyId]);
+      const install = (plugin) => {
+        const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
+        if (restarting) return;
+        if (busyId) { setToast(tr0("plg.queued")); return; }
+        setBusyId(id);
+        setFail(null);
+        setStatus(null);
+        setPendingRestart("");
+        api("pluginInstall", { owner: plugin.owner, name: plugin.name, fullName: plugin.fullName })
+          .then(() => {
+            setItems((cur) => cur.map((it) => (it.fullName || (it.owner + "/" + it.name)) === id ? { ...it, installed: true } : it));
+            setOpen((cur) => cur && (cur.fullName || (cur.owner + "/" + cur.name)) === id ? { ...cur, installed: true } : cur);
+            setPendingRestart(plugin.name || id);
+            setToast(tr0("mkt.sent", { name: plugin.name || id }));
+          }, (e) => {
+            const msg = e && e.message ? String(e.message) : String(e);
+            setFail({ id, message: msg });
+            setToast(tr0("plg.failed", { m: msg }));
+          })
+          .finally(() => setBusyId(""));
+      };
+      const startRestart = () => {
+        if (restarting) return;
+        setRestarting(true);
+        setToast("");
+        pluginRestartFlow(tr0, bootId, (v) => setRestarting(v), setToast);
+      };
+      if (running || !items.length) return err ? h("div", { className: "sh-err" }, err) : null;
+      const pct = busyId ? progressPercent(status) : null;
+      const phase = busyId ? progressCopy(status, tr0) : "";
+      return h(I18nProvider, { t: tr0 },
+        h("div", { className: "sh-root sh-tool" },
+          h("div", { className: "sh-hint" }, tr0("plg.hint", { n: items.length })),
+          h("div", { className: "sh-cards" },
+            items.map((plugin) => {
+              const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
+              return h(PluginCard, {
+                key: id,
+                plugin,
+                tr: tr0,
+                busy: busyId === id,
+                phase,
+                pct,
+                fail: fail && fail.id === id && !busyId ? fail.message : "",
+                onOpen: () => setOpen(plugin),
+                onInstall: () => install(plugin),
+                onRetry: () => install(plugin),
+              });
+            }),
+          ),
+          pendingRestart && !busyId ? h("div", { className: "sh-plg-banner" },
+            h("span", null, "✅ " + tr0("mkt.restartBanner", { name: pendingRestart })),
+            h("button", {
+              type: "button",
+              className: "sh-mini primary",
+              disabled: restarting,
+              onClick: startRestart,
+            }, restarting ? tr0("mkt.restarting") : tr0("mkt.restartNow")),
+          ) : null,
+          open ? h(PluginDrawer, {
+            plugin: open,
+            tr: tr0,
+            restarting,
+            onClose: () => setOpen(null),
+            onInstall: (p) => { setOpen(null); install(p); },
+            onRestart: startRestart,
+          }) : null,
+          toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
+        ),
+      );
+    }
+
     function conversationRoot() {
       return typeof document === "undefined" ? null : document.querySelector("[data-phase]");
     }
@@ -2439,6 +2738,11 @@ window.__ModuleLoader__.load({
         slots,
         { name: "tool.call.toolview", key: "skillhub_list", locale: "skillhub" },
         ListToolView,
+      ));
+      slots.inject("tool.call.toolview", () => registerSlot(
+        slots,
+        { name: "tool.call.toolview", key: "skillhub_plugin_search", locale: "skillhub" },
+        PluginSearchToolView,
       ));
       slots.inject("settings.plugin.item", () => registerSlot(
         slots,

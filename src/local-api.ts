@@ -8,7 +8,16 @@ import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './i
 import { listInstalledPlugins, readInstalledPluginReadme, removeInstalledPlugin } from './installed-plugins.js'
 import { loaderHost, setLivePluginDisabled } from './live-plugin.js'
 import { renderMarkdown } from './markdown.js'
-import { installMarketPlugin, isPluginInstallBusy, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
+import {
+  fetchInstallPlan,
+  installMarketPlugin,
+  isPluginInstallBusy,
+  listPluginCategories,
+  listPlugins,
+  parsePluginRef,
+  resolveInstallSource,
+  withPluginInstallLock,
+} from './plugin-market.js'
 import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
@@ -116,6 +125,13 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
         pageSize: body.pageSize ?? body.limit ?? url.searchParams.get('page_size') ?? url.searchParams.get('pageSize'),
       })
       return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstallPlan') {
+      const ref = parsePluginRef(body.owner ?? url.searchParams.get('owner'), body.name ?? url.searchParams.get('name'))
+      const plan = await fetchInstallPlan(cfg, ref.owner, ref.name)
+      const source = resolveInstallSource(plan, ref)
+      const plugin = (plan && typeof plan === 'object' ? (plan as { plugin?: { repositoryUrl?: unknown } }).plugin : undefined) || {}
+      return sendJson(res, 200, { ok: true, source, repositoryUrl: String(plugin.repositoryUrl || '') })
     }
     if (method === 'pluginInstall') {
       const result = await withPluginInstallLock(() => installMarketPlugin(
