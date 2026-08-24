@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fetchOpts } from './api.js'
 import { addDshPlugin, webProfileDir, type PluginRunner } from './dsh-cli.js'
-import { fetchJson } from './http.js'
+import { fetchBytes, fetchJson, HttpError } from './http.js'
 import type { PluginConfig } from './types.js'
 
 export type PluginScope = 'verified' | 'all'
@@ -222,7 +222,77 @@ export interface PluginInstallResult {
 
 export interface PluginInstallDeps {
   fetchJson: typeof fetchJson
+  fetchBytes: typeof fetchBytes
   runDshPlugin: PluginRunner
+  profileDir: string
+}
+
+/** 从 cordis.patch.yml 文本提取 loader 条目 id(只取 `- id:` 行,不解析完整 YAML)。 */
+export function patchEntryIds(yaml: string): string[] {
+  const ids: string[] = []
+  for (const m of String(yaml || '').matchAll(/^[ \t]*-[ \t]*id:[ \t]*['"]?([A-Za-z0-9@._/-]+)['"]?[ \t]*$/gm)) {
+    if (!ids.includes(m[1])) ids.push(m[1])
+  }
+  return ids
+}
+
+/** 收集 web profile 已安装各包 cordis.patch.yml 声明的 loader id → 持有包名。 */
+export function collectInstalledPatchIds(profileDir: string = webProfileDir()): Map<string, string> {
+  const out = new Map<string, string>()
+  for (const pkg of Object.keys(readInstalledPlugins(profileDir))) {
+    try {
+      const raw = readFileSync(join(profileDir, 'node_modules', pkg, 'cordis.patch.yml'), 'utf8')
+      for (const id of patchEntryIds(raw)) if (!out.has(id)) out.set(id, pkg)
+    } catch {
+      // 该包没有 cordis.patch.yml,不参与组合
+    }
+  }
+  return out
+}
+
+/** 拉取待装插件(github pinned 规格)仓库根部的 cordis.patch.yml 条目 id;仓库没有该文件时返回空。 */
+export async function fetchPatchIdsFromSource(
+  source: string,
+  cfg: PluginConfig,
+  fetchBytesImpl: typeof fetchBytes = fetchBytes,
+): Promise<string[]> {
+  const pin = GITHUB_PIN.exec(String(source || '').trim())
+  if (!pin) return []
+  const url = `https://raw.githubusercontent.com/${pin[1]}/${pin[2]}/cordis.patch.yml`
+  try {
+    const { body } = await fetchBytesImpl(url, fetchOpts(cfg))
+    return patchEntryIds(body.toString('utf8'))
+  } catch (err) {
+    if (err instanceof HttpError && /^HTTP 404/.test(err.message)) return []
+    throw err
+  }
+}
+
+/**
+ * loader id 冲突预检:两个 bundle 的 cordis.patch.yml 声明相同 id 时,
+ * 宿主重启后 cordis 会以 duplicate loader entry id 拒绝整个插件树,dsh web 起不来。
+ * 安装前拦下,避免把宿主打进无法启动的状态。返回 null 表示无冲突。
+ */
+export async function findPatchIdConflict(
+  source: string,
+  cfg: PluginConfig,
+  deps: { fetchBytesImpl?: typeof fetchBytes; profileDir?: string } = {},
+): Promise<{ id: string; holder: string } | null> {
+  const incoming = await fetchPatchIdsFromSource(source, cfg, deps.fetchBytesImpl)
+  if (!incoming.length) return null
+  const profileDir = deps.profileDir ?? webProfileDir()
+  const installed = collectInstalledPatchIds(profileDir)
+  const installedSpecs = readInstalledPlugins(profileDir)
+  const sourceRepo = githubRepoFromSpec(source)
+  for (const id of incoming) {
+    const holder = installed.get(id)
+    if (!holder) continue
+    // 同一个仓库重装/升级不冲突(pnpm 覆盖同一份依赖)
+    const holderRepo = githubRepoFromSpec(installedSpecs[holder] || '')
+    if (holderRepo && sourceRepo && holderRepo === sourceRepo) continue
+    return { id, holder }
+  }
+  return null
 }
 
 let installChain = Promise.resolve()
@@ -313,6 +383,10 @@ export async function installMarketPlugin(
   const ref = parsePluginRef(plugin.owner, plugin.name)
   const plan = await fetchInstallPlan(cfg, ref.owner, ref.name, fetchImpl)
   const source = resolveInstallSource(plan, ref)
+  const conflict = await findPatchIdConflict(source, cfg, { fetchBytesImpl: deps.fetchBytes, profileDir: deps.profileDir })
+  if (conflict) {
+    throw new Error(`插件加载 id「${conflict.id}」与已安装的 ${conflict.holder} 冲突,继续安装会让 dsh web 无法启动,已拒绝。请先卸载 ${conflict.holder}。`)
+  }
   const log = await addDshPlugin(source, deps.runDshPlugin ? { runDshPlugin: deps.runDshPlugin } : {})
   return {
     fullName: ref.fullName,
@@ -350,6 +424,59 @@ export async function listPluginCategories(
     return items.length ? items : fallbackPluginCategories()
   } catch {
     return fallbackPluginCategories()
+  }
+}
+
+export interface PluginSearchResult {
+  query: string
+  category?: string
+  sort: PluginSort
+  items: MarketPlugin[]
+  total: number
+  offset: number
+  hasMore: boolean
+}
+
+/** 把 Agent 工具的 offset/limit 映射为目录 API 的 page/pageSize（含页内 skip，offset 未对齐 pageSize 时避免重复返回整页）。 */
+export function pluginPaging(
+  offset: unknown,
+  limit: unknown,
+  fallbackLimit: number,
+): { page: number; pageSize: number; offset: number; skip: number } {
+  const off = Math.max(0, Math.floor(Number(offset) || 0))
+  const explicit = Math.floor(Number(limit))
+  const size = Number.isFinite(explicit) && explicit > 0 ? Math.min(100, explicit) : Math.max(1, Math.floor(fallbackLimit) || 24)
+  return { page: Math.floor(off / size) + 1, pageSize: size, offset: off, skip: off % size }
+}
+
+/** 聊天内插件搜索：offset 翻页 + 已安装标注，供 skillhub_plugin_search 工具复用。 */
+export async function searchMarketPlugins(
+  cfg: PluginConfig,
+  opts: { q?: unknown; category?: unknown; sort?: unknown; limit?: unknown; offset?: unknown } = {},
+  fetchJsonImpl: typeof fetchJson = fetchJson,
+  installedMap: Record<string, string> = readInstalledPlugins(),
+): Promise<PluginSearchResult> {
+  const paging = pluginPaging(opts.offset, opts.limit, cfg.maxResults)
+  const category = parsePluginCategory(opts.category)
+  const sort = sanitizePluginSort(opts.sort)
+  const page = await listPlugins(cfg, {
+    q: opts.q,
+    scope: 'verified',
+    category,
+    sort,
+    page: paging.page,
+    pageSize: paging.pageSize,
+  }, fetchJsonImpl, installedMap)
+  // offset 未按 pageSize 对齐时（如已展示 3 张、默认 pageSize=12），页内 skip 切掉已展示部分，绝不重复返回
+  const items = paging.skip > 0 ? page.items.slice(paging.skip) : page.items
+  return {
+    query: String(opts.q || '').trim(),
+    category,
+    sort,
+    items,
+    total: page.total,
+    offset: paging.offset,
+    hasMore: paging.offset + items.length < page.total,
   }
 }
 

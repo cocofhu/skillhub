@@ -5,7 +5,19 @@ import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay
 import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
-import { installMarketPlugin, isPluginInstallBusy, listPluginCategories, listPlugins, withPluginInstallLock } from './plugin-market.js'
+import { listInstalledPlugins, readInstalledPluginReadme, removeInstalledPlugin } from './installed-plugins.js'
+import { loaderHost, setLivePluginDisabled } from './live-plugin.js'
+import { renderMarkdown } from './markdown.js'
+import {
+  fetchInstallPlan,
+  installMarketPlugin,
+  isPluginInstallBusy,
+  listPluginCategories,
+  listPlugins,
+  parsePluginRef,
+  resolveInstallSource,
+  withPluginInstallLock,
+} from './plugin-market.js'
 import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
@@ -76,6 +88,33 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       const items = await listPluginCategories(cfg)
       return sendJson(res, 200, { ok: true, items })
     }
+    if (method === 'installedPlugins') {
+      const result = await listInstalledPlugins()
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginReadme') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await readInstalledPluginReadme(pkg)
+      return sendJson(res, 200, { ok: true, ...result, html: renderMarkdown(result.readme) })
+    }
+    if (method === 'pluginUninstall') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await withPluginInstallLock(async () => {
+        // Drop the live loader fiber first so client-modules stops serving
+        // /plugins/<pkg>/client.js before dsh plugin remove deletes the files.
+        const live = await setLivePluginDisabled(pkg, true, loaderHost())
+        try {
+          const removed = await removeInstalledPlugin(pkg)
+          return { ...removed, restart: true }
+        } catch (err) {
+          if (live) await setLivePluginDisabled(pkg, false, loaderHost()).catch(() => false)
+          throw err
+        }
+      })
+      return sendJson(res, 200, { ok: true, ...result })
+    }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
         q: body.q ?? body.query ?? url.searchParams.get('q'),
@@ -86,6 +125,13 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
         pageSize: body.pageSize ?? body.limit ?? url.searchParams.get('page_size') ?? url.searchParams.get('pageSize'),
       })
       return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstallPlan') {
+      const ref = parsePluginRef(body.owner ?? url.searchParams.get('owner'), body.name ?? url.searchParams.get('name'))
+      const plan = await fetchInstallPlan(cfg, ref.owner, ref.name)
+      const source = resolveInstallSource(plan, ref)
+      const plugin = (plan && typeof plan === 'object' ? (plan as { plugin?: { repositoryUrl?: unknown } }).plugin : undefined) || {}
+      return sendJson(res, 200, { ok: true, source, repositoryUrl: String(plugin.repositoryUrl || '') })
     }
     if (method === 'pluginInstall') {
       const result = await withPluginInstallLock(() => installMarketPlugin(
