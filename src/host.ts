@@ -7,6 +7,7 @@ import { CATEGORY_KEYS, categoryLabel, parseCategory } from './categories.js'
 import { assignConfig, readOverlay, sanitizeSortBy, withDefaults } from './config-store.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
 import { handleApi, handleIcon } from './local-api.js'
+import { bindLoaderHost, type LoaderHost } from './live-plugin.js'
 import type { InstallResult, InstalledSkill, PluginConfig, SearchResult, SortBy } from './types.js'
 
 export const name = 'skillhub'
@@ -25,6 +26,7 @@ export const Config: Schema<Config> = Schema.object({
 })
 
 export function apply(ctx: Context, config: Config): void {
+  bindLoaderHost(ctx as unknown as LoaderHost)
   const cfg = withDefaults(config)
   assignConfig(cfg, readOverlay())
 
