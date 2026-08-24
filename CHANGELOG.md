@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.16] - 2026-08-24
+
+### Changed
+
+- 验证 `skillhub-plugin` Trusted Publishing：打 tag 后由 GitHub Actions 同时发布两个 npm 包
+
 ## [0.2.15] - 2026-08-24
 
 ### Changed
