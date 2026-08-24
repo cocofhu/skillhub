@@ -10,7 +10,7 @@ window.__ModuleLoader__.load({
 .sh-hint{color:var(--dsw-alias-label-caption,#6b7280);font-size:12px;line-height:18px;margin:0 0 10px}
 .sh-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 @media (max-width:640px){.sh-cards{grid-template-columns:1fr}}
-.sh-card{display:flex;gap:12px;align-items:flex-start;background:var(--dsw-alias-bg-layer-3,#fff);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;padding:12px;cursor:pointer;text-align:left;width:100%;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,background .16s}
+.sh-card{display:flex;gap:12px;align-items:flex-start;background:var(--dsw-alias-bg-layer-3,#fff);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;padding:12px;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;min-width:0;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,background .16s}
 .sh-card:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(38,49,72,.06));border-color:var(--dsw-alias-label-dimmed,#c7d2fe)}
 .sh-card.on{border-color:var(--dsw-alias-state-success-primary,#86efac)}
 .sh-icon{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--dsw-alias-border-l2,#e5e7eb);flex-shrink:0;background:linear-gradient(135deg,#c7d2fe,#fbcfe8);display:grid;place-items:center;font-weight:700;font-size:12px;color:#374151}
@@ -88,6 +88,7 @@ window.__ModuleLoader__.load({
 .sh-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--dsw-alias-toast-bg,#111827);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:2147483646}
 .sh-err{color:var(--dsw-alias-state-error-primary,#b91c1c);font-size:12px;margin:8px 0}
 .sh-tool{margin:4px 0 8px}
+.sh-tool *{box-sizing:border-box}
 .sh-fade{animation:sh-in .18s ease}
 .sh-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--dsw-alias-border-l2,#eee)}
 .sh-row:first-child{border-top:0}
