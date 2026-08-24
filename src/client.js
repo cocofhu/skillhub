@@ -1884,13 +1884,27 @@ window.__ModuleLoader__.load({
         if (fromTool) setItems(fromTool);
       }, [fromTool]);
       useEffect(() => {
-        if (fromTool || running) return;
+        if (running) return;
         let live = true;
         const limit = Number(args.limit) > 0 ? Number(args.limit) : 12;
         const page = Math.floor((Number(args.offset) || 0) / limit) + 1;
         api("plugins", { q: query, sort: "stars", page, pageSize: limit })
-          .then((d) => { if (live) { setItems(d.items || []); setErr(""); } })
-          .catch((e) => { if (live) { setItems([]); setErr(e.message || String(e)); } });
+          .then((d) => {
+            if (!live) return;
+            const fresh = d.items || [];
+            if (fromTool) {
+              // 历史工具结果只合并最新 installed 标志(重启后新装的插件也能显示徽标),保留当时的卡片内容
+              const mark = new Map(fresh.map((it) => [it.fullName || it.owner + "/" + it.name, !!it.installed]));
+              setItems((cur) => cur.map((it) => {
+                const key = it.fullName || it.owner + "/" + it.name;
+                return mark.has(key) ? { ...it, installed: mark.get(key) } : it;
+              }));
+            } else {
+              setItems(fresh);
+              setErr("");
+            }
+          })
+          .catch((e) => { if (live && !fromTool) { setItems([]); setErr(e.message || String(e)); } });
         return () => { live = false; };
       }, [query, running, !!fromTool]);
       useEffect(() => {
