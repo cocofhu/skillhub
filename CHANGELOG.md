@@ -11,6 +11,14 @@
 - 装完出现「请重启 dsh web」横幅并支持一键重启（与插件广场同链路）；卡片「详情」弹窗展示完整描述、仓库链接与 install-plan 安装来源（pinned commit 规格）
 - systemPrompt 补充插件搜索 / 安装规则；客户端新增 `plg.*` 中英文案
 
+### Changed
+
+- 插件广场「已安装」卡片改为紧凑布局：短标题、包名/ slug 副标题、角标「已装」、底栏来源或文件信息
+- 插件广场「已安装」点卡片打开详情，去掉卡片上的「详情」按钮；详情页底部提供卸载
+- 插件广场「已安装」抽屉的 README 支持 GitHub 常见 HTML（居中标题、徽章图、`<p align>`），仍过滤 script / javascript: 链接
+- 插件广场「已安装」抽屉的 README 改为 Markdown 渲染（标题、列表、表格、链接、徽章），不再等宽纯文本预览
+- `SKILL.md` frontmatter 支持 YAML `|` / `>` 多行 description，已安装技能卡片不再把 `|` 显示成空白
+
 ### Fixed
 
 - 聊天内卡片布局：`.sh-card` 补 `box-sizing:border-box` 与 `min-width:0`、`.sh-tool` 下统一 border-box，修复聊天工具视图（无 `.sh-mkt` 重置）中卡片因 padding/border 溢出网格轨道、相邻卡片相互挤压重叠的问题

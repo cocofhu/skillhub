@@ -5,6 +5,8 @@ import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay
 import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
+import { listInstalledPlugins, readInstalledPluginReadme, removeInstalledPlugin } from './installed-plugins.js'
+import { renderMarkdown } from './markdown.js'
 import {
   fetchInstallPlan,
   installMarketPlugin,
@@ -84,6 +86,22 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
     if (method === 'pluginCategories') {
       const items = await listPluginCategories(cfg)
       return sendJson(res, 200, { ok: true, items })
+    }
+    if (method === 'installedPlugins') {
+      const result = await listInstalledPlugins()
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginReadme') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await readInstalledPluginReadme(pkg)
+      return sendJson(res, 200, { ok: true, ...result, html: renderMarkdown(result.readme) })
+    }
+    if (method === 'pluginUninstall') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await withPluginInstallLock(() => removeInstalledPlugin(pkg))
+      return sendJson(res, 200, { ok: true, ...result, restart: true })
     }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
