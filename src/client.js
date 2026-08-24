@@ -56,6 +56,7 @@ window.__ModuleLoader__.load({
 .sh-tabs{display:flex;gap:16px;margin:0 -22px;padding:0 22px;border-bottom:1px solid var(--dsw-alias-border-l2,#e5e7eb);overflow-x:auto;scrollbar-width:none;flex:none}
 .sh-tabs::-webkit-scrollbar{display:none}
 .sh-tab{appearance:none;flex:none;background:0 0;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 0 12px;font:inherit;font-size:13px;line-height:20px;color:var(--dsw-alias-label-tertiary,#6b7280);cursor:pointer;white-space:nowrap}
+.sh-tab:focus,.sh-tab:focus-visible{outline:none}
 .sh-tab.on{color:var(--dsw-alias-label-primary,inherit);border-bottom-color:var(--dsw-alias-label-primary,#111827);font-weight:650}
 .sh-ver-card{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 18px;margin:0 0 12px;border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;background:var(--dsw-alias-bg-layer-3,#fff)}
 .sh-ver-main{min-width:0;flex:1}
@@ -135,6 +136,7 @@ window.__ModuleLoader__.load({
 .sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
 .sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-mkt-card.clickable{cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left}
 .sh-mkt-card.on{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 45%,var(--dsw-alias-border-l2,#e2e4e8))}
 .sh-mkt-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
 .sh-mkt-card.on:hover{border-color:var(--dsw-alias-state-success-primary,#279c62)}
@@ -204,6 +206,62 @@ window.__ModuleLoader__.load({
 .sh-plaza-body .sh-title{font-size:15px;line-height:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sh-plaza-body .sh-desc{-webkit-line-clamp:2;font-size:13px;line-height:20px}
 .sh-plaza-body .sh-mkt-card{min-height:220px;padding:16px}
+.sh-ip-card{position:relative;box-sizing:border-box;min-width:0;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:12px;background:var(--dsw-alias-bg-layer-3,#fff);cursor:pointer;text-align:left;width:100%;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,box-shadow .16s,background .16s}
+.sh-ip-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-ip-card:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4d6bfe);outline-offset:2px}
+.sh-plaza-body .sh-ip-card{min-height:0}
+.sh-ip-card .sh-mkt-avatar{width:40px;height:40px;border-radius:10px}
+.sh-ip-badge{position:absolute;top:12px;right:12px;flex:none;min-height:18px;padding:1px 7px;border-radius:999px;background:var(--dsw-alias-state-success-tertiary,#ecfdf5);color:var(--dsw-alias-state-success-primary,#047857);font-size:11px;line-height:16px}
+.sh-ip-head{display:flex;align-items:center;gap:12px;min-width:0;padding-right:46px}
+.sh-ip-head-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.sh-ip-title{margin:0;font-size:15px;line-height:22px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-ip-sub{margin:0;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#9ca3af);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-ip-desc{display:-webkit-box;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.sh-ip-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ========= 已安装视图:segmented 切换 / Meta 卡片 / README 预览 ========= */
+.sh-scope{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sh-seg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:9px;background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
+.sh-seg button{appearance:none;border:0;background:transparent;height:28px;padding:0 14px;border-radius:7px;font:inherit;font-size:12px;color:var(--dsw-alias-label-tertiary,#7b8088);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s,color .15s,box-shadow .15s}
+.sh-seg button:hover{color:var(--dsw-alias-label-secondary,#4b5058)}
+.sh-seg button.on{background:var(--dsw-alias-bg-layer-3,#fff);color:var(--dsw-alias-label-primary,#17191c);font-weight:600;box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-seg .sh-count{font-size:11px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-caption,#9ca3af)}
+.sh-seg button.on .sh-count{color:var(--dsw-alias-state-business-primary,#4d6bfe)}
+.sh-card .sh-desc{-webkit-line-clamp:2;min-height:38px}
+.sh-version{flex:none;font-size:11px;color:var(--dsw-alias-label-caption,#9ca3af);font-variant-numeric:tabular-nums}
+.sh-slug-mono{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:10.5px;color:var(--dsw-alias-label-caption,#9ca3af);overflow-wrap:anywhere}
+.sh-statline{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:auto;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px}
+.sh-statline span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sh-statline svg{width:12px;height:12px;color:var(--dsw-alias-label-caption,#9ca3af);flex:none}
+.sh-card-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);justify-content:flex-end}
+.sh-others{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px dashed var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;color:var(--dsw-alias-label-caption,#9ca3af);font-size:12px;line-height:18px}
+.sh-tabs.plain{margin:0 -18px;padding:0 18px}
+.sh-kv{display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px 14px;font-size:13px;line-height:20px;margin:0 0 16px}
+.sh-kv dt{color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;padding-top:1px}
+.sh-kv dd{margin:0;overflow-wrap:anywhere}
+.sh-kv dd code{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11.5px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);padding:2px 6px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
+.sh-readme{margin:0;padding:16px 18px 20px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-3,#fff);font-size:13px;line-height:1.7;color:var(--dsw-alias-label-secondary,#4b5058);overflow-wrap:anywhere;max-height:52vh;overflow:auto}
+.sh-readme>:first-child{margin-top:0}
+.sh-readme>:last-child{margin-bottom:0}
+.sh-readme h1,.sh-readme h2,.sh-readme h3,.sh-readme h4{margin:1.15em 0 .45em;color:var(--dsw-alias-label-primary,#17191c);line-height:1.35;font-weight:700}
+.sh-readme h1{font-size:22px}
+.sh-readme h2{font-size:17px;padding-bottom:6px;border-bottom:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
+.sh-readme h3{font-size:15px}
+.sh-readme p{margin:.7em 0}
+.sh-readme a{color:var(--dsw-alias-state-business-primary,#4d6bfe);text-decoration:none}
+.sh-readme a:hover{text-decoration:underline}
+.sh-readme [align="center"]{text-align:center}
+.sh-readme img{max-width:min(100%,520px);max-height:240px;height:auto;vertical-align:middle;margin:0 4px 8px 0}
+.sh-readme ul,.sh-readme ol{margin:.5em 0 .7em;padding-left:1.4em}
+.sh-readme li{margin:.2em 0}
+.sh-readme blockquote{margin:.7em 0;padding:6px 12px;border-left:3px solid var(--dsw-alias-border-l2,#d1d5db);color:var(--dsw-alias-label-tertiary,#7b8088);background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
+.sh-readme hr{border:0;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);margin:1.1em 0}
+.sh-readme code{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:12px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);padding:1px 5px;border-radius:4px}
+.sh-readme pre{margin:.7em 0;padding:12px 14px;border-radius:8px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);overflow:auto}
+.sh-readme pre code{background:none;padding:0;font-size:12px;line-height:1.55}
+.sh-readme table{border-collapse:collapse;width:100%;margin:.7em 0;font-size:12.5px}
+.sh-readme th,.sh-readme td{border:1px solid var(--dsw-alias-border-l2,#e2e4e8);padding:6px 10px;text-align:left}
+.sh-readme th{background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-primary,#17191c);font-weight:600}
+.sh-trunc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--dsw-alias-state-warn-label,#c2410c)}
 `;
 
     const CSS_ID = "skillhub-style";
@@ -267,6 +325,41 @@ window.__ModuleLoader__.load({
       if (Number.isNaN(d.getTime())) return "";
       const loc = tr && tr("locale") === "en" ? "en-US" : "zh-CN";
       return d.toLocaleDateString(loc, { year: "numeric", month: "short", day: "numeric" });
+    }
+
+    function fmtSize(bytes) {
+      const n = Number(bytes);
+      if (!Number.isFinite(n) || n < 0) return "";
+      if (n < 1024) return n + " B";
+      const kb = n / 1024;
+      if (kb < 1024) return (Math.round(kb * 10) / 10) + " KB";
+      return (Math.round(kb / 102.4) / 10) + " MB";
+    }
+
+    function letterOf(name) {
+      const ch = String(name || "").match(/[A-Za-z0-9]|[一-鿿]/);
+      return (ch ? ch[0] : "?").toUpperCase();
+    }
+
+    function StatFileIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("path", { d: "M3 1.5h4l2 2v7H3v-9Z", stroke: "currentColor", strokeWidth: "1.1", strokeLinejoin: "round" }),
+        h("path", { d: "M7 1.5v2h2", stroke: "currentColor", strokeWidth: "1.1" }),
+      );
+    }
+
+    function StatSizeIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("rect", { x: "2", y: "2", width: "8", height: "8", rx: "1.6", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("path", { d: "M4.2 6.8 6 5l1.8 1.8", stroke: "currentColor", strokeWidth: "1.1", strokeLinecap: "round", strokeLinejoin: "round" }),
+      );
+    }
+
+    function StatClockIcon() {
+      return h("svg", { viewBox: "0 0 12 12", fill: "none", "aria-hidden": "true" },
+        h("circle", { cx: "6", cy: "6", r: "4.5", stroke: "currentColor", strokeWidth: "1.1" }),
+        h("path", { d: "M6 3.6V6l1.7 1.1", stroke: "currentColor", strokeWidth: "1.1", strokeLinecap: "round" }),
+      );
     }
 
     const ZH = {
@@ -374,6 +467,33 @@ window.__ModuleLoader__.load({
       "plaza.plugins": "插件",
       "plaza.noSession": "请先打开一个会话",
       "plaza.back": "返回对话",
+      "scope.all": "全部",
+      "scope.installed": "已安装",
+      "meta.files": "{n} 个文件",
+      "meta.updated": "更新于 {t}",
+      "stat.files": "文件数",
+      "stat.size": "总大小",
+      "stat.updated": "更新于",
+      "inst.error": "读取本机技能失败：{m}",
+      "ip.empty": "web profile 还没有已安装的 dsh 插件",
+      "ip.error": "读取本机插件失败：{m}",
+      "ip.tab.overview": "概览",
+      "ip.tab.readme": "README",
+      "ip.readmeTitle": "README",
+      "ip.noReadme": "该插件没有 README。",
+      "ip.truncated": "内容超过 64 KB，已截断显示前 64 KB。",
+      "ip.others": "另有 {n} 个非 dsh 依赖（未识别为插件），已默认折叠。",
+      "ip.tag.dsh": "dsh 插件",
+      "ip.kv.pkg": "包名",
+      "ip.kv.version": "当前版本",
+      "ip.kv.spec": "安装来源",
+      "ip.kv.path": "解析位置",
+      "ip.kv.basis": "识别依据",
+      "ip.kv.basisValue": "package.json 含 dsh 字段",
+      "ip.src.github": "GitHub",
+      "ip.src.npm": "npm",
+      "ip.src.link": "本地 link",
+      "ip.src.unknown": "未知来源",
     };
     const EN = {
       locale: "en",
@@ -480,6 +600,33 @@ window.__ModuleLoader__.load({
       "plaza.plugins": "Plugins",
       "plaza.noSession": "Open a session first",
       "plaza.back": "Back to chat",
+      "scope.all": "All",
+      "scope.installed": "Installed",
+      "meta.files": "{n} files",
+      "meta.updated": "Updated {t}",
+      "stat.files": "Files",
+      "stat.size": "Total size",
+      "stat.updated": "Updated",
+      "inst.error": "Failed to read local skills: {m}",
+      "ip.empty": "No dsh plugins installed in the web profile",
+      "ip.error": "Failed to read local plugins: {m}",
+      "ip.tab.overview": "Overview",
+      "ip.tab.readme": "README",
+      "ip.readmeTitle": "README",
+      "ip.noReadme": "This plugin has no README.",
+      "ip.truncated": "Content exceeds 64 KB; showing the first 64 KB.",
+      "ip.others": "{n} non-dsh dependencies (not recognized as plugins) are collapsed.",
+      "ip.tag.dsh": "dsh plugin",
+      "ip.kv.pkg": "Package",
+      "ip.kv.version": "Version",
+      "ip.kv.spec": "Installed from",
+      "ip.kv.path": "Resolved path",
+      "ip.kv.basis": "Recognized by",
+      "ip.kv.basisValue": "package.json has a dsh field",
+      "ip.src.github": "GitHub",
+      "ip.src.npm": "npm",
+      "ip.src.link": "Local link",
+      "ip.src.unknown": "Unknown source",
     };
 
     const I18nCtx = React.createContext(null);
@@ -555,14 +702,14 @@ window.__ModuleLoader__.load({
       return h("div", { className }, initials(item.name || item.slug));
     }
 
-    function Cards({ items, onOpen }) {
+    function Cards({ items, onOpen, footline }) {
       const tr = useTr();
       if (!items?.length) return h("div", { className: "sh-hint" }, tr("search.empty"));
       return h(
         "div",
         { className: "sh-cards" },
         items.map((item) => {
-          const meta = [
+          const meta = footline ? footline(item, tr) : [
             catLabel(item, tr),
             item.downloads ? tr("meta.downloads", { n: fmt(item.downloads, tr) }) : null,
             item.version ? "v" + item.version : null,
@@ -1058,6 +1205,7 @@ window.__ModuleLoader__.load({
       useEffect(() => ensureCss(), []);
       const payload = pickPayload(props);
       const fromTool = Array.isArray(payload?.items) ? payload.items : null;
+      const skillsDir = payload?.skillsDir || "";
       const running = !!(props?.block && !("kind" in props.block));
       const [items, setItems] = useState(fromTool || []);
       const [open, setOpen] = useState(null);
@@ -1065,43 +1213,43 @@ window.__ModuleLoader__.load({
       useEffect(() => { if (fromTool) setItems(fromTool); }, [fromTool]);
       if (running) return null;
       const tr = typeof props.t === "function" ? props.t : lookup;
-      const openItem = (it) => setOpen({
-        slug: it.slug,
-        name: it.name,
-        description: it.description,
-        version: it.version,
-        installed: true,
-        pageUrl: "https://skillhub.cn/skills/" + it.slug,
-      });
+      const dropItem = (it) => setItems((cur) => cur.filter((x) => x.slug !== it.slug));
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-root sh-tool" },
           h("div", { className: "sh-hint" }, items.length ? tr("installed.hint", { n: items.length }) : tr("installed.none")),
-          items.map((it) => h("div", { key: it.slug, className: "sh-row" },
-            h("div", null,
-              h("div", { className: "sh-title" }, it.name),
-              h("div", { className: "sh-slug" }, it.slug + (it.version ? " · v" + it.version : "")),
-            ),
-            h("div", null,
-              h("button", { type: "button", className: "sh-mini", onClick: () => openItem(it) }, tr("action.detail")),
-              h("button", {
-                type: "button",
-                className: "sh-mini",
-                onClick: async () => {
-                  try {
-                    await api("uninstall", { slug: it.slug });
-                    setItems((cur) => cur.filter((x) => x.slug !== it.slug));
-                    setToast(tr("toast.uninstalled", { name: it.name }));
-                  } catch (e) {
-                    setToast(e.message || String(e));
-                  }
-                },
-              }, tr("action.uninstall")),
-            ),
-          )),
-          open ? h(Drawer, {
+          items.length ? h("div", { className: "sh-cards" },
+            items.map((it) => h(SkillMetaCard, {
+              key: it.slug,
+              item: it,
+              onOpen: setOpen,
+              actions: h("div", { className: "sh-card-actions" },
+                h("button", {
+                  type: "button",
+                  className: "sh-mini",
+                  onClick: (e) => { e.stopPropagation(); setOpen(it); },
+                }, tr("action.detail")),
+                h("button", {
+                  type: "button",
+                  className: "sh-mini",
+                  onClick: async (e) => {
+                    e.stopPropagation();
+                    try {
+                      await api("uninstall", { slug: it.slug });
+                      dropItem(it);
+                      setToast(tr("toast.uninstalled", { name: it.name }));
+                    } catch (err) {
+                      setToast(err.message || String(err));
+                    }
+                  },
+                }, tr("action.uninstall")),
+              ),
+            })),
+          ) : null,
+          open ? h(LocalSkillDrawer, {
             item: open,
+            skillsDir,
             onClose: () => setOpen(null),
-            onUninstalled: (it) => setItems((cur) => cur.filter((x) => x.slug !== it.slug)),
+            onUninstalled: dropItem,
           }) : null,
           toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
         ),
@@ -1270,6 +1418,40 @@ window.__ModuleLoader__.load({
       { key: "admin-security", displayName: "管理安全" },
     ];
 
+    function shortPkgName(pkg, name) {
+      const n = String(name || "").trim();
+      const p = String(pkg || "").trim();
+      if (n && n !== p) return n;
+      const slash = p.lastIndexOf("/");
+      return slash >= 0 ? p.slice(slash + 1) : (n || p || "?");
+    }
+
+    function PlazaLocalCard({ icon, title, subtitle, description, footer, badge, onOpen }) {
+      return h("article", {
+        className: "sh-ip-card",
+        tabIndex: 0,
+        role: "button",
+        onClick: onOpen,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        },
+      },
+        badge ? h("span", { className: "sh-ip-badge" }, badge) : null,
+        h("div", { className: "sh-ip-head" },
+          icon,
+          h("div", { className: "sh-ip-head-main" },
+            h("div", { className: "sh-ip-title", title }, title),
+            subtitle ? h("div", { className: "sh-ip-sub", title: subtitle }, subtitle) : null,
+          ),
+        ),
+        description ? h("p", { className: "sh-ip-desc" }, description) : null,
+        footer ? h("div", { className: "sh-ip-foot" }, footer) : null,
+      );
+    }
+
     function pluginLetter(plugin) {
       const raw = String((plugin && plugin.name) || (plugin && plugin.owner) || "");
       const ch = raw.match(/[A-Za-z0-9]|[\u4e00-\u9fff]/);
@@ -1342,6 +1524,319 @@ window.__ModuleLoader__.load({
       return null;
     }
 
+    /* ========= 已安装视图:segmented 切换 / Meta 卡片 / 插件 README 预览 ========= */
+
+    function ScopeSeg({ scope, onChange, count }) {
+      const tr = useTr();
+      return h("div", { className: "sh-scope" },
+        h("div", { className: "sh-seg", role: "tablist" },
+          h("button", {
+            type: "button",
+            role: "tab",
+            className: scope === "all" ? "on" : "",
+            "aria-selected": scope === "all",
+            onClick: () => onChange("all"),
+          }, tr("scope.all")),
+          h("button", {
+            type: "button",
+            role: "tab",
+            className: scope === "installed" ? "on" : "",
+            "aria-selected": scope === "installed",
+            onClick: () => onChange("installed"),
+          },
+            tr("scope.installed"),
+            count != null ? h("span", { className: "sh-count" }, String(count)) : null,
+          ),
+        ),
+      );
+    }
+
+    function skillStatSpans(item, tr) {
+      const out = [];
+      if (item.files != null) out.push(h("span", { key: "files" }, h(StatFileIcon), tr("meta.files", { n: item.files })));
+      if (item.totalBytes != null) out.push(h("span", { key: "size" }, h(StatSizeIcon), fmtSize(item.totalBytes)));
+      if (item.mtimeMs) out.push(h("span", { key: "mtime" }, h(StatClockIcon), tr("meta.updated", { t: fmtTime(item.mtimeMs, tr) })));
+      return out;
+    }
+
+    /** 已安装技能 Meta 卡片:名称/已装徽章/版本/slug/两行描述/统计行;可复用到对话工具卡片。 */
+    function SkillMetaCard({ item, onOpen, actions }) {
+      const tr = useTr();
+      const spans = skillStatSpans(item, tr);
+      return h("article", {
+        className: "sh-card on",
+        tabIndex: 0,
+        role: "button",
+        onClick: () => onOpen(item),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen(item);
+          }
+        },
+      },
+        h("div", { className: "sh-icon" }, letterOf(item.name || item.slug)),
+        h("div", { className: "sh-meta" },
+          h("div", { className: "sh-top" },
+            h("div", { className: "sh-title", title: item.name }, item.name),
+            h("span", { className: "sh-badge" }, tr("badge.installed")),
+            item.version ? h("span", { className: "sh-version" }, "v" + item.version) : null,
+          ),
+          h("div", { className: "sh-slug-mono" }, item.slug),
+          item.description ? h("div", { className: "sh-desc" }, item.description) : null,
+          spans.length ? h("div", { className: "sh-statline" }, spans) : null,
+          actions || null,
+        ),
+      );
+    }
+
+    /** 已安装技能本地概览抽屉:只展示 Meta 信息,不浏览文件内容。 */
+    function LocalSkillDrawer({ item, skillsDir, onClose, onUninstalled }) {
+      const tr = useTr();
+      const [working, setWorking] = useState(false);
+      const [toast, setToast] = useState("");
+      const chips = [];
+      if (item.files != null) chips.push(h("div", { className: "sh-stat", key: "f" }, tr("stat.files") + " ", h("b", null, String(item.files))));
+      if (item.totalBytes != null) chips.push(h("div", { className: "sh-stat", key: "s" }, tr("stat.size") + " ", h("b", null, fmtSize(item.totalBytes))));
+      if (item.mtimeMs) chips.push(h("div", { className: "sh-stat", key: "m" }, tr("stat.updated") + " ", h("b", null, fmtTime(item.mtimeMs, tr))));
+      const uninstall = async () => {
+        setWorking(true);
+        try {
+          await api("uninstall", { slug: item.slug });
+          onUninstalled?.(item);
+          onClose();
+        } catch (e) {
+          setToast(e.message || String(e));
+        } finally {
+          setWorking(false);
+        }
+      };
+      return h(Overlay, { onClose },
+        h("div", { className: "sh-drawer sh-fade", role: "dialog", "aria-modal": "true" },
+          h("button", { type: "button", className: "sh-close", onClick: onClose, "aria-label": tr("action.close") }, "×"),
+          h("div", { className: "sh-head" },
+            h("div", { className: "sh-dicon" }, letterOf(item.name || item.slug)),
+            h("div", { style: { minWidth: 0, flex: 1 } },
+              h("h2", null, item.name),
+              h("div", { className: "sh-slug-mono" }, item.slug),
+              h("div", { className: "sh-tags" },
+                h("span", { className: "sh-tag green" }, tr("badge.installed")),
+                item.version ? h("span", { className: "sh-tag" }, "v" + item.version) : null,
+              ),
+            ),
+          ),
+          h("div", { className: "sh-body" },
+            h("p", { className: "sh-overview" }, item.description || tr("overview.empty")),
+            chips.length ? h("div", { className: "sh-stats" }, chips) : null,
+          ),
+          onUninstalled ? h("div", { className: "sh-foot" },
+            h("button", { type: "button", className: "sh-mini", disabled: working, onClick: uninstall },
+              working ? tr("action.uninstalling") : tr("action.uninstall")),
+          ) : null,
+          toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
+        ),
+      );
+    }
+
+    /** 已安装技能:与「全部」相同的卡片与详情弹窗,footline 展示本地 Meta。 */
+    function installedFootline(item, tr) {
+      return [
+        item.files != null ? tr("meta.files", { n: item.files }) : null,
+        item.totalBytes != null ? fmtSize(item.totalBytes) : null,
+        item.mtimeMs ? tr("meta.updated", { t: fmtTime(item.mtimeMs, tr) }) : null,
+        item.version ? "v" + item.version : null,
+      ].filter(Boolean).join(" · ");
+    }
+
+    function InstalledSkillsView({ onChanged }) {
+      const tr = useTr();
+      const [state, setState] = useState({ status: "loading", items: [], err: "" });
+      const [open, setOpen] = useState(null);
+      useEffect(() => {
+        let live = true;
+        api("list", {})
+          .then((d) => { if (live) setState({ status: "ready", items: (d.items || []).map((it) => ({ ...it, installed: true })), err: "" }); })
+          .catch((e) => { if (live) setState({ status: "error", items: [], err: e.message || String(e) }); });
+        return () => { live = false; };
+      }, []);
+      const drop = (it) => {
+        setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.slug !== it.slug) }));
+        setOpen((cur) => (cur && cur.slug === it.slug ? { ...cur, installed: false } : cur));
+        onChanged?.();
+      };
+      return h("div", null,
+        state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
+        state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("inst.error", { m: state.err })) : null,
+        state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("installed.none")) : null,
+        state.items.length ? h("div", { className: "sh-mkt-grid" },
+          state.items.map((item) => h(PlazaLocalCard, {
+            key: item.slug,
+            icon: h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback", "aria-hidden": "true" }, letterOf(item.name || item.slug)),
+            title: item.name,
+            subtitle: item.slug && item.slug !== item.name ? item.slug : null,
+            description: item.description || "",
+            footer: installedFootline(item, tr),
+            badge: tr("badge.installed"),
+            onOpen: () => setOpen(item),
+          })),
+        ) : null,
+        open ? h(Drawer, {
+          item: open,
+          onClose: () => setOpen(null),
+          onUninstalled: drop,
+        }) : null,
+      );
+    }
+
+    function pluginSourceLabel(plugin, tr) {
+      if (plugin.source === "github") return tr("ip.src.github");
+      if (plugin.source === "npm") return tr("ip.src.npm");
+      if (plugin.source === "link") return tr("ip.src.link");
+      return tr("ip.src.unknown");
+    }
+
+    /** 已安装插件:点卡片打开本地详情抽屉。 */
+    function InstalledPluginCard({ plugin, onOpen }) {
+      const tr = useTr();
+      const title = shortPkgName(plugin.pkg, plugin.name);
+      const footer = [pluginSourceLabel(plugin, tr), plugin.version ? "v" + plugin.version : null].filter(Boolean).join(" · ");
+      return h(PlazaLocalCard, {
+        icon: h(MarketAvatar, { plugin: { name: title, owner: plugin.pkg, avatarUrl: plugin.avatarUrl } }),
+        title,
+        subtitle: plugin.pkg && plugin.pkg !== title ? plugin.pkg : null,
+        description: plugin.description || "",
+        footer,
+        badge: tr("badge.installed"),
+        onOpen: () => onOpen(plugin),
+      });
+    }
+
+    /** 已安装插件预览抽屉:概览 KV + README Markdown 渲染,底部卸载。 */
+    function PluginDrawer({ plugin, onClose, onUninstalled }) {
+      const tr = useTr();
+      const [tab, setTab] = useState("overview");
+      const [readme, setReadme] = useState(null);
+      const [working, setWorking] = useState(false);
+      const [toast, setToast] = useState("");
+      useEffect(() => {
+        let live = true;
+        setReadme(null);
+        api("pluginReadme", { pkg: plugin.pkg })
+          .then((d) => { if (live) setReadme({ status: "ready", text: d.readme || "", html: d.html || "", truncated: !!d.truncated }); })
+          .catch((e) => { if (live) setReadme({ status: "error", text: "", truncated: false, err: e.message || String(e) }); });
+        return () => { live = false; };
+      }, [plugin.pkg]);
+      const kv = [
+        [tr("ip.kv.pkg"), plugin.pkg],
+        [tr("ip.kv.version"), plugin.version ? "v" + plugin.version : "-"],
+        [tr("ip.kv.spec"), plugin.spec],
+        [tr("ip.kv.path"), plugin.path || "-"],
+        [tr("ip.kv.basis"), tr("ip.kv.basisValue")],
+      ];
+      const uninstall = async () => {
+        if (working) return;
+        setWorking(true);
+        try {
+          await api("pluginUninstall", { pkg: plugin.pkg });
+          onUninstalled?.(plugin);
+          onClose();
+        } catch (e) {
+          setToast(e.message || String(e));
+        } finally {
+          setWorking(false);
+        }
+      };
+      return h(Overlay, { onClose },
+        h("div", { className: "sh-drawer sh-fade", role: "dialog", "aria-modal": "true" },
+          h("button", { type: "button", className: "sh-close", onClick: onClose, "aria-label": tr("action.close") }, "×"),
+          h("div", { className: "sh-head" },
+            h("div", { className: "sh-dicon" }, letterOf(plugin.name || plugin.pkg)),
+            h("div", { style: { minWidth: 0, flex: 1 } },
+              h("h2", null, plugin.name || plugin.pkg),
+              h("div", { className: "sh-slug-mono" }, plugin.pkg),
+              h("div", { className: "sh-tags" },
+                h("span", { className: "sh-tag green" }, tr("action.installed")),
+                h("span", { className: "sh-tag blue" }, tr("ip.tag.dsh")),
+                plugin.version ? h("span", { className: "sh-tag" }, "v" + plugin.version) : null,
+                h("span", { className: "sh-tag" }, pluginSourceLabel(plugin, tr)),
+              ),
+            ),
+          ),
+          h("div", { className: "sh-body" },
+            h("div", { className: "sh-tabs plain", role: "tablist" },
+              h("button", {
+                type: "button",
+                role: "tab",
+                className: "sh-tab" + (tab === "overview" ? " on" : ""),
+                "aria-selected": tab === "overview",
+                onClick: () => setTab("overview"),
+              }, tr("ip.tab.overview")),
+              h("button", {
+                type: "button",
+                role: "tab",
+                className: "sh-tab" + (tab === "readme" ? " on" : ""),
+                "aria-selected": tab === "readme",
+                onClick: () => setTab("readme"),
+              }, tr("ip.tab.readme")),
+            ),
+            h("div", { className: "sh-pane" },
+              tab === "overview" ? h("div", null,
+                h("p", { className: "sh-overview" }, plugin.description || tr("mkt.noDesc")),
+                h("dl", { className: "sh-kv" },
+                  kv.map(([k, v]) => [h("dt", { key: k }, k), h("dd", { key: k + "-dd" }, h("code", null, v))]),
+                ),
+              ) : h("div", null,
+                readme === null ? h("p", { className: "sh-hint" }, tr("loading")) : null,
+                readme && readme.status === "error" ? h("p", { className: "sh-err" }, readme.err) : null,
+                readme && readme.status === "ready" && !readme.text ? h("p", { className: "sh-hint" }, tr("ip.noReadme")) : null,
+                readme && readme.status === "ready" && readme.text ? h("div", null,
+                  h("div", { className: "sh-readme", dangerouslySetInnerHTML: { __html: readme.html || "" } }),
+                  readme.truncated ? h("div", { className: "sh-trunc" }, tr("ip.truncated")) : null,
+                ) : null,
+              ),
+            ),
+          ),
+          h("div", { className: "sh-foot" },
+            h("button", {
+              type: "button",
+              className: "sh-mini",
+              disabled: working,
+              onClick: uninstall,
+            }, working ? tr("action.uninstalling") : tr("action.uninstall")),
+          ),
+          toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
+        ),
+      );
+    }
+
+    function InstalledPluginsView({ onChanged }) {
+      const tr = useTr();
+      const [state, setState] = useState({ status: "loading", items: [], others: 0, err: "" });
+      const [open, setOpen] = useState(null);
+      useEffect(() => {
+        let live = true;
+        api("installedPlugins", {})
+          .then((d) => { if (live) setState({ status: "ready", items: d.items || [], others: Number(d.others) || 0, err: "" }); })
+          .catch((e) => { if (live) setState({ status: "error", items: [], others: 0, err: e.message || String(e) }); });
+        return () => { live = false; };
+      }, []);
+      const drop = (plugin) => {
+        setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.pkg !== plugin.pkg) }));
+        setOpen(null);
+        onChanged?.();
+      };
+      return h("div", null,
+        state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
+        state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("ip.error", { m: state.err })) : null,
+        state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("ip.empty")) : null,
+        state.items.length ? h("div", { className: "sh-mkt-grid" },
+          state.items.map((p) => h(InstalledPluginCard, { key: p.pkg, plugin: p, onOpen: setOpen })),
+        ) : null,
+        state.status === "ready" && state.others > 0 ? h("div", { className: "sh-others" }, tr("ip.others", { n: state.others })) : null,
+        open ? h(PluginDrawer, { plugin: open, onClose: () => setOpen(null), onUninstalled: drop }) : null,
+      );
+    }
+
     function Marketplace(props) {
       useEffect(() => ensureCss(), []);
       const tr = typeof props.t === "function" ? props.t : lookup;
@@ -1361,7 +1856,14 @@ window.__ModuleLoader__.load({
       const [liveStatus, setLiveStatus] = useState(null);
       const [pendingRestart, setPendingRestart] = useState("");
       const [restarting, setRestarting] = useState(false);
+      const [scope, setScope] = useState("all");
+      const [installedCount, setInstalledCount] = useState(null);
       const install = installMarketPlugin;
+      const loadInstalledCount = () => {
+        api("installedPlugins", {})
+          .then((d) => setInstalledCount((d.items || []).length))
+          .catch(() => {});
+      };
       useEffect(() => {
         let live = true;
         api("pluginCategories", {})
@@ -1377,7 +1879,10 @@ window.__ModuleLoader__.load({
         }).catch(() => {});
         return () => { live = false; };
       }, []);
+      // 切换分段时刷新已安装计数
+      useEffect(() => { loadInstalledCount(); }, [scope]);
       useEffect(() => {
+        if (scope !== "all") return;
         let live = true;
         if (page === 1) setStatus("loading");
         api("plugins", { q: submitted, scope: "verified", category, sort: "stars", page, pageSize: 48 })
@@ -1398,7 +1903,7 @@ window.__ModuleLoader__.load({
             setErr(e.message || String(e));
           });
         return () => { live = false; };
-      }, [submitted, category, page]);
+      }, [submitted, category, page, scope]);
       useEffect(() => {
         if (!sending && !restarting) return;
         let live = true;
@@ -1472,6 +1977,8 @@ window.__ModuleLoader__.load({
       };
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
+          h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
+          scope === "installed" ? h(InstalledPluginsView, { t: tr, onChanged: loadInstalledCount }) : h(React.Fragment, null,
           h("form", {
             className: "sh-mkt-search",
             onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
@@ -1569,6 +2076,7 @@ window.__ModuleLoader__.load({
                             return iid === id ? { ...it, installed: true } : it;
                           }));
                           setPendingRestart(plugin.fullName || id);
+                          loadInstalledCount();
                         },
                         (e) => setFeedback(e.message || String(e)),
                       ).finally(() => setSending(""));
@@ -1587,6 +2095,7 @@ window.__ModuleLoader__.load({
             h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: Math.max(0, total - items.length) })),
             h(ChevronDown),
           ) : null,
+          ),
         ),
       );
     }
@@ -1619,7 +2128,17 @@ window.__ModuleLoader__.load({
       const [status, setStatus] = useState("loading");
       const [err, setErr] = useState("");
       const [open, setOpen] = useState(null);
+      const [scope, setScope] = useState("all");
+      const [installedCount, setInstalledCount] = useState(null);
+      const loadInstalledCount = () => {
+        api("list", {})
+          .then((d) => setInstalledCount((d.items || []).length))
+          .catch(() => {});
+      };
+      // 初次挂载与每次切换分段都刷新计数,卸载/安装后回到全部也能拿到最新值
+      useEffect(() => { loadInstalledCount(); }, [scope]);
       useEffect(() => {
+        if (scope !== "all") return;
         let live = true;
         if (page === 1) setStatus("loading");
         api("search", { query: submitted, category, limit: pageSize, offset: (page - 1) * pageSize })
@@ -1643,13 +2162,16 @@ window.__ModuleLoader__.load({
             setErr(e.message || String(e));
           });
         return () => { live = false; };
-      }, [submitted, category, page]);
+      }, [submitted, category, page, scope]);
       const mark = (item, installed) => {
         setItems((cur) => cur.map((it) => it.slug === item.slug ? { ...it, installed } : it));
         setOpen((cur) => cur && cur.slug === item.slug ? { ...cur, installed } : cur);
+        loadInstalledCount();
       };
       const remaining = Math.max(0, total - items.length);
       return h("div", { className: "sh-mkt" },
+        h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
+        scope === "installed" ? h(InstalledSkillsView, { onChanged: loadInstalledCount }) : h(React.Fragment, null,
         h("form", {
           className: "sh-mkt-search",
           onSubmit: (e) => { e.preventDefault(); setPage(1); setSubmitted(query.trim()); },
@@ -1700,6 +2222,7 @@ window.__ModuleLoader__.load({
           onInstalled: (it) => mark(it, true),
           onUninstalled: (it) => mark(it, false),
         }) : null,
+        ),
       );
     }
 

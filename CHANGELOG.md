@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 插件广场「已安装」卡片改为紧凑布局：短标题、包名/ slug 副标题、角标「已装」、底栏来源或文件信息
+- 插件广场「已安装」点卡片打开详情，去掉卡片上的「详情」按钮；详情页底部提供卸载
+- 插件广场「已安装」抽屉的 README 支持 GitHub 常见 HTML（居中标题、徽章图、`<p align>`），仍过滤 script / javascript: 链接
+- 插件广场「已安装」抽屉的 README 改为 Markdown 渲染（标题、列表、表格、链接、徽章），不再等宽纯文本预览
+- `SKILL.md` frontmatter 支持 YAML `|` / `>` 多行 description，已安装技能卡片不再把 `|` 显示成空白
+
 ## [0.2.13] - 2026-08-20
 
 ### Changed
