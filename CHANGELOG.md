@@ -13,7 +13,8 @@
 
 ### Fixed
 
-- 聊天内卡片布局：`.sh-card` 补 `box-sizing:border-box` 与 `min-width:0`、`.sh-tool` 下统一 border-box,修复聊天工具视图（无 `.sh-mkt` 重置）中卡片因 padding/border 溢出网格轨道、相邻卡片相互挤压重叠的问题
+- 聊天内卡片布局：`.sh-card` 补 `box-sizing:border-box` 与 `min-width:0`、`.sh-tool` 下统一 border-box，修复聊天工具视图（无 `.sh-mkt` 重置）中卡片因 padding/border 溢出网格轨道、相邻卡片相互挤压重叠的问题
+- 安装进度区：`.sh-plg-phase` 长下载 URL 允许断行并限 2 行（`word-break:break-all` + line-clamp)，不再溢出卡片右边界
 - 聊天内插件搜索「还有吗」分页：`offset` 未按 `pageSize` 对齐时（如已展示 3 张、默认分页 12）不再重复返回整页卡片，`pluginPaging` 补页内 `skip` 切片并据实计算 `offset` / `hasMore`；翻到尽头时回复「没有了」而非「没找到」
 - 安装失败 / 超时后 `pluginInstallStatus` 现在返回错误终态（`error` 带拒绝原因），轮询侧可见失败原因；下次安装开始时自动重置
 

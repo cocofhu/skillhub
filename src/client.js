@@ -208,8 +208,8 @@ window.__ModuleLoader__.load({
 /* —— 聊天内插件卡片：沿用 .sh-card 体系，仅新增以下几处（全部使用 dsw-alias 既有令牌） —— */
 .sh-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:8px;min-height:28px}
 .sh-mono{font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;background:var(--dsw-alias-bg-module-platform,#f7f8fa);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:8px;padding:8px 10px;word-break:break-all;color:var(--dsw-alias-label-secondary,#4b5563)}
-.sh-plg-progress{margin-top:8px;display:flex;flex-direction:column;gap:5px}
-.sh-plg-phase{font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#6b7280)}
+.sh-plg-progress{margin-top:8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.sh-plg-phase{font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#6b7280);word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .sh-plg-banner{display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px 12px;border:1px solid var(--dsw-alias-state-success-primary,#86efac);border-radius:12px;background:var(--dsw-alias-state-success-tertiary,#ecfdf5);font-size:12.5px;color:var(--dsw-alias-state-success-primary,#047857)}
 .sh-plg-banner .sh-mini{margin-left:auto}
 `;
