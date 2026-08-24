@@ -14,6 +14,7 @@ import {
   PLUGIN_CATEGORY_KEYS,
   installMarketPlugin,
   searchMarketPlugins,
+  pluginPaging,
   withPluginInstallLock,
   type PluginInstallResult,
   type PluginSearchResult,
@@ -124,7 +125,7 @@ export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'skillhub_plugin_search',
     description:
-      'Search DeepSeek Harness (DSH) plugins and show clickable plugin cards. ALWAYS call this instead of web_search or bash when the user wants to find/recommend/browse DSH plugins (插件). Call EXACTLY ONCE per user message. You extract the search topic: pass a real keyword (浏览器自动化, browser), not the user\'s whole sentence. Omit query to browse popular plugins. For 还有吗, reuse the previous query with offset = cards already shown. After cards appear, reply with AT MOST one short sentence.',
+      'Search DeepSeek Harness (DSH) plugins and show clickable plugin cards. ALWAYS call this instead of web_search or bash when the user wants to find/recommend/browse DSH plugins (插件). Call EXACTLY ONCE per user message. You extract the search topic: pass a real keyword (浏览器自动化, browser), not the user\'s whole sentence. Omit query to browse popular plugins. For 还有吗 / "more?", you MUST reuse the previous query AND pass offset = number of cards already shown — calling again with offset=0 re-shows the SAME cards and is strictly forbidden. After cards appear, reply with AT MOST one short sentence.',
     parameters: {
       query: { type: 'string', description: 'Main keyword, e.g. 浏览器自动化 or browser. Optional when category is set.' },
       category: {
@@ -272,6 +273,37 @@ export function apply(ctx: Context, config: Config): void {
     }).settings
     settings.register('skillhub', Config, { base: config })
   })
+
+  // 启动自检:验证「还有吗」offset 分页不再重复返回已展示卡片(D1 回归保护)。
+  // fire-and-forget,失败只记日志,不影响插件加载。
+  void selfCheckPluginPaging(cfg)
+}
+
+/** 启动自检:pluginPaging 页内 skip + 真实 API 两页零重复。fetchJsonImpl 仅测试注入用。 */
+export async function selfCheckPluginPaging(
+  cfg: PluginConfig,
+  fetchJsonImpl?: Parameters<typeof searchMarketPlugins>[2],
+): Promise<boolean> {
+  try {
+    const paging = pluginPaging(3, undefined, cfg.maxResults)
+    if (paging.skip !== 3 || paging.page !== 1) {
+      console.error(`[skillhub] self-check FAILED: pluginPaging(3) 应得 skip=3/page=1, 实际 skip=${paging.skip} page=${paging.page}`)
+      return false
+    }
+    const first = await searchMarketPlugins(cfg, { q: 'agent', limit: 5, offset: 0 }, fetchJsonImpl)
+    const second = await searchMarketPlugins(cfg, { q: 'agent', limit: 5, offset: first.items.length }, fetchJsonImpl)
+    const shown = new Set(first.items.map((it) => it.fullName))
+    const dup = second.items.filter((it) => shown.has(it.fullName))
+    if (dup.length) {
+      console.error(`[skillhub] self-check FAILED: 「还有吗」分页重复返回 ${dup.length} 张已展示卡片: ${dup.map((it) => it.fullName).join(', ')}`)
+      return false
+    }
+    console.log(`[skillhub] self-check ok: 插件分页两页零重复(${first.items.length}+${second.items.length} 条, total=${first.total})`)
+    return true
+  } catch (err) {
+    console.warn(`[skillhub] self-check 未完成(网络/配置原因,不影响使用): ${err instanceof Error ? err.message : String(err)}`)
+    return false
+  }
 }
 
 function cloneJson(value: unknown) {
@@ -306,15 +338,15 @@ export function renderList(result: { items: InstalledSkill[]; skillsDir: string 
 
 export function renderPluginSearch(result: PluginSearchResult): string {
   if (!result.items?.length) {
-    if ((result.offset || 0) > 0) return '本页没有新的插件了。对用户只说一句：没有了，前面都列过了。不要写长文。'
+    if ((result.offset || 0) > 0) return '本页没有新的插件了。对用户只说一句：没有了，前面都列过了。不要写长文。绝对禁止再次调用 skillhub_plugin_search。'
     return '没有找到相关插件。对用户只说一句：没找到，可以换个词再搜。不要写长文。'
   }
   const lines = result.items.map((it, i) => `${i + 1}. ${it.owner}/${it.name}${it.installed ? '（已安装）' : ''}`)
   const start = result.offset || 0
   const shown = start + result.items.length
   const more = result.hasMore
-    ? `用户若问还有吗，立刻再调用 skillhub_plugin_search 一次，query 仍为「${result.query}」，offset=${shown}。`
-    : '已经全部列出。'
+    ? `用户若问还有吗，立刻再调用 skillhub_plugin_search 一次，query 仍为「${result.query}」且必须带 offset=${shown}。不带 offset 或 offset=0 会把上面这 ${result.items.length} 张卡片原样再展示一遍，属于严重错误，绝对禁止。`
+    : `已经全部列出。用户再问还有吗时，直接回答"没有了，前面都列过了"，绝对禁止再次调用 skillhub_plugin_search。`
   return [
     `插件卡片已展示 ${result.items.length} 条（内部序号，禁止复述给用户）：`,
     lines.join('\n'),

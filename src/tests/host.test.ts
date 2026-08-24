@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { renderInstall, renderList, renderPluginInstall, renderPluginSearch, renderSearch } from '../host.js'
+import { renderInstall, renderList, renderPluginInstall, renderPluginSearch, renderSearch, selfCheckPluginPaging } from '../host.js'
 import type { MarketPlugin, PluginSearchResult } from '../plugin-market.js'
-import type { InstalledSkill, SearchResult, SkillCard } from '../types.js'
+import type { InstalledSkill, PluginConfig, SearchResult, SkillCard } from '../types.js'
+
+const baseCfg: PluginConfig = {
+  apiBase: 'https://api.skillhub.cn',
+  webBase: 'https://skillhub.cn',
+  skillsDir: '/tmp/skills',
+  timeoutMs: 5000,
+  userAgent: 'skillhub-test',
+  maxResults: 12,
+  sortBy: 'score',
+}
 
 function card(partial: Partial<SkillCard>): SkillCard {
   return {
@@ -138,7 +148,54 @@ test('renderPluginSearch says everything is listed when hasMore is false', () =>
     hasMore: false,
   })
   assert.match(text, /已经全部列出/)
+  assert.match(text, /绝对禁止再次调用 skillhub_plugin_search/)
   assert.doesNotMatch(text, /offset=/)
+})
+
+test('renderPluginSearch forbids re-calling without offset when more pages exist', () => {
+  const text = renderPluginSearch({
+    query: '浏览器自动化',
+    sort: 'stars',
+    items: [plugin({}), plugin({ name: 'b', fullName: 'o/b' }), plugin({ name: 'c', fullName: 'o/c' })],
+    total: 3,
+    offset: 0,
+    hasMore: true,
+  })
+  assert.match(text, /必须带 offset=3/)
+  assert.match(text, /offset=0 会把上面这 3 张卡片原样再展示一遍/)
+  assert.match(text, /绝对禁止/)
+})
+
+test('selfCheckPluginPaging passes when two offset pages do not overlap', async () => {
+  const pages: Record<string, unknown> = {}
+  const mk = (names: string[], total: number) => ({
+    items: names.map((n) => ({ owner: 'o', name: n, fullName: `o/${n}`, description: '', stars: 1, categoryKey: 'web-tools', installability: 'verified', repositoryUrl: 'https://github.com/o/x', avatarUrl: '' })),
+    total,
+  })
+  // 第一页 5 条(offset=0),第二页请求 page=2(offset=5 对齐),返回全新 5 条
+  const fetchJson = async (url: string) => {
+    if (/page=2/.test(url)) return mk(['f', 'g', 'h', 'i', 'j'], 10)
+    return mk(['a', 'b', 'c', 'd', 'e'], 10)
+  }
+  const ok = await selfCheckPluginPaging({ ...baseCfg, maxResults: 5 }, fetchJson as never)
+  assert.equal(ok, true)
+})
+
+test('selfCheckPluginPaging fails when the second page repeats shown cards (D1 regression)', async () => {
+  const mk = (names: string[]) => ({
+    items: names.map((n) => ({ owner: 'o', name: n, fullName: `o/${n}`, description: '', stars: 1, categoryKey: 'web-tools', installability: 'verified', repositoryUrl: 'https://github.com/o/x', avatarUrl: '' })),
+    total: 10,
+  })
+  // 模拟缺陷:第二页把第一页原样返回
+  const fetchJson = async () => mk(['a', 'b', 'c', 'd', 'e'])
+  const ok = await selfCheckPluginPaging({ ...baseCfg, maxResults: 5 }, fetchJson as never)
+  assert.equal(ok, false)
+})
+
+test('selfCheckPluginPaging reports failure instead of throwing when the API is unreachable', async () => {
+  const fetchJson = async () => { throw new Error('network down') }
+  const ok = await selfCheckPluginPaging({ ...baseCfg, maxResults: 5 }, fetchJson as never)
+  assert.equal(ok, false)
 })
 
 test('renderPluginInstall reminds about restart and prints no commands', () => {
