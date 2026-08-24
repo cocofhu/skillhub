@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- npm 主包名改为无 scope 的 `skillhub-plugin`；打 `v*` tag 时 CI 同时发布 `skillhub-plugin` 与兼容包 `@cocofhu/skillhub`
+- 安装命令改为 `dsh plugin --profile web add skillhub-plugin`（`@cocofhu/skillhub` 仍可用）
+
 ## [0.2.14] - 2026-08-24
 
 ### Added

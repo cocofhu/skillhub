@@ -90,19 +90,21 @@ dsh web --host 127.0.0.1 --port 3080
 
 ## 发布
 
-正式版走 GitHub Release tag，并由 `.github/workflows/publish.yml` 用 npm Trusted Publishing 发到 `@cocofhu/skillhub`。不要把 `NPM_TOKEN` 写进 workflow。npm 上的无前缀名 `skillhub` 已被占用。
+正式版走 GitHub Release tag，并由 `.github/workflows/publish.yml` 用 npm Trusted Publishing **同时**发到 `skillhub-plugin` 和 `@cocofhu/skillhub`。不要把 `NPM_TOKEN` 写进 workflow。npm 上的无前缀名 `skillhub` 已被占用。
 
 1. 升 `package.json` 的 `version`，把 `CHANGELOG.md` 的 Unreleased 写入该版本，合并进 `main`。
 2. 打 annotated tag 并推送，例如 `git tag -a v0.2.2 -m "v0.2.2" && git push origin v0.2.2`。
-3. 同时创建 GitHub Release；Actions 里的 Publish 会 `npm publish`。
+3. 同时创建 GitHub Release；Actions 里两个 Publish job 会分别 `npm publish`。
 
-Trusted Publisher 在 https://www.npmjs.com/package/@cocofhu/skillhub/access 绑定一次即可：
+两个包都要在 npm 上绑定 Trusted Publisher（同一份 `publish.yml`）：
 
 - Organization or user：`cocofhu`
 - Repository：`skillhub`
 - Workflow filename：`publish.yml`
 - Environment name：留空
 - Allowed actions：`npm publish`
+
+新包 `skillhub-plugin` 首次发布后打开 https://www.npmjs.com/package/skillhub-plugin/access 绑定；`@cocofhu/skillhub` 保持原来的绑定即可。
 
 ## 文档
 
