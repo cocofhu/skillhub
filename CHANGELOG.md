@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.14] - 2026-08-24
+
 ### Added
 
 - 对话内 DSH 插件搜索与卡片直装：新增 Agent 工具 `skillhub_plugin_search` / `skillhub_plugin_install`，聊天流渲染与技能卡片同款风格的插件卡片（已验证 / 已安装徽标、分类与星标、图标代理 + 首字母兜底）
