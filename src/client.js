@@ -1580,7 +1580,7 @@ window.__ModuleLoader__.load({
       ].filter(Boolean).join(" · ");
     }
 
-    function InstalledSkillsView() {
+    function InstalledSkillsView({ onChanged }) {
       const tr = useTr();
       const [state, setState] = useState({ status: "loading", items: [], err: "" });
       const [open, setOpen] = useState(null);
@@ -1594,6 +1594,7 @@ window.__ModuleLoader__.load({
       const drop = (it) => {
         setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.slug !== it.slug) }));
         setOpen((cur) => (cur && cur.slug === it.slug ? { ...cur, installed: false } : cur));
+        onChanged?.();
       };
       return h("div", null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
@@ -1788,9 +1789,10 @@ window.__ModuleLoader__.load({
           if (!live) return;
           if (d.boot) setBootId(d.boot);
         }).catch(() => {});
-        loadInstalledCount();
         return () => { live = false; };
       }, []);
+      // 切换分段时刷新已安装计数
+      useEffect(() => { loadInstalledCount(); }, [scope]);
       useEffect(() => {
         if (scope !== "all") return;
         let live = true;
@@ -2040,11 +2042,13 @@ window.__ModuleLoader__.load({
       const [open, setOpen] = useState(null);
       const [scope, setScope] = useState("all");
       const [installedCount, setInstalledCount] = useState(null);
-      useEffect(() => {
+      const loadInstalledCount = () => {
         api("list", {})
           .then((d) => setInstalledCount((d.items || []).length))
           .catch(() => {});
-      }, []);
+      };
+      // 初次挂载与每次切换分段都刷新计数,卸载/安装后回到全部也能拿到最新值
+      useEffect(() => { loadInstalledCount(); }, [scope]);
       useEffect(() => {
         if (scope !== "all") return;
         let live = true;
@@ -2074,11 +2078,12 @@ window.__ModuleLoader__.load({
       const mark = (item, installed) => {
         setItems((cur) => cur.map((it) => it.slug === item.slug ? { ...it, installed } : it));
         setOpen((cur) => cur && cur.slug === item.slug ? { ...cur, installed } : cur);
+        loadInstalledCount();
       };
       const remaining = Math.max(0, total - items.length);
       return h("div", { className: "sh-mkt" },
         h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
-        scope === "installed" ? h(InstalledSkillsView) : h(React.Fragment, null,
+        scope === "installed" ? h(InstalledSkillsView, { onChanged: loadInstalledCount }) : h(React.Fragment, null,
         h("form", {
           className: "sh-mkt-search",
           onSubmit: (e) => { e.preventDefault(); setPage(1); setSubmitted(query.trim()); },
