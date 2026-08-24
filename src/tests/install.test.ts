@@ -63,6 +63,20 @@ test('parseFrontmatter accepts CRLF and ignores missing fences', () => {
   assert.deepEqual(parseFrontmatter('# no frontmatter\n'), {})
 })
 
+test('parseFrontmatter reads YAML | and > block scalars', () => {
+  const literal = parseFrontmatter(
+    '---\nname: ima-skill\ndescription: |\n  统一的 IMA 技能。\n  支持笔记和知识库。\nhomepage: https://ima.qq.com\n---\n# body\n',
+  )
+  assert.equal(literal.name, 'ima-skill')
+  assert.equal(literal.description, '统一的 IMA 技能。\n支持笔记和知识库。')
+  const folded = parseFrontmatter('---\ndescription: >\n  one line\n  continues here\n\n  next para\n---\n')
+  assert.equal(folded.description, 'one line continues here\nnext para')
+  const emptyBlock = parseFrontmatter('---\nname: x\ndescription: |\nversion: 1\n---\n')
+  assert.equal(emptyBlock.name, 'x')
+  assert.equal(emptyBlock.version, '1')
+  assert.equal(emptyBlock.description, undefined)
+})
+
 test('install requires SKILL.md', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'skillhub-test-'))
   const cfg = testCfg(dir)

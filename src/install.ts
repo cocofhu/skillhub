@@ -187,16 +187,64 @@ export async function uninstallSkill(slug: string, skillsDir: string): Promise<{
 export function parseFrontmatter(text: string): { name?: string; description?: string; version?: string } {
   const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!match) return {}
+  const lines = match[1].split(/\r?\n/)
   const out: { name?: string; description?: string; version?: string } = {}
-  for (const line of match[1].split(/\r?\n/)) {
-    const m = line.match(/^(name|description|version)\s*:\s*(.*)$/)
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^(name|description|version)\s*:\s*(.*)$/)
     if (!m) continue
-    const value = m[2].trim().replace(/^['"]|['"]$/g, '')
-    if (m[1] === 'name') out.name = value
-    if (m[1] === 'description') out.description = value
-    if (m[1] === 'version') out.version = value
+    const key = m[1] as 'name' | 'description' | 'version'
+    const raw = m[2].trim()
+    const block = raw.match(/^([>|])[+-]?\d*$/)
+    let value: string
+    if (block) {
+      const body: string[] = []
+      while (i + 1 < lines.length) {
+        const next = lines[i + 1]
+        if (next.trim() !== '' && !/^\s/.test(next)) break
+        body.push(next)
+        i += 1
+      }
+      value = decodeYamlBlock(block[1] as '|' | '>', body)
+    } else {
+      value = unquoteYamlScalar(raw)
+    }
+    if (value) out[key] = value
   }
   return out
+}
+
+function unquoteYamlScalar(raw: string): string {
+  if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+    return raw.slice(1, -1)
+  }
+  return raw
+}
+
+/** YAML `|` keeps newlines; `>` folds them. Indent is stripped; trailing blank lines dropped. */
+function decodeYamlBlock(style: '|' | '>', body: string[]): string {
+  while (body.length && body[body.length - 1].trim() === '') body.pop()
+  const nonempty = body.filter((line) => line.trim() !== '')
+  const minIndent = nonempty.length
+    ? Math.min(...nonempty.map((line) => (line.match(/^(\s*)/)?.[1].length ?? 0)))
+    : 0
+  const stripped = body.map((line) => line.slice(Math.min(minIndent, line.length)))
+  if (style === '>') {
+    const paras: string[] = []
+    let cur: string[] = []
+    for (const line of stripped) {
+      if (line.trim() === '') {
+        if (cur.length) {
+          paras.push(cur.join(' '))
+          cur = []
+        }
+        continue
+      }
+      cur.push(line.trimEnd())
+    }
+    if (cur.length) paras.push(cur.join(' '))
+    return paras.join('\n').trim()
+  }
+  return stripped.join('\n').trim()
 }
 
 function commonTopDir(paths: string[]): string {

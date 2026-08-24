@@ -9,6 +9,7 @@ import {
   listInstalledPlugins,
   parseSpecSource,
   readInstalledPluginReadme,
+  removeInstalledPlugin,
   resolvePluginDir,
 } from '../installed-plugins.js'
 
@@ -154,6 +155,29 @@ test('readInstalledPluginReadme reads markdown fallback and rejects unknown pkg'
     assert.equal(result.truncated, false)
     await assert.rejects(() => readInstalledPluginReadme('not-installed', dir), /未安装该插件/)
     await assert.rejects(() => readInstalledPluginReadme('../evil', dir), /无效插件包名/)
+  } finally {
+    cleanup()
+  }
+})
+
+test('removeInstalledPlugin runs dsh plugin remove for a profile dsh dep', async () => {
+  const { dir, cleanup } = makeProfile()
+  try {
+    addPackage(dir, 'dsh-gone', { version: '1.0.0', dsh: true })
+    addDep(dir, { 'dsh-gone': '^1.0.0' })
+    const calls: string[][] = []
+    const result = await removeInstalledPlugin('dsh-gone', dir, {
+      runDshPlugin: async (profile, args) => {
+        calls.push([profile, ...args])
+        return 'removed'
+      },
+    })
+    assert.equal(result.pkg, 'dsh-gone')
+    assert.deepEqual(calls, [['web', 'remove', 'dsh-gone']])
+    await assert.rejects(() => removeInstalledPlugin('missing', dir, { runDshPlugin: async () => '' }), /未安装该插件/)
+    addPackage(dir, 'lodash', { version: '4.17.21' })
+    addDep(dir, { lodash: '^4.17.21' })
+    await assert.rejects(() => removeInstalledPlugin('lodash', dir, { runDshPlugin: async () => '' }), /不是 dsh 插件/)
   } finally {
     cleanup()
   }

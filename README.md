@@ -82,7 +82,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 广场两个分类页顶部都有 **全部 / 已安装** 切换器（带已安装计数与「本机数据 · 只读预览」旁注）。切到「已安装」后完全不请求远端，数据全部来自本机文件系统的只读接口：
 
-- **插件页**：枚举 web profile `package.json` 依赖，展示本机已安装插件的卡片（包名、来源 spec、版本、描述、已安装徽章）。`github:` / `npm` / `link:` 三类来源都能识别；点卡片或 **预览** 打开抽屉，含 **概览**（描述 + 包名 / 版本 / 来源 / 解析位置 / 识别依据）与 **README**（等宽纯文本，超过 64 KB 自动截断并提示）两个 tab。非 dsh 依赖不会混入列表，只以「另有 N 个非 dsh 依赖」计数折叠提示。
+- **插件页**：枚举 web profile `package.json` 依赖，展示本机已安装插件的卡片（包名、来源 spec、版本、描述、已安装徽章）。`github:` / `npm` / `link:` 三类来源都能识别；点卡片打开抽屉，含 **概览** 与 **README**（Markdown 渲染，超过 64 KB 自动截断并提示），底部可卸载。非 dsh 依赖不会混入列表，只以「另有 N 个非 dsh 依赖」计数折叠提示。
 - **技能页**：以 Meta 卡片展示本机已安装技能（名称 + 已装徽章 + 版本、slug、两行描述、文件数 / 体积 / 更新时间统计行），点开为本地概览抽屉，并明确标注不浏览技能文件内容。切回「全部」恢复原有搜索状态。
 
 对话中的 `skillhub_list` 工具卡片同步升级为同款 Meta 卡片，保留 **详情 / 卸载** 操作。
@@ -161,6 +161,7 @@ pnpm build
 | `src/api.ts` | 搜索与技能卡片映射 |
 | `src/plugin-market.ts` | DSH 插件目录查询与 install-plan 安装 |
 | `src/installed-plugins.ts` | 已安装插件枚举与 README 只读预览（web profile） |
+| `src/markdown.ts` | README Markdown 安全渲染（白名单 HTML，仅 http(s)/mailto/# 链接） |
 | `src/dsh-cli.ts` | 复用当前 dsh 进程执行 `dsh plugin add`，解析 pnpm ndjson 进度 |
 | `src/ndjson.ts` | pnpm `--reporter=ndjson` 进度解析 |
 | `src/restart.ts` | 同源一键重启当前 dsh web（含反向代理） |

@@ -56,6 +56,7 @@ window.__ModuleLoader__.load({
 .sh-tabs{display:flex;gap:16px;margin:0 -22px;padding:0 22px;border-bottom:1px solid var(--dsw-alias-border-l2,#e5e7eb);overflow-x:auto;scrollbar-width:none;flex:none}
 .sh-tabs::-webkit-scrollbar{display:none}
 .sh-tab{appearance:none;flex:none;background:0 0;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 0 12px;font:inherit;font-size:13px;line-height:20px;color:var(--dsw-alias-label-tertiary,#6b7280);cursor:pointer;white-space:nowrap}
+.sh-tab:focus,.sh-tab:focus-visible{outline:none}
 .sh-tab.on{color:var(--dsw-alias-label-primary,inherit);border-bottom-color:var(--dsw-alias-label-primary,#111827);font-weight:650}
 .sh-ver-card{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 18px;margin:0 0 12px;border:1px solid var(--dsw-alias-border-l2,#e5e7eb);border-radius:12px;background:var(--dsw-alias-bg-layer-3,#fff)}
 .sh-ver-main{min-width:0;flex:1}
@@ -135,6 +136,7 @@ window.__ModuleLoader__.load({
 .sh-mkt-summary{margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-variant-numeric:tabular-nums}
 .sh-mkt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
 .sh-mkt-card{position:relative;min-width:0;min-height:188px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-mkt-card.clickable{cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left}
 .sh-mkt-card.on{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary,#279c62) 45%,var(--dsw-alias-border-l2,#e2e4e8))}
 .sh-mkt-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
 .sh-mkt-card.on:hover{border-color:var(--dsw-alias-state-success-primary,#279c62)}
@@ -204,6 +206,18 @@ window.__ModuleLoader__.load({
 .sh-plaza-body .sh-title{font-size:15px;line-height:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sh-plaza-body .sh-desc{-webkit-line-clamp:2;font-size:13px;line-height:20px}
 .sh-plaza-body .sh-mkt-card{min-height:220px;padding:16px}
+.sh-ip-card{position:relative;box-sizing:border-box;min-width:0;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:12px;background:var(--dsw-alias-bg-layer-3,#fff);cursor:pointer;text-align:left;width:100%;font:inherit;color:var(--dsw-alias-label-primary,inherit);transition:border-color .16s,box-shadow .16s,background .16s}
+.sh-ip-card:hover{border-color:var(--dsw-alias-border-l1,#cfd2d8);box-shadow:var(--dsw-shadow-lv1,0 2px 8px rgb(20 24 32 / 8%))}
+.sh-ip-card:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4d6bfe);outline-offset:2px}
+.sh-plaza-body .sh-ip-card{min-height:0}
+.sh-ip-card .sh-mkt-avatar{width:40px;height:40px;border-radius:10px}
+.sh-ip-badge{position:absolute;top:12px;right:12px;flex:none;min-height:18px;padding:1px 7px;border-radius:999px;background:var(--dsw-alias-state-success-tertiary,#ecfdf5);color:var(--dsw-alias-state-success-primary,#047857);font-size:11px;line-height:16px}
+.sh-ip-head{display:flex;align-items:center;gap:12px;min-width:0;padding-right:46px}
+.sh-ip-head-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.sh-ip-title{margin:0;font-size:15px;line-height:22px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-ip-sub{margin:0;font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#9ca3af);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-ip-desc{display:-webkit-box;overflow:hidden;margin:0;color:var(--dsw-alias-label-tertiary,#7b8088);font-size:13px;line-height:20px;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.sh-ip-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);color:var(--dsw-alias-label-tertiary,#7b8088);font-size:11px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* ========= 已安装视图:segmented 切换 / Meta 卡片 / README 预览 ========= */
 .sh-scope{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sh-seg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:9px;background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
@@ -225,8 +239,28 @@ window.__ModuleLoader__.load({
 .sh-kv dt{color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;padding-top:1px}
 .sh-kv dd{margin:0;overflow-wrap:anywhere}
 .sh-kv dd code{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:11.5px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);padding:2px 6px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
-.sh-readme{margin:0;padding:14px 16px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:12px;line-height:1.8;color:var(--dsw-alias-label-secondary,#4b5058);white-space:pre-wrap;overflow-wrap:anywhere;max-height:46vh;overflow:auto}
-.sh-readme-h3{font-size:13px;font-weight:650;margin:0 0 10px;color:var(--dsw-alias-label-primary,#17191c)}
+.sh-readme{margin:0;padding:16px 18px 20px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;background:var(--dsw-alias-bg-layer-3,#fff);font-size:13px;line-height:1.7;color:var(--dsw-alias-label-secondary,#4b5058);overflow-wrap:anywhere;max-height:52vh;overflow:auto}
+.sh-readme>:first-child{margin-top:0}
+.sh-readme>:last-child{margin-bottom:0}
+.sh-readme h1,.sh-readme h2,.sh-readme h3,.sh-readme h4{margin:1.15em 0 .45em;color:var(--dsw-alias-label-primary,#17191c);line-height:1.35;font-weight:700}
+.sh-readme h1{font-size:22px}
+.sh-readme h2{font-size:17px;padding-bottom:6px;border-bottom:1px solid var(--dsw-alias-border-l2,#e2e4e8)}
+.sh-readme h3{font-size:15px}
+.sh-readme p{margin:.7em 0}
+.sh-readme a{color:var(--dsw-alias-state-business-primary,#4d6bfe);text-decoration:none}
+.sh-readme a:hover{text-decoration:underline}
+.sh-readme [align="center"]{text-align:center}
+.sh-readme img{max-width:min(100%,520px);max-height:240px;height:auto;vertical-align:middle;margin:0 4px 8px 0}
+.sh-readme ul,.sh-readme ol{margin:.5em 0 .7em;padding-left:1.4em}
+.sh-readme li{margin:.2em 0}
+.sh-readme blockquote{margin:.7em 0;padding:6px 12px;border-left:3px solid var(--dsw-alias-border-l2,#d1d5db);color:var(--dsw-alias-label-tertiary,#7b8088);background:var(--dsw-alias-bg-layer-1,#f5f6f8)}
+.sh-readme hr{border:0;border-top:1px solid var(--dsw-alias-border-l2,#e2e4e8);margin:1.1em 0}
+.sh-readme code{font-family:var(--ds-font-family-code,ui-monospace,monospace);font-size:12px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);padding:1px 5px;border-radius:4px}
+.sh-readme pre{margin:.7em 0;padding:12px 14px;border-radius:8px;background:var(--dsw-alias-bg-layer-1,#f5f6f8);overflow:auto}
+.sh-readme pre code{background:none;padding:0;font-size:12px;line-height:1.55}
+.sh-readme table{border-collapse:collapse;width:100%;margin:.7em 0;font-size:12.5px}
+.sh-readme th,.sh-readme td{border:1px solid var(--dsw-alias-border-l2,#e2e4e8);padding:6px 10px;text-align:left}
+.sh-readme th{background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-primary,#17191c);font-weight:600}
 .sh-trunc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--dsw-alias-state-warn-label,#c2410c)}
 `;
 
@@ -445,7 +479,7 @@ window.__ModuleLoader__.load({
       "ip.error": "读取本机插件失败：{m}",
       "ip.tab.overview": "概览",
       "ip.tab.readme": "README",
-      "ip.readmeTitle": "README（纯文本预览）",
+      "ip.readmeTitle": "README",
       "ip.noReadme": "该插件没有 README。",
       "ip.truncated": "内容超过 64 KB，已截断显示前 64 KB。",
       "ip.others": "另有 {n} 个非 dsh 依赖（未识别为插件），已默认折叠。",
@@ -578,7 +612,7 @@ window.__ModuleLoader__.load({
       "ip.error": "Failed to read local plugins: {m}",
       "ip.tab.overview": "Overview",
       "ip.tab.readme": "README",
-      "ip.readmeTitle": "README (plain text preview)",
+      "ip.readmeTitle": "README",
       "ip.noReadme": "This plugin has no README.",
       "ip.truncated": "Content exceeds 64 KB; showing the first 64 KB.",
       "ip.others": "{n} non-dsh dependencies (not recognized as plugins) are collapsed.",
@@ -1384,6 +1418,40 @@ window.__ModuleLoader__.load({
       { key: "admin-security", displayName: "管理安全" },
     ];
 
+    function shortPkgName(pkg, name) {
+      const n = String(name || "").trim();
+      const p = String(pkg || "").trim();
+      if (n && n !== p) return n;
+      const slash = p.lastIndexOf("/");
+      return slash >= 0 ? p.slice(slash + 1) : (n || p || "?");
+    }
+
+    function PlazaLocalCard({ icon, title, subtitle, description, footer, badge, onOpen }) {
+      return h("article", {
+        className: "sh-ip-card",
+        tabIndex: 0,
+        role: "button",
+        onClick: onOpen,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        },
+      },
+        badge ? h("span", { className: "sh-ip-badge" }, badge) : null,
+        h("div", { className: "sh-ip-head" },
+          icon,
+          h("div", { className: "sh-ip-head-main" },
+            h("div", { className: "sh-ip-title", title }, title),
+            subtitle ? h("div", { className: "sh-ip-sub", title: subtitle }, subtitle) : null,
+          ),
+        ),
+        description ? h("p", { className: "sh-ip-desc" }, description) : null,
+        footer ? h("div", { className: "sh-ip-foot" }, footer) : null,
+      );
+    }
+
     function pluginLetter(plugin) {
       const raw = String((plugin && plugin.name) || (plugin && plugin.owner) || "");
       const ch = raw.match(/[A-Za-z0-9]|[\u4e00-\u9fff]/);
@@ -1600,7 +1668,18 @@ window.__ModuleLoader__.load({
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
         state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("inst.error", { m: state.err })) : null,
         state.status === "ready" && !state.items.length ? h("p", { className: "sh-mkt-status" }, tr("installed.none")) : null,
-        state.items.length ? h(Cards, { items: state.items, onOpen: setOpen, footline: installedFootline }) : null,
+        state.items.length ? h("div", { className: "sh-mkt-grid" },
+          state.items.map((item) => h(PlazaLocalCard, {
+            key: item.slug,
+            icon: h("div", { className: "sh-mkt-avatar sh-mkt-avatar-fallback", "aria-hidden": "true" }, letterOf(item.name || item.slug)),
+            title: item.name,
+            subtitle: item.slug && item.slug !== item.name ? item.slug : null,
+            description: item.description || "",
+            footer: installedFootline(item, tr),
+            badge: tr("badge.installed"),
+            onOpen: () => setOpen(item),
+          })),
+        ) : null,
         open ? h(Drawer, {
           item: open,
           onClose: () => setOpen(null),
@@ -1616,51 +1695,34 @@ window.__ModuleLoader__.load({
       return tr("ip.src.unknown");
     }
 
-    /** 已安装插件:复用「全部」市场卡片结构,详情入口打开本地 README 预览抽屉。 */
+    /** 已安装插件:点卡片打开本地详情抽屉。 */
     function InstalledPluginCard({ plugin, onOpen }) {
       const tr = useTr();
-      const name = plugin.name || plugin.pkg;
-      return h("article", { className: "sh-mkt-card on" },
-        h("div", { className: "sh-mkt-head" },
-          h(MarketAvatar, { plugin: { name, owner: plugin.pkg } }),
-          h("div", { className: "sh-mkt-head-main" },
-            h("div", { className: "sh-mkt-top" },
-              h("p", { className: "sh-mkt-owner" }, plugin.pkg),
-              h("span", { className: "sh-mkt-badge on" }, tr("mkt.installed")),
-            ),
-            h("div", { className: "sh-mkt-name" }, name),
-          ),
-        ),
-        h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
-        h("div", { className: "sh-mkt-meta" },
-          h("span", null, pluginSourceLabel(plugin, tr)),
-          plugin.version ? h("span", null, "v" + plugin.version) : null,
-        ),
-        h("div", { className: "sh-mkt-actions" },
-          h("a", {
-            className: "sh-mkt-details",
-            href: "#",
-            onClick: (e) => { e.preventDefault(); onOpen(plugin); },
-          }, tr("mkt.details")),
-          h("button", {
-            type: "button",
-            className: "sh-mkt-install done",
-            disabled: true,
-          }, tr("mkt.installed")),
-        ),
-      );
+      const title = shortPkgName(plugin.pkg, plugin.name);
+      const footer = [pluginSourceLabel(plugin, tr), plugin.version ? "v" + plugin.version : null].filter(Boolean).join(" · ");
+      return h(PlazaLocalCard, {
+        icon: h(MarketAvatar, { plugin: { name: title, owner: plugin.pkg, avatarUrl: plugin.avatarUrl } }),
+        title,
+        subtitle: plugin.pkg && plugin.pkg !== title ? plugin.pkg : null,
+        description: plugin.description || "",
+        footer,
+        badge: tr("badge.installed"),
+        onOpen: () => onOpen(plugin),
+      });
     }
 
-    /** 已安装插件预览抽屉:概览 KV + README 等宽纯文本(64KB 截断警示)。 */
-    function PluginDrawer({ plugin, onClose }) {
+    /** 已安装插件预览抽屉:概览 KV + README Markdown 渲染,底部卸载。 */
+    function PluginDrawer({ plugin, onClose, onUninstalled }) {
       const tr = useTr();
       const [tab, setTab] = useState("overview");
       const [readme, setReadme] = useState(null);
+      const [working, setWorking] = useState(false);
+      const [toast, setToast] = useState("");
       useEffect(() => {
         let live = true;
         setReadme(null);
         api("pluginReadme", { pkg: plugin.pkg })
-          .then((d) => { if (live) setReadme({ status: "ready", text: d.readme || "", truncated: !!d.truncated }); })
+          .then((d) => { if (live) setReadme({ status: "ready", text: d.readme || "", html: d.html || "", truncated: !!d.truncated }); })
           .catch((e) => { if (live) setReadme({ status: "error", text: "", truncated: false, err: e.message || String(e) }); });
         return () => { live = false; };
       }, [plugin.pkg]);
@@ -1671,6 +1733,19 @@ window.__ModuleLoader__.load({
         [tr("ip.kv.path"), plugin.path || "-"],
         [tr("ip.kv.basis"), tr("ip.kv.basisValue")],
       ];
+      const uninstall = async () => {
+        if (working) return;
+        setWorking(true);
+        try {
+          await api("pluginUninstall", { pkg: plugin.pkg });
+          onUninstalled?.(plugin);
+          onClose();
+        } catch (e) {
+          setToast(e.message || String(e));
+        } finally {
+          setWorking(false);
+        }
+      };
       return h(Overlay, { onClose },
         h("div", { className: "sh-drawer sh-fade", role: "dialog", "aria-modal": "true" },
           h("button", { type: "button", className: "sh-close", onClick: onClose, "aria-label": tr("action.close") }, "×"),
@@ -1715,18 +1790,26 @@ window.__ModuleLoader__.load({
                 readme && readme.status === "error" ? h("p", { className: "sh-err" }, readme.err) : null,
                 readme && readme.status === "ready" && !readme.text ? h("p", { className: "sh-hint" }, tr("ip.noReadme")) : null,
                 readme && readme.status === "ready" && readme.text ? h("div", null,
-                  h("h3", { className: "sh-readme-h3" }, tr("ip.readmeTitle")),
-                  h("pre", { className: "sh-readme" }, readme.text),
+                  h("div", { className: "sh-readme", dangerouslySetInnerHTML: { __html: readme.html || "" } }),
                   readme.truncated ? h("div", { className: "sh-trunc" }, tr("ip.truncated")) : null,
                 ) : null,
               ),
             ),
           ),
+          h("div", { className: "sh-foot" },
+            h("button", {
+              type: "button",
+              className: "sh-mini",
+              disabled: working,
+              onClick: uninstall,
+            }, working ? tr("action.uninstalling") : tr("action.uninstall")),
+          ),
+          toast ? h(Toast, { text: toast, onDone: () => setToast("") }) : null,
         ),
       );
     }
 
-    function InstalledPluginsView() {
+    function InstalledPluginsView({ onChanged }) {
       const tr = useTr();
       const [state, setState] = useState({ status: "loading", items: [], others: 0, err: "" });
       const [open, setOpen] = useState(null);
@@ -1737,6 +1820,11 @@ window.__ModuleLoader__.load({
           .catch((e) => { if (live) setState({ status: "error", items: [], others: 0, err: e.message || String(e) }); });
         return () => { live = false; };
       }, []);
+      const drop = (plugin) => {
+        setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.pkg !== plugin.pkg) }));
+        setOpen(null);
+        onChanged?.();
+      };
       return h("div", null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
         state.status === "error" ? h("p", { className: "sh-mkt-status" }, tr("ip.error", { m: state.err })) : null,
@@ -1745,7 +1833,7 @@ window.__ModuleLoader__.load({
           state.items.map((p) => h(InstalledPluginCard, { key: p.pkg, plugin: p, onOpen: setOpen })),
         ) : null,
         state.status === "ready" && state.others > 0 ? h("div", { className: "sh-others" }, tr("ip.others", { n: state.others })) : null,
-        open ? h(PluginDrawer, { plugin: open, onClose: () => setOpen(null) }) : null,
+        open ? h(PluginDrawer, { plugin: open, onClose: () => setOpen(null), onUninstalled: drop }) : null,
       );
     }
 
@@ -1890,7 +1978,7 @@ window.__ModuleLoader__.load({
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
           h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
-          scope === "installed" ? h(InstalledPluginsView, { t: tr }) : h(React.Fragment, null,
+          scope === "installed" ? h(InstalledPluginsView, { t: tr, onChanged: loadInstalledCount }) : h(React.Fragment, null,
           h("form", {
             className: "sh-mkt-search",
             onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
