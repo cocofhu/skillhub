@@ -463,6 +463,7 @@ window.__ModuleLoader__.load({
       "mkt.phaseBuilding": "运行构建脚本",
       "mkt.packagesDone": "已处理 {n} 个包",
       "mkt.restartBanner": "已安装 {name}，请重启 dsh web 后生效",
+      "mkt.uninstallRestartBanner": "已卸载 {name}，请重启 dsh web 后完全卸载",
       "mkt.restartNow": "立即重启",
       "mkt.restarting": "正在重启…",
       "mkt.restartFail": "重启失败：{m}",
@@ -602,6 +603,7 @@ window.__ModuleLoader__.load({
       "mkt.phaseBuilding": "Running build scripts",
       "mkt.packagesDone": "Processed {n} packages",
       "mkt.restartBanner": "Installed {name} — restart dsh web to apply",
+      "mkt.uninstallRestartBanner": "Uninstalled {name} — restart dsh web to finish removing it",
       "mkt.restartNow": "Restart now",
       "mkt.restarting": "Restarting…",
       "mkt.restartFail": "Restart failed: {m}",
@@ -1889,7 +1891,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function InstalledPluginsView({ onChanged }) {
+    function InstalledPluginsView({ onChanged, onNeedRestart }) {
       const tr = useTr();
       const [state, setState] = useState({ status: "loading", items: [], others: 0, err: "" });
       const [open, setOpen] = useState(null);
@@ -1904,6 +1906,7 @@ window.__ModuleLoader__.load({
         setState((cur) => ({ ...cur, items: cur.items.filter((x) => x.pkg !== plugin.pkg) }));
         setOpen(null);
         onChanged?.();
+        onNeedRestart?.(plugin.name || plugin.pkg);
       };
       return h("div", null,
         state.status === "loading" ? h("p", { className: "sh-mkt-status" }, tr("loading")) : null,
@@ -1935,6 +1938,7 @@ window.__ModuleLoader__.load({
       const [bootId, setBootId] = useState("");
       const [liveStatus, setLiveStatus] = useState(null);
       const [pendingRestart, setPendingRestart] = useState("");
+      const [restartKind, setRestartKind] = useState("install");
       const [restarting, setRestarting] = useState(false);
       const [scope, setScope] = useState("all");
       const [installedCount, setInstalledCount] = useState(null);
@@ -2019,7 +2023,20 @@ window.__ModuleLoader__.load({
       return h(I18nProvider, { t: tr },
         h("div", { className: "sh-mkt" },
           h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
-          scope === "installed" ? h(InstalledPluginsView, { t: tr, onChanged: loadInstalledCount }) : h(React.Fragment, null,
+          pendingRestart && !sending ? h("div", { className: "sh-mkt-banner" },
+            h("span", { className: "sh-mkt-banner-text" }, tr(restartKind === "uninstall" ? "mkt.uninstallRestartBanner" : "mkt.restartBanner", { name: pendingRestart })),
+            h("button", {
+              type: "button",
+              className: "sh-mkt-restart",
+              disabled: restarting,
+              onClick: startRestart,
+            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")),
+          ) : null,
+          scope === "installed" ? h(InstalledPluginsView, {
+            t: tr,
+            onChanged: loadInstalledCount,
+            onNeedRestart: (name) => { setRestartKind("uninstall"); setPendingRestart(name); },
+          }) : h(React.Fragment, null,
           h("form", {
             className: "sh-mkt-search",
             onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
@@ -2062,15 +2079,6 @@ window.__ModuleLoader__.load({
                 style: pct != null ? { width: pct + "%" } : undefined,
               }),
             ),
-          ) : null,
-          pendingRestart && !sending ? h("div", { className: "sh-mkt-banner" },
-            h("span", { className: "sh-mkt-banner-text" }, tr("mkt.restartBanner", { name: pendingRestart })),
-            h("button", {
-              type: "button",
-              className: "sh-mkt-restart",
-              disabled: restarting,
-              onClick: startRestart,
-            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")),
           ) : null,
           feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px", textAlign: "left" } }, feedback) : null,
           status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
@@ -2116,6 +2124,7 @@ window.__ModuleLoader__.load({
                             const iid = it.fullName || (it.owner + "/" + it.name);
                             return iid === id ? { ...it, installed: true } : it;
                           }));
+                          setRestartKind("install");
                           setPendingRestart(plugin.fullName || id);
                           loadInstalledCount();
                         },

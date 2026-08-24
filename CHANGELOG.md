@@ -13,6 +13,7 @@
 
 ### Changed
 
+- 卸载任何已安装插件后都提示重启 dsh web（与安装后同一条横幅，文案为「已卸载 … 请重启后完全卸载」）
 - 插件广场「已安装」卡片改为紧凑布局：短标题、包名/ slug 副标题、角标「已装」、底栏来源或文件信息
 - 插件广场「已安装」点卡片打开详情，去掉卡片上的「详情」按钮；详情页底部提供卸载
 - 插件广场「已安装」抽屉的 README 支持 GitHub 常见 HTML（居中标题、徽章图、`<p align>`），仍过滤 script / javascript: 链接
@@ -21,6 +22,7 @@
 
 ### Fixed
 
+- 卸载已安装插件时先停掉运行中的 loader 入口，避免删掉文件后浏览器仍去拉 `/plugins/<name>/client.js` 报 `failed to import loader entry`
 - 聊天内卡片布局：`.sh-card` 补 `box-sizing:border-box` 与 `min-width:0`、`.sh-tool` 下统一 border-box，修复聊天工具视图（无 `.sh-mkt` 重置）中卡片因 padding/border 溢出网格轨道、相邻卡片相互挤压重叠的问题
 - 安装进度区：`.sh-plg-phase` 长下载 URL 允许断行并限 2 行（`word-break:break-all` + line-clamp)，不再溢出卡片右边界
 - 聊天内插件搜索「还有吗」分页：`offset` 未按 `pageSize` 对齐时（如已展示 3 张、默认分页 12）不再重复返回整页卡片，`pluginPaging` 补页内 `skip` 切片并据实计算 `offset` / `hasMore`；翻到尽头时回复「没有了」而非「没找到」

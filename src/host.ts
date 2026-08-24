@@ -10,6 +10,7 @@ import { handleApi, handleIcon } from './local-api.js'
 import {
   INSTALL_TIMEOUT_MS,
 } from './dsh-cli.js'
+import { bindLoaderHost, type LoaderHost } from './live-plugin.js'
 import {
   PLUGIN_CATEGORY_KEYS,
   installMarketPlugin,
@@ -37,6 +38,7 @@ export const Config: Schema<Config> = Schema.object({
 })
 
 export function apply(ctx: Context, config: Config): void {
+  bindLoaderHost(ctx as unknown as LoaderHost)
   const cfg = withDefaults(config)
   assignConfig(cfg, readOverlay())
 
