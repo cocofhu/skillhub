@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { withDefaults } from '../config-store.js'
+import { HttpError } from '../http.js'
 import {
   buildPluginsUrl,
+  collectInstalledPatchIds,
   fetchInstallPlan,
+  fetchPatchIdsFromSource,
   fallbackPluginCategories,
+  findPatchIdConflict,
   installMarketPlugin,
   installPlanUrl,
   listPluginCategories,
@@ -15,6 +19,7 @@ import {
   mapMarketPlugin,
   mapPluginCategory,
   parsePluginCategory,
+  patchEntryIds,
   pluginPaging,
   searchMarketPlugins,
   parsePluginRef,
@@ -187,6 +192,9 @@ test('installMarketPlugin fetches the plan then runs dsh plugin add', async () =
         profile: 'web',
       } as T
     },
+    fetchBytes: async () => {
+      throw new HttpError('HTTP 404 https://raw.githubusercontent.com/x', 404)
+    },
     runDshPlugin: async (profile, args) => {
       seen.push([profile, ...args])
       return 'installed ok'
@@ -241,6 +249,113 @@ test('installMarketPlugin does not spawn when the plan is for another repo', asy
     }),
     /仓库与所选插件不一致/,
   )
+})
+
+test('patchEntryIds extracts loader ids from cordis.patch.yml', () => {
+  const a = '- insert:\n    - id: genui\n      name: \'@omdsh-dev/dsh-genui\'\n'
+  assert.deepEqual(patchEntryIds(a), ['genui'])
+  const b = '# comment\n- insert:\n    - id: skillhub\n      name: \'@cocofhu/skillhub\'\n    - id: skillhub\n      name: dup\n'
+  assert.deepEqual(patchEntryIds(b), ['skillhub'])
+  assert.deepEqual(patchEntryIds(''), [])
+  assert.deepEqual(patchEntryIds('- insert:\n    - name: no-id-here\n'), [])
+})
+
+test('collectInstalledPatchIds reads patch files of installed deps', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-ids-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      dependencies: { '@cocofhu/skillhub': 'link:/x', 'dsh-plugin-genui': 'github:a/b#59fa47b' },
+    }))
+    mkdirSync(join(dir, 'node_modules', '@cocofhu', 'skillhub'), { recursive: true })
+    mkdirSync(join(dir, 'node_modules', 'dsh-plugin-genui'), { recursive: true })
+    writeFileSync(join(dir, 'node_modules', '@cocofhu', 'skillhub', 'cordis.patch.yml'), '- insert:\n    - id: skillhub\n      name: x\n')
+    writeFileSync(join(dir, 'node_modules', 'dsh-plugin-genui', 'cordis.patch.yml'), '- insert:\n    - id: genui\n      name: y\n')
+    const ids = collectInstalledPatchIds(dir)
+    assert.equal(ids.get('skillhub'), '@cocofhu/skillhub')
+    assert.equal(ids.get('genui'), 'dsh-plugin-genui')
+    assert.equal(ids.size, 2)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('fetchPatchIdsFromSource reads the pinned raw patch and tolerates 404', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const sha = 'a'.repeat(40)
+  let seen = ''
+  const ids = await fetchPatchIdsFromSource(`github:o/n#${sha}`, cfg, async (url: string) => {
+    seen = url
+    return { body: Buffer.from('- insert:\n    - id: demo\n      name: x\n'), contentType: 'text/plain' }
+  })
+  assert.equal(seen, `https://raw.githubusercontent.com/o/n/${sha}/cordis.patch.yml`)
+  assert.deepEqual(ids, ['demo'])
+  const none = await fetchPatchIdsFromSource(`github:o/n#${sha}`, cfg, async () => {
+    throw new HttpError('HTTP 404 https://raw.githubusercontent.com/o/n/x/cordis.patch.yml', 404)
+  })
+  assert.deepEqual(none, [])
+  assert.deepEqual(await fetchPatchIdsFromSource('npm:left-pad', cfg), [])
+})
+
+test('findPatchIdConflict flags a duplicate loader id but allows same-repo reinstall', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-conflict-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      dependencies: { 'dsh-plugin-genui': 'github:pengyue-polaron/deepseek-harness-genui#59fa47b01281bf34dd1234f153ae60d2dc30a759' },
+    }))
+    mkdirSync(join(dir, 'node_modules', 'dsh-plugin-genui'), { recursive: true })
+    writeFileSync(join(dir, 'node_modules', 'dsh-plugin-genui', 'cordis.patch.yml'), '- insert:\n    - id: genui\n      name: dsh-plugin-genui\n')
+    const patch = async () => ({ body: Buffer.from('- insert:\n    - id: genui\n      name: \'@omdsh-dev/dsh-genui\'\n'), contentType: 'text/plain' })
+    // 另一个仓库、同一个 loader id → 冲突
+    const conflict = await findPatchIdConflict(
+      'github:omdsh-dev/dsh-genui#1ca5da4eb9394972cce2c1ccacfedc22eec3166b',
+      cfg,
+      { fetchBytesImpl: patch, profileDir: dir },
+    )
+    assert.deepEqual(conflict, { id: 'genui', holder: 'dsh-plugin-genui' })
+    // 同仓库重装/升级 → 放行
+    const same = await findPatchIdConflict(
+      'github:pengyue-polaron/deepseek-harness-genui#59fa47b01281bf34dd1234f153ae60d2dc30a759',
+      cfg,
+      { fetchBytesImpl: patch, profileDir: dir },
+    )
+    assert.equal(same, null)
+    // 无 patch 的插件 → 放行
+    const bare = await findPatchIdConflict(
+      'github:omdsh-dev/dsh-genui#1ca5da4eb9394972cce2c1ccacfedc22eec3166b',
+      cfg,
+      { fetchBytesImpl: async () => { throw new HttpError('HTTP 404 x', 404) }, profileDir: dir },
+    )
+    assert.equal(bare, null)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('installMarketPlugin refuses to install when the loader id conflicts', async () => {
+  const cfg = withDefaults({ apiBase: 'https://api.skillhub.cn' })
+  const dir = mkdtempSync(join(tmpdir(), 'skillhub-refuse-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      dependencies: { 'dsh-plugin-genui': 'github:pengyue-polaron/deepseek-harness-genui#59fa47b01281bf34dd1234f153ae60d2dc30a759' },
+    }))
+    mkdirSync(join(dir, 'node_modules', 'dsh-plugin-genui'), { recursive: true })
+    writeFileSync(join(dir, 'node_modules', 'dsh-plugin-genui', 'cordis.patch.yml'), '- insert:\n    - id: genui\n      name: dsh-plugin-genui\n')
+    const sha = '1ca5da4eb9394972cce2c1ccacfedc22eec3166b'
+    await assert.rejects(
+      () => installMarketPlugin({ owner: 'omdsh-dev', name: 'dsh-genui' }, cfg, {
+        fetchJson: async <T>() => ({ source: `github:omdsh-dev/dsh-genui#${sha}` }) as T,
+        fetchBytes: async () => ({ body: Buffer.from('- insert:\n    - id: genui\n      name: \'@omdsh-dev/dsh-genui\'\n'), contentType: 'text/plain' }),
+        profileDir: dir,
+        runDshPlugin: async () => {
+          throw new Error('should not run')
+        },
+      }),
+      /加载 id「genui」与已安装的 dsh-plugin-genui 冲突/,
+    )
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('installPlanUrl encodes owner/name', () => {
