@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.15] - 2026-08-24
+
 ### Changed
 
 - npm 主包名改为无 scope 的 `skillhub-plugin`；打 `v*` tag 时 CI 同时发布 `skillhub-plugin` 与兼容包 `@cocofhu/skillhub`
