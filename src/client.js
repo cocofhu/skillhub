@@ -270,10 +270,9 @@ window.__ModuleLoader__.load({
 .sh-readme th,.sh-readme td{border:1px solid var(--dsw-alias-border-l2,#e2e4e8);padding:6px 10px;text-align:left}
 .sh-readme th{background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-primary,#17191c);font-weight:600}
 .sh-trunc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--dsw-alias-state-warn-label,#c2410c)}
-/* ========= Loading 态:Spinner / 骨架屏 / 搜索居中 ========= */
+/* ========= Loading 态:Spinner / 骨架屏 ========= */
 .sh-spinner{flex:none;display:inline-block;width:15px;height:15px;border-radius:50%;border:2px solid var(--dsw-alias-border-l2,#e2e4e8);border-top-color:var(--dsw-alias-label-primary,#17191c);animation:shSpin .7s linear infinite}
 @keyframes shSpin{to{transform:rotate(360deg)}}
-.sh-mkt-search--center{max-width:460px;margin:0 auto;width:100%}
 .sh-mkt-status.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:24px 12px}
 .sh-mkt-more .sh-spinner{width:13px;height:13px;border-width:2px}
 .sh-mkt-go{display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -2104,7 +2103,7 @@ window.__ModuleLoader__.load({
             onNeedRestart: (name) => { setRestartKind("uninstall"); setPendingRestart(name); },
           }) : h(React.Fragment, null,
           h("form", {
-            className: "sh-mkt-search sh-mkt-search--center",
+            className: "sh-mkt-search",
             onSubmit: (e) => {
               e.preventDefault();
               if (listBusy) return;
@@ -2312,7 +2311,7 @@ window.__ModuleLoader__.load({
         h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
         scope === "installed" ? h(InstalledSkillsView, { onChanged: loadInstalledCount }) : h(React.Fragment, null,
         h("form", {
-          className: "sh-mkt-search sh-mkt-search--center",
+          className: "sh-mkt-search",
           onSubmit: (e) => {
             e.preventDefault();
             if (listBusy) return;
