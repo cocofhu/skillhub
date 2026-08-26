@@ -270,6 +270,29 @@ window.__ModuleLoader__.load({
 .sh-readme th,.sh-readme td{border:1px solid var(--dsw-alias-border-l2,#e2e4e8);padding:6px 10px;text-align:left}
 .sh-readme th{background:var(--dsw-alias-bg-layer-1,#f5f6f8);color:var(--dsw-alias-label-primary,#17191c);font-weight:600}
 .sh-trunc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--dsw-alias-state-warn-label,#c2410c)}
+/* ========= Loading 态:Spinner / 骨架屏 / 搜索居中 ========= */
+.sh-spinner{flex:none;display:inline-block;width:15px;height:15px;border-radius:50%;border:2px solid var(--dsw-alias-border-l2,#e2e4e8);border-top-color:var(--dsw-alias-label-primary,#17191c);animation:shSpin .7s linear infinite}
+@keyframes shSpin{to{transform:rotate(360deg)}}
+.sh-mkt-search--center{max-width:460px;margin:0 auto;width:100%}
+.sh-mkt-status.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:24px 12px}
+.sh-mkt-more .sh-spinner{width:13px;height:13px;border-width:2px}
+.sh-mkt-go{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.sh-mkt-go .sh-spinner{width:13px;height:13px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff}
+.sh-mkt-go:disabled{opacity:.55;cursor:default}
+.sh-mkt-filter:disabled{opacity:.5;cursor:default}
+.sh-mkt-skeleton{pointer-events:none}
+.sh-mkt-sk{min-height:188px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--dsw-alias-border-l2,#e2e4e8);border-radius:10px;padding:14px;background:var(--dsw-alias-bg-layer-3,#fff)}
+.sh-plaza-body .sh-mkt-sk{min-height:220px}
+.sh-mkt-sk-row{display:flex;gap:10px;align-items:center;margin-bottom:4px}
+.sh-mkt-sk-main{flex:1;min-width:0}
+.sh-mkt-sk-avatar{width:36px;height:36px;border-radius:9px}
+.sh-mkt-sk-line{height:10px;border-radius:6px}
+.sh-mkt-sk-avatar,.sh-mkt-sk-line{background:linear-gradient(90deg,var(--dsw-alias-bg-module-platform,#eef0f3) 25%,var(--dsw-alias-interactive-bg-hover,#e2e5ea) 45%,var(--dsw-alias-bg-module-platform,#eef0f3) 65%);background-size:400% 100%;animation:shShimmer 1.3s ease infinite}
+.sh-mkt-sk-line.w40{width:40%}
+.sh-mkt-sk-line.w60{width:60%}
+.sh-mkt-sk-line.w90{width:90%}
+@keyframes shShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.sh-spinner{animation:none}.sh-mkt-sk-avatar,.sh-mkt-sk-line{animation:none}}
 `;
 
     const CSS_ID = "skillhub-style";
@@ -470,7 +493,10 @@ window.__ModuleLoader__.load({
       "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 dsh web",
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
+      "mkt.moreLoading": "加载中…",
       "mkt.catAll": "全部",
+      "mkt.searching": "正在搜索「{q}」…",
+      "mkt.switching": "切换分类中…",
       "plaza.title": "插件广场",
       "plaza.skills": "技能",
       "plaza.plugins": "插件",
@@ -610,7 +636,10 @@ window.__ModuleLoader__.load({
       "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart dsh web yourself",
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
+      "mkt.moreLoading": "Loading…",
       "mkt.catAll": "All",
+      "mkt.searching": "Searching “{q}”…",
+      "mkt.switching": "Switching category…",
       "plaza.title": "Plugin Plaza",
       "plaza.skills": "Skills",
       "plaza.plugins": "Plugins",
@@ -1564,6 +1593,34 @@ window.__ModuleLoader__.load({
       );
     }
 
+    /** 通用旋转 Spinner,配合 .sh-spinner 动画使用。 */
+    function Spinner() {
+      return h("span", { className: "sh-spinner", "aria-hidden": "true" });
+    }
+
+    /** 居中的「Spinner + 文案」加载行,用于进入/搜索等待态。 */
+    function LoadingStatus({ text }) {
+      return h("p", { className: "sh-mkt-status loading" }, h(Spinner), text);
+    }
+
+    /** 微光骨架屏卡片网格:gridClass 传 .sh-mkt-grid / .sh-cards 以复用响应式列布局。 */
+    function SkeletonCards({ count = 4, gridClass = "sh-mkt-grid" }) {
+      return h("div", { className: gridClass + " sh-mkt-skeleton", "aria-hidden": "true", "aria-busy": "true" },
+        Array.from({ length: count }, (_, i) => h("div", { key: i, className: "sh-mkt-sk" },
+          h("div", { className: "sh-mkt-sk-row" },
+            h("div", { className: "sh-mkt-sk-avatar" }),
+            h("div", { className: "sh-mkt-sk-main" },
+              h("div", { className: "sh-mkt-sk-line w40" }),
+              h("div", { className: "sh-mkt-sk-line w60" }),
+            ),
+          ),
+          h("div", { className: "sh-mkt-sk-line w90" }),
+          h("div", { className: "sh-mkt-sk-line w90" }),
+          h("div", { className: "sh-mkt-sk-line w60" }),
+        )),
+      );
+    }
+
     function installMarketPlugin(plugin) {
       return api("pluginInstall", {
         owner: plugin.owner,
@@ -1932,6 +1989,9 @@ window.__ModuleLoader__.load({
       const [total, setTotal] = useState(0);
       const [status, setStatus] = useState("loading");
       const [err, setErr] = useState("");
+      // reason 记录本次加载的触发来源:init 进入 / search 搜索 / cat 切分类 / more 加载更多
+      const [reason, setReason] = useState("init");
+      const [loadingMore, setLoadingMore] = useState(false);
       const [sending, setSending] = useState("");
       const [feedback, setFeedback] = useState("");
       const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
@@ -1976,6 +2036,7 @@ window.__ModuleLoader__.load({
             setTotal(Number(d.total) || 0);
             setStatus("ready");
             setErr("");
+            setLoadingMore(false);
           })
           .catch((e) => {
             if (!live) return;
@@ -1985,6 +2046,7 @@ window.__ModuleLoader__.load({
             }
             setStatus("error");
             setErr(e.message || String(e));
+            setLoadingMore(false);
           });
         return () => { live = false; };
       }, [submitted, category, page, scope]);
@@ -2014,6 +2076,10 @@ window.__ModuleLoader__.load({
         return "https://github.com/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
       };
       const pct = sending ? progressPercent(liveStatus) : null;
+      // 列表加载中(进入/搜索/切分类):搜索按钮与分类按钮禁用防重
+      const listBusy = status === "loading";
+      const searching = listBusy && reason === "search";
+      const skeleton = listBusy && reason !== "search";
       const startRestart = () => {
         if (restarting) return;
         setRestarting(true);
@@ -2038,8 +2104,14 @@ window.__ModuleLoader__.load({
             onNeedRestart: (name) => { setRestartKind("uninstall"); setPendingRestart(name); },
           }) : h(React.Fragment, null,
           h("form", {
-            className: "sh-mkt-search",
-            onSubmit: (e) => { e.preventDefault(); setSubmitted(query.trim()); setPage(1); },
+            className: "sh-mkt-search sh-mkt-search--center",
+            onSubmit: (e) => {
+              e.preventDefault();
+              if (listBusy) return;
+              setReason("search");
+              setSubmitted(query.trim());
+              setPage(1);
+            },
           },
             h("div", { className: "sh-mkt-field" },
               h(SearchIcon),
@@ -2050,19 +2122,21 @@ window.__ModuleLoader__.load({
                 onChange: (e) => setQuery(e.currentTarget.value),
               }),
             ),
-            h("button", { type: "submit", className: "sh-mkt-go" }, tr("mkt.search")),
+            h("button", { type: "submit", className: "sh-mkt-go", disabled: listBusy }, listBusy ? h(Spinner) : null, tr("mkt.search")),
           ),
           h("div", { className: "sh-mkt-filters" },
             h("button", {
               type: "button",
               className: "sh-mkt-filter" + (!category ? " on" : ""),
-              onClick: () => { setCategory(""); setPage(1); },
+              disabled: listBusy,
+              onClick: () => { setReason("cat"); setCategory(""); setPage(1); },
             }, tr("mkt.catAll")),
             cats.map((it) => h("button", {
               key: it.key,
               type: "button",
               className: "sh-mkt-filter" + (category === it.key ? " on" : ""),
-              onClick: () => { setCategory(it.key); setPage(1); },
+              disabled: listBusy,
+              onClick: () => { setReason("cat"); setCategory(it.key); setPage(1); },
             }, catLabelFor(it.key))),
           ),
           status === "ready" ? h("div", { className: "sh-mkt-results" },
@@ -2081,10 +2155,14 @@ window.__ModuleLoader__.load({
             ),
           ) : null,
           feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px", textAlign: "left" } }, feedback) : null,
-          status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
+          searching ? h(LoadingStatus, { text: tr("mkt.searching", { q: submitted }) }) : null,
+          skeleton ? h("div", { className: "sh-mkt-results" },
+            reason === "cat" ? h("p", { className: "sh-mkt-summary" }, tr("mkt.switching")) : null,
+          ) : null,
+          skeleton ? h(SkeletonCards, { count: 4 }) : null,
           status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
           status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("mkt.empty")) : null,
-          items.length ? h("div", { className: "sh-mkt-grid" },
+          items.length && !searching && !skeleton ? h("div", { className: "sh-mkt-grid" },
             items.map((plugin) => {
               const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
               const verified = plugin.installability === "verified";
@@ -2139,11 +2217,13 @@ window.__ModuleLoader__.load({
           status === "ready" && items.length < total ? h("button", {
             type: "button",
             className: "sh-mkt-more",
-            onClick: () => setPage((n) => n + 1),
+            disabled: loadingMore,
+            onClick: () => { if (loadingMore) return; setReason("more"); setLoadingMore(true); setPage((n) => n + 1); },
           },
-            h("span", null, tr("mkt.more")),
-            h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: Math.max(0, total - items.length) })),
-            h(ChevronDown),
+            loadingMore ? h(Spinner) : null,
+            h("span", null, loadingMore ? tr("mkt.moreLoading") : tr("mkt.more")),
+            loadingMore ? null : h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: Math.max(0, total - items.length) })),
+            loadingMore ? null : h(ChevronDown),
           ) : null,
           ),
         ),
@@ -2177,6 +2257,9 @@ window.__ModuleLoader__.load({
       const [hasMore, setHasMore] = useState(false);
       const [status, setStatus] = useState("loading");
       const [err, setErr] = useState("");
+      // reason 记录本次加载的触发来源:init 进入 / search 搜索 / cat 切分类 / more 加载更多
+      const [reason, setReason] = useState("init");
+      const [loadingMore, setLoadingMore] = useState(false);
       const [open, setOpen] = useState(null);
       const [scope, setScope] = useState("all");
       const [installedCount, setInstalledCount] = useState(null);
@@ -2200,6 +2283,7 @@ window.__ModuleLoader__.load({
             setHasMore(!!d.hasMore);
             setStatus("ready");
             setErr("");
+            setLoadingMore(false);
           })
           .catch((e) => {
             if (!live) return;
@@ -2210,6 +2294,7 @@ window.__ModuleLoader__.load({
             }
             setStatus("error");
             setErr(e.message || String(e));
+            setLoadingMore(false);
           });
         return () => { live = false; };
       }, [submitted, category, page, scope]);
@@ -2219,12 +2304,22 @@ window.__ModuleLoader__.load({
         loadInstalledCount();
       };
       const remaining = Math.max(0, total - items.length);
+      // 列表加载中(进入/搜索/切分类):搜索按钮与分类按钮禁用防重
+      const listBusy = status === "loading";
+      const searching = listBusy && reason === "search";
+      const skeleton = listBusy && reason !== "search";
       return h("div", { className: "sh-mkt" },
         h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
         scope === "installed" ? h(InstalledSkillsView, { onChanged: loadInstalledCount }) : h(React.Fragment, null,
         h("form", {
-          className: "sh-mkt-search",
-          onSubmit: (e) => { e.preventDefault(); setPage(1); setSubmitted(query.trim()); },
+          className: "sh-mkt-search sh-mkt-search--center",
+          onSubmit: (e) => {
+            e.preventDefault();
+            if (listBusy) return;
+            setReason("search");
+            setPage(1);
+            setSubmitted(query.trim());
+          },
         },
           h("div", { className: "sh-mkt-field" },
             h(SearchIcon),
@@ -2235,36 +2330,44 @@ window.__ModuleLoader__.load({
               onChange: (e) => setQuery(e.currentTarget.value),
             }),
           ),
-          h("button", { type: "submit", className: "sh-mkt-go" }, tr("mkt.search")),
+          h("button", { type: "submit", className: "sh-mkt-go", disabled: listBusy }, listBusy ? h(Spinner) : null, tr("mkt.search")),
         ),
         h("div", { className: "sh-mkt-filters" },
           h("button", {
             type: "button",
             className: "sh-mkt-filter" + (!category ? " on" : ""),
-            onClick: () => { setCategory(""); setPage(1); },
+            disabled: listBusy,
+            onClick: () => { setReason("cat"); setCategory(""); setPage(1); },
           }, tr("mkt.catAll")),
           SKILL_CAT_KEYS.map((key) => h("button", {
             key,
             type: "button",
             className: "sh-mkt-filter" + (category === key ? " on" : ""),
-            onClick: () => { setCategory(key); setPage(1); },
+            disabled: listBusy,
+            onClick: () => { setReason("cat"); setCategory(key); setPage(1); },
           }, tr("cat." + key))),
         ),
         status === "ready" ? h("div", { className: "sh-mkt-results" },
           h("p", { className: "sh-mkt-summary" }, tr("search.hint", { n: total || items.length })),
         ) : null,
-        status === "loading" && page === 1 ? h("p", { className: "sh-mkt-status" }, tr("mkt.loading")) : null,
+        searching ? h(LoadingStatus, { text: tr("mkt.searching", { q: submitted }) }) : null,
+        skeleton ? h("div", { className: "sh-mkt-results" },
+          reason === "cat" ? h("p", { className: "sh-mkt-summary" }, tr("mkt.switching")) : null,
+        ) : null,
+        skeleton ? h(SkeletonCards, { count: 4, gridClass: "sh-cards" }) : null,
         status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
         status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("search.empty")) : null,
-        items.length ? h(Cards, { items, onOpen: setOpen }) : null,
+        items.length && !searching && !skeleton ? h(Cards, { items, onOpen: setOpen }) : null,
         status === "ready" && (hasMore || remaining > 0) ? h("button", {
           type: "button",
           className: "sh-mkt-more",
-          onClick: () => setPage((n) => n + 1),
+          disabled: loadingMore,
+          onClick: () => { if (loadingMore) return; setReason("more"); setLoadingMore(true); setPage((n) => n + 1); },
         },
-          h("span", null, tr("mkt.more")),
-          remaining ? h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: remaining })) : null,
-          h(ChevronDown),
+          loadingMore ? h(Spinner) : null,
+          h("span", null, loadingMore ? tr("mkt.moreLoading") : tr("mkt.more")),
+          loadingMore || !remaining ? null : h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: remaining })),
+          loadingMore ? null : h(ChevronDown),
         ) : null,
         open ? h(Drawer, {
           item: open,
