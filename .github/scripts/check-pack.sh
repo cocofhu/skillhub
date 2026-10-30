@@ -38,6 +38,7 @@ must=(
   lib/dsh-cli.js
   lib/ndjson.js
   lib/restart.js
+  lib/runtime-profile.js
   lib/local-api.js
   lib/categories.js
 )

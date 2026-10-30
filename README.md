@@ -41,7 +41,8 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 
 - Node.js 22 或更高版本
 - pnpm 11（见 `packageManager` 字段）
-- DeepSeek Harness Web
+- DeepSeek Harness Web（按 `0.2.0-rc.2` 接口验证）或 Desktop（按 `0.2.1-rc.3` 接口验证）；更早版本未验证
+- Desktop 插件管理需要发行版自带的 `dsh-desktop-host/lib/cli.js`。缺少该入口时会明确报错，请升级或重新安装 Desktop
 
 ## 安装
 
@@ -56,6 +57,14 @@ dsh plugin --profile web add skillhub-plugin
 ```sh
 dsh plugin --profile web add @cocofhu/skillhub
 ```
+
+Desktop 使用应用内提供的 `dsh` 命令，安装到 `desktop` profile：
+
+```sh
+dsh plugin --profile desktop add skillhub-plugin
+```
+
+安装后重启 Desktop 应用。插件的已安装列表、安装、卸载和自更新默认跟随当前宿主的 profile；自定义 profile 同样适用。
 
 本地开发：
 
@@ -87,13 +96,13 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
 
-点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile web add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；若 pnpm 拦截 git 源的 `prepare`，会写入 web profile 的 `dangerouslyAllowAllBuilds` 并自动重试。装完会提示重启，并提供 **立即重启**（同源页面即可，含轻量云等反向代理；若 `dsh web` 由 systemd 托管则走 `systemctl restart`）。已装进当前 web profile 的插件会显示「已安装」。对话里的技能搜索 / zip 安装不受影响。
+点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile <当前 profile> add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；若 pnpm 拦截 git 源的 `prepare`，会写入当前 profile 的 `dangerouslyAllowAllBuilds` 并自动重试。已装进当前 profile 的插件会显示「已安装」。Web 装完可点 **立即重启**（支持同源反向代理；systemd 托管时走 `systemctl restart`）；Desktop 请使用应用菜单重启。对话里的技能搜索 / zip 安装不受影响。
 
 #### 已安装视图（本地只读预览）
 
 广场两个分类页顶部都有 **全部 / 已安装** 切换器（带已安装计数与「本机数据 · 只读预览」旁注）。切到「已安装」后完全不请求远端，数据全部来自本机文件系统的只读接口：
 
-- **插件页**：枚举 web profile `package.json` 依赖，展示本机已安装插件的卡片（包名、来源 spec、版本、描述、已安装徽章）。`github:` / `npm` / `link:` 三类来源都能识别；点卡片打开抽屉，含 **概览** 与 **README**（Markdown 渲染，超过 64 KB 自动截断并提示），底部可卸载。非 dsh 依赖不会混入列表，只以「另有 N 个非 dsh 依赖」计数折叠提示。
+- **插件页**：枚举当前 profile `package.json` 依赖，展示本机已安装插件的卡片（包名、来源 spec、版本、描述、已安装徽章）。`github:` / `npm` / `link:` 三类来源都能识别；点卡片打开抽屉，含 **概览** 与 **README**（Markdown 渲染，超过 64 KB 自动截断并提示），底部可卸载。非 dsh 依赖不会混入列表，只以「另有 N 个非 dsh 依赖」计数折叠提示。
 - **技能页**：以 Meta 卡片展示本机已安装技能（名称 + 已装徽章 + 版本、slug、两行描述、文件数 / 体积 / 更新时间统计行），点开为本地概览抽屉，并明确标注不浏览技能文件内容。切回「全部」恢复原有搜索状态。
 
 对话中的 `skillhub_list` 工具卡片同步升级为同款 Meta 卡片，保留 **详情 / 卸载** 操作。
@@ -107,7 +116,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | `skillhub_list` | 列出已安装技能 |
 | `skillhub_uninstall` | 卸载本地技能目录 |
 | `skillhub_plugin_search` | 搜索或浏览 DSH 插件，并展示插件卡片（支持 `query` / `category` / `sort` / `limit` / `offset` 翻页，已安装标注） |
-| `skillhub_plugin_install` | 用户点名后按 `owner` + `name` 安装 DSH 插件（同一 install-plan 校验链），装完提示重启 dsh web |
+| `skillhub_plugin_install` | 用户点名后按 `owner` + `name` 安装 DSH 插件（同一 install-plan 校验链），装完提示重启 Harness |
 
 ## 配置
 
@@ -118,8 +127,9 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | API 地址 | 默认 `https://api.skillhub.cn` |
 | 安装目录 | 默认 `$DSH_HOME/skills`（通常是 `~/.dsh/skills`） |
 | 搜索结果上限 | 每批返回的卡片数量，默认 12 |
+| 插件 profile | 留空自动跟随宿主；可指定 `web`、`desktop` 或自定义 profile |
 
-标题栏有 **更新** 按钮：会查询 GitHub 最新 release，并用 `dsh plugin add github:cocofhu/skillhub#vX.Y.Z` 安装。更新后请重启 `dsh web` 并强制刷新。若当前是本地 `link:` 开发安装，更新会改成 GitHub release 安装。
+标题栏有 **更新** 按钮：会查询 GitHub 最新 release，并在当前目标 profile 用 `dsh plugin add github:cocofhu/skillhub#vX.Y.Z` 安装。更新后请重启 Harness，Web 还需强制刷新。若当前是本地 `link:` 开发安装，更新会改成 GitHub release 安装。
 
 保存后立即生效。配置写入 Harness 用户目录下的 `skillhub.json`，不会进入 git。
 
@@ -150,7 +160,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | DSH 插件目录 | `GET /api/v1/plugins` |
 | 插件安装计划 | `GET /api/v1/plugins/{owner}/{name}/install-plan` |
 
-上游请求有超时；技能 zip 安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。广场安装 DSH 插件会在本机执行 `dsh plugin add`，写入当前 web profile。
+上游请求有超时；技能 zip 安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。广场安装 DSH 插件会在本机执行 `dsh plugin add`，写入当前目标 profile。
 
 ## 开发
 
@@ -173,7 +183,8 @@ pnpm build
 | `src/client.js` | 搜索卡片、详情弹窗、设置页、插件广场、已安装视图 |
 | `src/api.ts` | 搜索与技能卡片映射 |
 | `src/plugin-market.ts` | DSH 插件目录查询与 install-plan 安装 |
-| `src/installed-plugins.ts` | 已安装插件枚举与 README 只读预览（web profile） |
+| `src/installed-plugins.ts` | 当前 profile 的已安装插件枚举与 README 只读预览 |
+| `src/runtime-profile.ts` | 从宿主识别 profile 名称、目录和 DSH_HOME |
 | `src/markdown.ts` | README Markdown 安全渲染（白名单 HTML，仅 http(s)/mailto/# 链接） |
 | `src/dsh-cli.ts` | 复用当前 dsh 进程执行 `dsh plugin add`，解析 pnpm ndjson 进度 |
 | `src/ndjson.ts` | pnpm `--reporter=ndjson` 进度解析 |
@@ -194,17 +205,17 @@ pnpm build
 | --- | --- |
 | 页面停在 Loading plugins | 确认 `pnpm build` 成功，重启 `dsh web` 后强制刷新 |
 | `cannot get property "locale" without inject@skillhub` | 升级到含此次修复的版本；重启 `dsh web` 并强制刷新 |
-| 搜索卡片未出现 | 开新对话，确认 `skillhub_search` 已加载 |
+| 搜索卡片未出现 | 升级到含桌面兼容修复的版本并重启 Harness；工具区域会显示加载、空结果或错误，可据此排查。Desktop 请求使用应用内的鉴权转发 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
 | 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
-| 广场点安装失败 | 确认当前是 `dsh web` 拉起的进程，且 web profile 可写 |
-| 设置里点更新失败 | 确认能访问 `api.github.com`，且 web profile 可执行 `dsh plugin add` |
+| 广场点安装失败 | 确认设置显示的目标 profile 正确且目录可写；Desktop 会复用应用自带的 CLI，无需将 `dsh` 加入 PATH。旧桌面版缺少内置 CLI 入口时请升级 |
+| 设置里点更新失败 | 确认能访问 `api.github.com`，且当前目标 profile 可执行 `dsh plugin add` |
 | pnpm 拒绝 `prepare` | 广场安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add skillhub-plugin`，不要从 git 安装 |
 
 ## 安全
 
-安装第三方技能等于在本机落下可被 Agent 读取的文件。广场安装 DSH 插件会把第三方代码装进 web profile。请只安装已验证且你信任的来源。
+安装第三方技能等于在本机落下可被 Agent 读取的文件。广场安装 DSH 插件会把第三方代码装进当前目标 profile。请只安装已验证且你信任的来源。
 
 漏洞请按 [SECURITY.md](SECURITY.md) 私下报告，不要发公开 Issue。
 
