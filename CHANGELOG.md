@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 插件广场、已安装徽章、安装 / 卸载和自更新跟随当前宿主 profile，修复 Desktop 与自定义 profile 被静默指向 `web` 的问题；设置中可查看和覆盖目标 profile（#36）
+- Windows Desktop 复用应用自带的 CLI 与包管理器，正确传递 Electron 的 Node 模式；命令输出按 UTF-8 流式解码，保留跨数据块的中文字符（#38）
+- 搜索与已安装工具卡片兼容宿主原始事件、结构化 metadata 和旧会话结果；空结果、运行中和失败状态提供可见反馈，Desktop 请求保留应用内鉴权转发（#40）
+
+### Added
+
+- Desktop / 自定义 profile、Windows CLI 与客户端 DOM 回归测试；CI 增加 Windows Node.js 22 / 24 的原生命令测试
+
 ## [0.2.16] - 2026-08-24
 
 ### Changed
