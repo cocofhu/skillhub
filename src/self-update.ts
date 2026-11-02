@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { runDshPlugin, webProfileDir } from './dsh-cli.js'
+import { runDshPlugin } from './dsh-cli.js'
 import { fetchJson } from './http.js'
+import { currentProfileDir, resolveRuntimeProfile } from './runtime-profile.js'
 import type { FetchOptions } from './types.js'
 
 export { runCommand, webProfileDir } from './dsh-cli.js'
@@ -23,6 +24,7 @@ export interface UpdateStatus {
   upToDate: boolean
   source: 'link' | 'github' | 'unknown'
   profileDir: string
+  profile: string
   canUpdate: boolean
   message?: string
 }
@@ -39,6 +41,7 @@ export interface UpdateDeps {
   readPackageJson: typeof readPackageJson
   readProfilePackage: typeof readProfilePackage
   profileDir: () => string
+  profile?: string
 }
 
 const defaultDeps: UpdateDeps = {
@@ -46,7 +49,7 @@ const defaultDeps: UpdateDeps = {
   runDshPlugin,
   readPackageJson,
   readProfilePackage,
-  profileDir: webProfileDir,
+  profileDir: currentProfileDir,
 }
 
 export function packageRoot(): string {
@@ -57,7 +60,7 @@ export function readPackageJson(root = packageRoot()): { name?: string; version?
   return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { name?: string; version?: string }
 }
 
-export function readProfilePackage(profileDir = webProfileDir()): { dependencies?: Record<string, string> } {
+export function readProfilePackage(profileDir = currentProfileDir()): { dependencies?: Record<string, string> } {
   return JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { dependencies?: Record<string, string> }
 }
 
@@ -108,20 +111,23 @@ export async function fetchLatestRelease(
 
 export async function getUpdateStatus(
   opts: FetchOptions,
-  deps: UpdateDeps = defaultDeps,
+  deps: Partial<UpdateDeps> = {},
   signal?: AbortSignal,
 ): Promise<UpdateStatus> {
-  const profileDir = deps.profileDir()
-  const pkg = deps.readPackageJson()
+  const runtime = resolveRuntimeProfile(deps.profile)
+  const profileDir = deps.profileDir?.() ?? runtime.dir
+  const pkg = (deps.readPackageJson ?? readPackageJson)()
   const currentVersion = normalizeVersion(pkg.version || '0.0.0') || '0.0.0'
   let source: UpdateStatus['source'] = 'unknown'
   try {
-    const profile = deps.readProfilePackage(profileDir)
-    source = detectSource(profile.dependencies?.skillhub)
+    const profile = (deps.readProfilePackage ?? readProfilePackage)(profileDir)
+    const names = [pkg.name, 'skillhub-plugin', '@cocofhu/skillhub', 'skillhub'].filter((name): name is string => Boolean(name))
+    const spec = names.map((name) => profile.dependencies?.[name]).find((value) => value !== undefined)
+    source = detectSource(spec)
   } catch {
     source = 'unknown'
   }
-  const latest = await fetchLatestRelease(opts, deps, signal)
+  const latest = await fetchLatestRelease(opts, { fetchJson: deps.fetchJson ?? fetchJson }, signal)
   const upToDate = compareSemver(currentVersion, latest.version) >= 0 && source !== 'link'
   const canUpdate = source === 'link' || compareSemver(currentVersion, latest.version) < 0
   let message: string | undefined
@@ -133,6 +139,7 @@ export async function getUpdateStatus(
     upToDate,
     source,
     profileDir,
+    profile: runtime.name,
     canUpdate,
     message,
   }
@@ -140,7 +147,7 @@ export async function getUpdateStatus(
 
 export async function updateToLatestRelease(
   opts: FetchOptions,
-  deps: UpdateDeps = defaultDeps,
+  deps: Partial<UpdateDeps> = {},
   signal?: AbortSignal,
 ): Promise<UpdateResult> {
   const status = await getUpdateStatus(opts, deps, signal)
@@ -149,8 +156,8 @@ export async function updateToLatestRelease(
     return { ...status, updated: false, restartedHint: false }
   }
   const spec = `${PLUGIN_GITHUB_SPEC}#${status.latest.tag}`
-  const log = await deps.runDshPlugin('web', ['add', spec])
-  const after = deps.readPackageJson()
+  const log = await (deps.runDshPlugin ?? runDshPlugin)(status.profile, ['add', spec])
+  const after = (deps.readPackageJson ?? readPackageJson)()
   return {
     ...status,
     currentVersion: normalizeVersion(after.version || status.latest.version),
@@ -159,7 +166,7 @@ export async function updateToLatestRelease(
     canUpdate: false,
     updated: true,
     restartedHint: true,
-    message: `已更新到 ${status.latest.tag}，请重启 dsh web 并强制刷新浏览器`,
+    message: `已更新到 ${status.latest.tag}，请重启当前宿主并刷新界面`,
     log: log.slice(-4000),
   }
 }

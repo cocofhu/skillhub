@@ -157,12 +157,12 @@ test('resolveInstallSource can parse command when source is missing', () => {
   assert.equal(source, `github:o/n#${sha}`)
 })
 
-test('resolveInstallSource rejects force, other profile, and mismatched repo', () => {
+test('resolveInstallSource rejects force, unsafe profiles, and mismatched repo', () => {
   const sha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   const expected = { owner: 'o', name: 'n', fullName: 'o/n' }
   assert.throws(() => resolveInstallSource(null, expected), /安装计划无效/)
   assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, command: 'dsh plugin --profile web add --force github:o/n' }, expected), /--force/)
-  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, profile: 'desktop' }, expected), /web profile/)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, profile: '../desktop' }, expected), /profile 名称无效/)
   assert.throws(() => resolveInstallSource({ source: `github:evil/n#${sha}` }, expected), /仓库与所选插件不一致/)
   assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, plugin: { fullName: 'evil/n' } }, expected), /fullName/)
   assert.throws(() => resolveInstallSource({

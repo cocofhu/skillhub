@@ -401,6 +401,8 @@ window.__ModuleLoader__.load({
       "cfg.expand": "展开",
       "cfg.api": "API 地址",
       "cfg.dir": "安装目录",
+      "cfg.profile": "目标 profile（留空自动识别）",
+      "cfg.activeProfile": "当前目标：{name}",
       "cfg.max": "搜索结果上限",
       "cfg.discard": "放弃修改",
       "cfg.save": "保存",
@@ -418,6 +420,7 @@ window.__ModuleLoader__.load({
       "badge.installed": "已装",
       "search.hint": "点击卡片查看详情并安装 · {n} 条",
       "search.empty": "没有结果",
+      "tool.failed": "工具执行失败：{m}",
       "tab.overview": "概述",
       "tab.versions": "版本历史",
       "tab.evaluation": "评测报告",
@@ -477,19 +480,20 @@ window.__ModuleLoader__.load({
       "mkt.sending": "正在安装",
       "mkt.install": "安装",
       "mkt.installed": "已安装",
-      "mkt.sent": "已安装 {name}，请重启 dsh web。",
+      "mkt.sent": "已安装 {name}，请重启 DeepSeek Harness。",
       "mkt.progressHint": "首次安装需要下载与解析依赖，大插件可能要 1–3 分钟",
       "mkt.phaseResolving": "解析依赖",
       "mkt.phaseDownloading": "下载中",
       "mkt.phaseLinking": "链接依赖",
       "mkt.phaseBuilding": "运行构建脚本",
       "mkt.packagesDone": "已处理 {n} 个包",
-      "mkt.restartBanner": "已安装 {name}，请重启 dsh web 后生效",
-      "mkt.uninstallRestartBanner": "已卸载 {name}，请重启 dsh web 后完全卸载",
+      "mkt.restartBanner": "已安装 {name}，请重启 DeepSeek Harness 后生效",
+      "mkt.uninstallRestartBanner": "已卸载 {name}，请重启 DeepSeek Harness 后完全卸载",
       "mkt.restartNow": "立即重启",
+      "mkt.manualRestart": "请退出并重新打开 DeepSeek Harness，使插件变更生效。",
       "mkt.restarting": "正在重启…",
       "mkt.restartFail": "重启失败：{m}",
-      "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 dsh web",
+      "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 DeepSeek Harness",
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
       "mkt.moreLoading": "加载中…",
@@ -506,7 +510,7 @@ window.__ModuleLoader__.load({
       "plg.retry": "重试",
       "plg.failed": "安装失败：{m}",
       "plg.sourceTitle": "安装来源（install-plan 校验：pinned commit · 仓库一致 · 拒绝 --force）",
-      "plg.installedHint": "已安装 · 重启 dsh web 后生效",
+      "plg.installedHint": "已安装 · 重启 DeepSeek Harness 后生效",
       "scope.all": "全部",
       "scope.installed": "已安装",
       "meta.files": "{n} 个文件",
@@ -515,7 +519,7 @@ window.__ModuleLoader__.load({
       "stat.size": "总大小",
       "stat.updated": "更新于",
       "inst.error": "读取本机技能失败：{m}",
-      "ip.empty": "web profile 还没有已安装的 dsh 插件",
+      "ip.empty": "当前 profile 还没有已安装的 DSH 插件",
       "ip.error": "读取本机插件失败：{m}",
       "ip.tab.overview": "概览",
       "ip.tab.readme": "README",
@@ -544,6 +548,8 @@ window.__ModuleLoader__.load({
       "cfg.expand": "Expand",
       "cfg.api": "API URL",
       "cfg.dir": "Install directory",
+      "cfg.profile": "Target profile (blank for automatic)",
+      "cfg.activeProfile": "Current target: {name}",
       "cfg.max": "Search result limit",
       "cfg.discard": "Discard",
       "cfg.save": "Save",
@@ -561,6 +567,7 @@ window.__ModuleLoader__.load({
       "badge.installed": "On",
       "search.hint": "Click a card to view details and install · {n}",
       "search.empty": "No results",
+      "tool.failed": "Tool failed: {m}",
       "tab.overview": "Overview",
       "tab.versions": "Versions",
       "tab.evaluation": "Evaluation",
@@ -620,19 +627,20 @@ window.__ModuleLoader__.load({
       "mkt.sending": "Installing",
       "mkt.install": "Install",
       "mkt.installed": "Installed",
-      "mkt.sent": "Installed {name}. Restart dsh web to apply.",
+      "mkt.sent": "Installed {name}. Restart DeepSeek Harness to apply.",
       "mkt.progressHint": "First installs download and resolve dependencies — large plugins can take 1–3 minutes",
       "mkt.phaseResolving": "Resolving dependencies",
       "mkt.phaseDownloading": "Downloading",
       "mkt.phaseLinking": "Linking",
       "mkt.phaseBuilding": "Running build scripts",
       "mkt.packagesDone": "Processed {n} packages",
-      "mkt.restartBanner": "Installed {name} — restart dsh web to apply",
-      "mkt.uninstallRestartBanner": "Uninstalled {name} — restart dsh web to finish removing it",
+      "mkt.restartBanner": "Installed {name} — restart DeepSeek Harness to apply",
+      "mkt.uninstallRestartBanner": "Uninstalled {name} — restart DeepSeek Harness to finish removing it",
       "mkt.restartNow": "Restart now",
+      "mkt.manualRestart": "Quit and reopen DeepSeek Harness to apply plugin changes.",
       "mkt.restarting": "Restarting…",
       "mkt.restartFail": "Restart failed: {m}",
-      "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart dsh web yourself",
+      "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart DeepSeek Harness yourself",
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
       "mkt.moreLoading": "Loading…",
@@ -649,7 +657,7 @@ window.__ModuleLoader__.load({
       "plg.retry": "Retry",
       "plg.failed": "Install failed: {m}",
       "plg.sourceTitle": "Install source (install-plan checks: pinned commit · repo match · no --force)",
-      "plg.installedHint": "Installed · restart dsh web to apply",
+      "plg.installedHint": "Installed · restart DeepSeek Harness to apply",
       "scope.all": "All",
       "scope.installed": "Installed",
       "meta.files": "{n} files",
@@ -658,7 +666,7 @@ window.__ModuleLoader__.load({
       "stat.size": "Total size",
       "stat.updated": "Updated",
       "inst.error": "Failed to read local skills: {m}",
-      "ip.empty": "No dsh plugins installed in the web profile",
+      "ip.empty": "No DSH plugins installed in the current profile",
       "ip.error": "Failed to read local plugins: {m}",
       "ip.tab.overview": "Overview",
       "ip.tab.readme": "README",
@@ -728,18 +736,30 @@ window.__ModuleLoader__.load({
     ];
 
     async function api(method, payload) {
-      const res = await fetch(pluginUrl(""), {
+      // Use the authenticated shell/worker carrier when supplied, matching DSH's
+      // RPC client. Desktop otherwise forwards dsh-app://app routes to its Host;
+      // fetching the loopback HTTP URL directly would lose the shell-owned cookie.
+      const transport = globalThis.__DSH_TRANSPORT__;
+      const init = {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ method, ...payload }),
-      });
+      };
+      const res = typeof transport?.fetch === "function"
+        ? await transport.fetch("skillhub", init)
+        : await fetch(pluginUrl(""), init);
       const body = await res.json().catch(() => ({}));
       if (!res.ok || body.ok === false) throw new Error(body.error || "HTTP " + res.status);
       return body;
     }
 
     // 同源一键重启（广场与聊天卡片共用）：调 pluginRestart，等待 BOOT_ID 变化后整页刷新。
+    function canRestartHost() {
+      return typeof document !== "undefined" && /^https?:/.test(document.baseURI);
+    }
+
     function pluginRestartFlow(tr, previousBoot, onBusy, onMessage) {
+      if (!canRestartHost()) { onBusy(false); onMessage(tr("mkt.manualRestart")); return; }
       const deadline = Date.now() + 60000;
       const awaitNewBoot = () => {
         const poll = () => {
@@ -1209,7 +1229,10 @@ window.__ModuleLoader__.load({
       const block = props?.block;
       const raw = (block && "kind" in block ? block.call?.argsRaw : block?.argsRaw) || "";
       if (!raw || typeof raw !== "string") return {};
-      try { return JSON.parse(raw); } catch { return {}; }
+      try {
+        const args = JSON.parse(raw);
+        return args && typeof args === "object" && !Array.isArray(args) ? args : {};
+      } catch { return {}; }
     }
 
     function contentText(node) {
@@ -1224,57 +1247,78 @@ window.__ModuleLoader__.load({
     }
 
     function pickPayload(props) {
-      const found = [];
-      const visit = (node, depth) => {
-        if (!node || depth > 6) return;
+      const seen = new Set();
+      const visit = (node, depth = 0) => {
+        if (!node || depth > 8) return null;
         if (typeof node === "string") {
-          const t = node.trim();
-          if ((t.startsWith("{") || t.startsWith("[")) && t.length > 8) {
-            try { visit(JSON.parse(t), depth + 1); } catch { /* ignore */ }
+          const text = node.trim();
+          if (text.startsWith("{") || text.startsWith("[")) {
+            try { return visit(JSON.parse(text), depth + 1); } catch { /* plain result text */ }
           }
-          return;
+          return null;
         }
-        if (typeof node !== "object") return;
-        if (Array.isArray(node)) {
-          for (const x of node) visit(x, depth + 1);
-          return;
+        if (typeof node !== "object" || seen.has(node)) return null;
+        seen.add(node);
+        if (Array.isArray(node.items)) return node;
+        const values = Array.isArray(node) ? node :
+          ["meta", "content", "text", "resultView", "result", "view", "data", "value", "payload", "message"]
+            .map((key) => node[key]);
+        for (const value of values) {
+          const found = visit(value, depth + 1);
+          if (found) return found;
         }
-        if (Array.isArray(node.items)) found.push(node);
-        for (const key of ["block", "meta", "result", "resultView", "view", "data", "value", "payload", "content", "message"]) {
-          if (node[key] != null) visit(node[key], depth + 1);
-        }
+        return null;
       };
-      visit(props, 0);
+      // DSH persists output.presentationMeta on tool/result and PTC block.meta.
+      // This first-party field is independent of Host presentCall/presentResult.
+      // Recorded empty results are authoritative too; do not rerun their search.
+      return visit(props?.block) || visit(props);
+    }
+
+    function useToolItems(props, method) {
       const block = props?.block;
-      visit(block?.meta, 1);
-      visit(block?.content, 1);
-      visit(block?.resultView, 1);
-      visit(contentText(block?.content), 1);
-      return found.find((x) => Array.isArray(x.items) && x.items.length) || found[0] || null;
+      const payload = React.useMemo(() => pickPayload(props), [block, props?.meta, props?.content, props?.resultView]);
+      const args = parseToolArgs(props);
+      const request = JSON.stringify(args);
+      const fromTool = Array.isArray(payload?.items) ? payload.items : null;
+      const running = props?.phase === "preparing" || props?.phase === "start"
+        || (props?.phase !== "result" && !!block && !("kind" in block));
+      const failure = block?.isError
+        ? contentText(block.content).trim() || block.error?.reason || block.error?.code || "Unknown error"
+        : "";
+      const [items, setItems] = useState(fromTool || []);
+      const [loaded, setLoaded] = useState(null);
+      const [err, setErr] = useState("");
+      useEffect(() => {
+        setItems(fromTool || []);
+        setErr("");
+        if (fromTool || running || failure) return;
+        let live = true;
+        const query = String(args.query || "").trim();
+        // Keep the wire offset/limit; the Host owns defaults and page-local skip.
+        const params = { ...args, query };
+        api(method, params)
+          .then((data) => { if (live) { setItems(data.items || []); setLoaded(block); } })
+          .catch((error) => { if (live) { setItems([]); setErr(error.message || String(error)); setLoaded(block); } });
+        return () => { live = false; };
+      }, [block, request, method, fromTool, running, failure]);
+      return { payload, items, setItems, running, err: failure || err, loading: !fromTool && !failure && loaded !== block };
+    }
+
+    function ToolState({ running, loading, err, empty, t }) {
+      const tr = typeof t === "function" ? t : lookup;
+      return h("div", { className: "sh-root sh-tool", role: err ? "alert" : "status" },
+        h("p", { className: err ? "sh-err" : "sh-hint" },
+          err ? tr("tool.failed", { m: err }) : running || loading ? tr("loading") : tr(empty)),
+      );
     }
 
     function SearchToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const args = parseToolArgs(props);
-      const query = String(payload?.query || args.query || "").trim();
-      const fromTool = Array.isArray(payload?.items) && payload.items.length ? payload.items : null;
-      const running = !!(props?.block && !("kind" in props.block));
-      const [items, setItems] = useState(fromTool || []);
-      const [err, setErr] = useState("");
+      const state = useToolItems(props, "search");
+      const { items, setItems } = state;
       const [open, setOpen] = useState(null);
-      useEffect(() => {
-        if (fromTool) setItems(fromTool);
-      }, [fromTool]);
-      useEffect(() => {
-        if (fromTool || running) return;
-        let live = true;
-        api("search", { query, queries: args.queries, category: args.category, offset: args.offset, limit: args.limit })
-          .then((d) => { if (live) setItems(d.items || []); })
-          .catch((e) => { if (live) { setItems([]); setErr(e.message || String(e)); } });
-        return () => { live = false; };
-      }, [query, running, !!fromTool]);
-      if (running || !items.length) return err ? h("div", { className: "sh-err" }, err) : null;
+      if (state.running || state.loading || state.err || !items.length) return h(ToolState, { ...state, empty: "search.empty", t: props.t });
       const mark = (item, installed) => {
         setItems((cur) => cur.map((it) => it.slug === item.slug ? { ...it, installed } : it));
         setOpen((cur) => cur && cur.slug === item.slug ? { ...cur, installed } : cur);
@@ -1296,15 +1340,12 @@ window.__ModuleLoader__.load({
 
     function ListToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const fromTool = Array.isArray(payload?.items) ? payload.items : null;
+      const state = useToolItems(props, "list");
+      const { items, setItems, payload } = state;
       const skillsDir = payload?.skillsDir || "";
-      const running = !!(props?.block && !("kind" in props.block));
-      const [items, setItems] = useState(fromTool || []);
       const [open, setOpen] = useState(null);
       const [toast, setToast] = useState("");
-      useEffect(() => { if (fromTool) setItems(fromTool); }, [fromTool]);
-      if (running) return null;
+      if (state.running || state.loading || state.err) return h(ToolState, { ...state, empty: "installed.none", t: props.t });
       const tr = typeof props.t === "function" ? props.t : lookup;
       const dropItem = (it) => setItems((cur) => cur.filter((x) => x.slug !== it.slug));
       return h(I18nProvider, { t: tr },
@@ -1368,6 +1409,7 @@ window.__ModuleLoader__.load({
       return {
         apiBase: "https://api.skillhub.cn",
         skillsDir: "",
+        profile: "",
         maxResults: 12,
         timeoutMs: 20000,
         sortBy: "score",
@@ -1381,6 +1423,7 @@ window.__ModuleLoader__.load({
       const [saved, setSaved] = useState(emptyDraft);
       const [draft, setDraft] = useState(emptyDraft);
       const [saving, setSaving] = useState(false);
+      const [activeProfile, setActiveProfile] = useState("");
       const [updateInfo, setUpdateInfo] = useState(null);
       const [err, setErr] = useState("");
       useEffect(() => {
@@ -1391,10 +1434,12 @@ window.__ModuleLoader__.load({
             const next = {
               apiBase: d.apiBase || "https://api.skillhub.cn",
               skillsDir: d.skillsDir || "",
+              profile: d.profile || "",
               maxResults: d.maxResults || 12,
               timeoutMs: d.timeoutMs || 20000,
               sortBy: d.sortBy || "score",
             };
+            setActiveProfile(d.activeProfile || "");
             setSaved(next);
             setDraft(next);
           })
@@ -1414,10 +1459,12 @@ window.__ModuleLoader__.load({
           const next = {
             apiBase: d.apiBase,
             skillsDir: d.skillsDir,
+            profile: d.profile || "",
             maxResults: d.maxResults,
             timeoutMs: d.timeoutMs,
             sortBy: d.sortBy,
           };
+          setActiveProfile(d.activeProfile || "");
           setSaved(next);
           setDraft(next);
         } catch (e) {
@@ -1471,6 +1518,17 @@ window.__ModuleLoader__.load({
                 onChange: (e) => setDraft({ ...draft, skillsDir: e.target.value }),
               }),
             ),
+            h("div", { className: "sh-cfg-f" },
+              h("label", { htmlFor: "sh-profile" }, tr("cfg.profile")),
+              h("input", {
+                id: "sh-profile",
+                type: "text",
+                value: draft.profile,
+                placeholder: activeProfile,
+                onChange: (e) => setDraft({ ...draft, profile: e.target.value }),
+              }),
+            ),
+            activeProfile ? h("p", { className: "sh-hint" }, tr("cfg.activeProfile", { name: activeProfile })) : null,
             h("div", { className: "sh-cfg-f" },
               h("label", { htmlFor: "sh-max" }, tr("cfg.max")),
               h("input", {
@@ -2090,12 +2148,12 @@ window.__ModuleLoader__.load({
           h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
           pendingRestart && !sending ? h("div", { className: "sh-mkt-banner" },
             h("span", { className: "sh-mkt-banner-text" }, tr(restartKind === "uninstall" ? "mkt.uninstallRestartBanner" : "mkt.restartBanner", { name: pendingRestart })),
-            h("button", {
+            canRestartHost() ? h("button", {
               type: "button",
               className: "sh-mkt-restart",
               disabled: restarting,
               onClick: startRestart,
-            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")),
+            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")) : h("span", { className: "sh-hint" }, tr("mkt.manualRestart")),
           ) : null,
           scope === "installed" ? h(InstalledPluginsView, {
             t: tr,
@@ -2435,6 +2493,7 @@ window.__ModuleLoader__.load({
 
     function PluginDrawer({ plugin, tr, restarting, onClose, onInstall, onRestart }) {
       const [source, setSource] = useState("");
+      const [profile, setProfile] = useState("");
       const [repoHint, setRepoHint] = useState("");
       useEffect(() => {
         let live = true;
@@ -2442,6 +2501,7 @@ window.__ModuleLoader__.load({
           .then((d) => {
             if (!live) return;
             setSource(d.source || "");
+            setProfile(d.profile || "");
             setRepoHint(d.repositoryUrl || "");
           })
           .catch(() => {});
@@ -2474,12 +2534,12 @@ window.__ModuleLoader__.load({
             ),
             h("p", { className: "sh-overview" }, plugin.description || tr("mkt.noDesc")),
             source ? h("p", { className: "sh-hint", style: { margin: "14px 0 6px" } }, tr("plg.sourceTitle")) : null,
-            source ? h("div", { className: "sh-mono" }, "dsh plugin --profile web add " + source) : null,
+            source && profile ? h("div", { className: "sh-mono" }, "dsh plugin --profile " + JSON.stringify(profile) + " add " + source) : null,
           ),
           h("div", { className: "sh-foot" },
             installed ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("plg.installedHint")) : null,
             !installed && !verified ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("mkt.unsupported")) : null,
-            installed ? h("button", {
+            installed && canRestartHost() ? h("button", {
               type: "button",
               className: "sh-mini primary",
               disabled: restarting,
@@ -2499,14 +2559,9 @@ window.__ModuleLoader__.load({
     // 聊天流插件卡片视图（key=skillhub_plugin_search）：卡片、就地安装进度、重启横幅、详情弹窗。
     function PluginSearchToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const args = parseToolArgs(props);
-      const query = String(payload?.query || args.query || "").trim();
-      const fromTool = Array.isArray(payload?.items) && payload.items.length ? payload.items : null;
-      const running = !!(props?.block && !("kind" in props.block));
+      const state = useToolItems(props, "pluginSearch");
+      const { items, setItems } = state;
       const tr0 = typeof props.t === "function" ? props.t : lookup;
-      const [items, setItems] = useState(fromTool || []);
-      const [err, setErr] = useState("");
       const [open, setOpen] = useState(null);
       const [toast, setToast] = useState("");
       const [busyId, setBusyId] = useState("");
@@ -2515,33 +2570,27 @@ window.__ModuleLoader__.load({
       const [pendingRestart, setPendingRestart] = useState("");
       const [restarting, setRestarting] = useState(false);
       const [bootId, setBootId] = useState("");
+      const recorded = state.payload?.items;
+      const refs = React.useMemo(() => Array.isArray(recorded) ? recorded.map((item) => ({
+        owner: item.owner, name: item.name, repositoryUrl: item.repositoryUrl,
+      })) : null, [recorded]);
       useEffect(() => {
-        if (fromTool) setItems(fromTool);
-      }, [fromTool]);
-      useEffect(() => {
-        if (running) return;
+        if (!refs?.length || state.running || state.err || busyId || pendingRestart) return;
         let live = true;
-        const limit = Number(args.limit) > 0 ? Number(args.limit) : 12;
-        const page = Math.floor((Number(args.offset) || 0) / limit) + 1;
-        api("plugins", { q: query, sort: "stars", page, pageSize: limit })
-          .then((d) => {
-            if (!live) return;
-            const fresh = d.items || [];
-            if (fromTool) {
-              // 历史工具结果只合并最新 installed 标志(重启后新装的插件也能显示徽标),保留当时的卡片内容
-              const mark = new Map(fresh.map((it) => [it.fullName || it.owner + "/" + it.name, !!it.installed]));
-              setItems((cur) => cur.map((it) => {
-                const key = it.fullName || it.owner + "/" + it.name;
-                return mark.has(key) ? { ...it, installed: mark.get(key) } : it;
-              }));
-            } else {
-              setItems(fresh);
-              setErr("");
-            }
+        api("pluginInstalled", { plugins: refs })
+          .then((data) => {
+            if (!live || !Array.isArray(data.items)) return;
+            const marks = new Map(data.items.map((item) => [item.fullName.toLowerCase(), !!item.installed]));
+            const mark = (item) => {
+              const key = (item.owner + "/" + item.name).toLowerCase();
+              return marks.has(key) ? { ...item, installed: marks.get(key) } : item;
+            };
+            setItems((current) => current.map(mark));
+            setOpen((current) => current ? mark(current) : current);
           })
-          .catch((e) => { if (live && !fromTool) { setItems([]); setErr(e.message || String(e)); } });
+          .catch(() => {}); // Offline/local-state failures must not hide replayed cards.
         return () => { live = false; };
-      }, [query, running, !!fromTool]);
+      }, [refs, state.running, state.err, busyId, pendingRestart]);
       useEffect(() => {
         if (bootId) return;
         let live = true;
@@ -2591,7 +2640,7 @@ window.__ModuleLoader__.load({
         setToast("");
         pluginRestartFlow(tr0, bootId, (v) => setRestarting(v), setToast);
       };
-      if (running || !items.length) return err ? h("div", { className: "sh-err" }, err) : null;
+      if (state.running || state.loading || state.err || !items.length) return h(ToolState, { ...state, empty: "mkt.empty", t: props.t });
       const pct = busyId ? progressPercent(status) : null;
       const phase = busyId ? progressCopy(status, tr0) : "";
       return h(I18nProvider, { t: tr0 },
@@ -2616,12 +2665,12 @@ window.__ModuleLoader__.load({
           ),
           pendingRestart && !busyId ? h("div", { className: "sh-plg-banner" },
             h("span", null, "✅ " + tr0("mkt.restartBanner", { name: pendingRestart })),
-            h("button", {
+            canRestartHost() ? h("button", {
               type: "button",
               className: "sh-mini primary",
               disabled: restarting,
               onClick: startRestart,
-            }, restarting ? tr0("mkt.restarting") : tr0("mkt.restartNow")),
+            }, restarting ? tr0("mkt.restarting") : tr0("mkt.restartNow")) : h("span", { className: "sh-hint" }, tr0("mkt.manualRestart")),
           ) : null,
           open ? h(PluginDrawer, {
             plugin: open,
