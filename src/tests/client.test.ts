@@ -70,6 +70,12 @@ function bench(url = 'dsh-app://app/', respond: (request: Request) => unknown | 
       assert.ok(component, `tool view registered for ${key}`)
       await act(async () => { root.render(React.createElement(component, props)) })
     },
+    /** Settled card results render on the Turn tail, outside the collapsed Tool group. */
+    async renderCards(props: Props) {
+      const block = { ...(props.block as Props), seq: 1 }
+      const turn = { data: { get: (key: string) => key === "skillhub-cards" ? { results: [block] } : undefined }, end: { seq: 1 } }
+      await this.render("skillhub-cards", { turn, seq: 1 })
+    },
     async click(text: string) {
       const button = [...dom.window.document.querySelectorAll('button')].find((element) => element.textContent?.trim() === text)
       assert.ok(button, `button ${text} is visible`)
@@ -106,7 +112,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
         const content = tool.output.render({}, value)
         const meta = tool.output.presentationMeta({}, value)
         // This is exactly how native tool/result and PTC dispatch are projected.
-        await b.render(name, result(name, meta, { content }))
+        await b.renderCards(result(name, meta, { content }))
         assert.ok(b.container.textContent?.includes(title))
       }
       await new Promise<void>((resolve) => setImmediate(resolve))
@@ -116,7 +122,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
   await t.test('first-party persisted metadata renders search cards and interactive install', async () => {
     const b = bench(undefined, ({ body }) => body.method === 'detail' ? { card: skill } : { name: skill.name, slug: skill.slug })
     try {
-      await b.render('skillhub_search', result('skillhub_search', { kind: 'skillhub-search', items: [skill] }))
+      await b.renderCards(result('skillhub_search', { kind: 'skillhub-search', items: [skill] }))
       assert.match(b.container.textContent || '', /PDF Assistant/)
       assert.equal(b.requests.length, 0, 'replay does not repeat the original search')
       const card = b.container.querySelector('.sh-card')!
@@ -126,6 +132,21 @@ test('desktop tool cards render durable DSH events and surface every state', asy
       assert.ok(b.requests.some(({ body }) => body.method === 'install'))
       assert.match(b.container.textContent || '', /On/)
       assert.equal(b.requests[0].url, 'dsh-app://app/skillhub', 'retain desktop authenticated protocol forwarding')
+    } finally { await b.close() }
+  })
+
+  await t.test('settled results collapse to a summary in the Tool group and render on the Turn tail', async () => {
+    const b = bench()
+    try {
+      const settled = result('skillhub_search', { items: [skill] })
+      await b.render('skillhub_search', settled)
+      assert.equal(b.container.textContent, '1 cards shown below the reply')
+      assert.equal(b.container.querySelector('.sh-card'), null)
+      await b.renderCards(settled)
+      assert.match(b.container.textContent || '', /PDF Assistant/)
+      await b.render('skillhub-cards', { turn: { data: { get: () => undefined }, end: { seq: 1 } }, seq: 1 })
+      assert.equal(b.container.textContent, '', 'a Turn without SkillHub results adds nothing')
+      assert.equal(b.requests.length, 0)
     } finally { await b.close() }
   })
 
@@ -142,8 +163,8 @@ test('desktop tool cards render durable DSH events and surface every state', asy
     const b = bench()
     try {
       const props = result('skillhub_search', undefined, { content: [{ type: 'text', text: 'Search result follows:' }, { type: 'text', text: JSON.stringify({ items: [skill] }) }] })
-      await b.render('skillhub_search', props)
-      await b.render('skillhub_search', { ...props })
+      await b.renderCards(props)
+      await b.renderCards({ ...props })
       assert.match(b.container.textContent || '', /PDF Assistant/)
       assert.equal(b.requests.length, 0)
     } finally { await b.close() }
@@ -184,12 +205,12 @@ test('desktop tool cards render durable DSH events and surface every state', asy
   await t.test('lists render raw metadata, empty states, and recover legacy results', async () => {
     const b = bench(undefined, () => ({ skillsDir: '/skills', items: [skill] }))
     try {
-      await b.render('skillhub_list', result('skillhub_list', { skillsDir: '/skills', items: [skill] }))
+      await b.renderCards(result('skillhub_list', { skillsDir: '/skills', items: [skill] }))
       assert.match(b.container.textContent || '', /PDF Assistant/)
       assert.equal(b.requests.length, 0)
-      await b.render('skillhub_list', result('skillhub_list', { items: [] }))
+      await b.renderCards(result('skillhub_list', { items: [] }))
       assert.match(b.container.textContent || '', /No skills installed/)
-      await b.render('skillhub_list', result('skillhub_list'))
+      await b.renderCards(result('skillhub_list'))
       assert.match(b.container.textContent || '', /PDF Assistant/)
       assert.equal(b.requests[0].body.method, 'list')
     } finally { await b.close() }
@@ -198,7 +219,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
   await t.test('plugin replay stays local and desktop install offers a manual restart', async () => {
     const b = bench(undefined, ({ body }) => body.method === 'pluginInstallPlan' ? { source: 'github:deepseek-ai/browser#abc', profile: 'desktop' } : { boot: 'boot-1' })
     try {
-      await b.render('skillhub_plugin_search', result('skillhub_plugin_search', { items: [plugin] }))
+      await b.renderCards(result('skillhub_plugin_search', { items: [plugin] }))
       assert.match(b.container.textContent || '', /browser/)
       assert.ok(!b.requests.some(({ body }) => body.method === 'plugins'))
       await b.click('Details')
@@ -228,7 +249,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
       : {})
     try {
       const old = { owner: 'other', name: 'old', fullName: 'other/old', installed: true, description: 'Keep this old description', installability: 'verified' }
-      await b.render('skillhub_plugin_search', result('skillhub_plugin_search', { items: [{ ...plugin, description: 'Recorded description' }, old] }))
+      await b.renderCards(result('skillhub_plugin_search', { items: [{ ...plugin, description: 'Recorded description' }, old] }))
       const cards = [...b.container.querySelectorAll('.sh-card')]
       assert.equal(cards.length, 2)
       assert.match(cards[0].textContent || '', /Recorded description/)
@@ -244,7 +265,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
   await t.test('background local-state failures do not hide replayed plugin cards', async () => {
     const b = bench(undefined, ({ body }) => { if (body.method === 'pluginInstalled') throw new Error('profile temporarily unavailable'); return {} })
     try {
-      await b.render('skillhub_plugin_search', result('skillhub_plugin_search', { items: [{ ...plugin, installed: true }] }))
+      await b.renderCards(result('skillhub_plugin_search', { items: [{ ...plugin, installed: true }] }))
       assert.match(b.container.textContent || '', /browser.*Installed/s)
       assert.equal(b.container.querySelector('[role="alert"]'), null)
     } finally { await b.close() }
@@ -255,7 +276,7 @@ test('desktop tool cards render durable DSH events and surface every state', asy
     const b = bench(undefined, ({ body }) => body.method === 'pluginInstalled'
       ? new Promise((resolve) => { reply = resolve }) : {})
     try {
-      await b.render('skillhub_plugin_search', result('skillhub_plugin_search', { items: [plugin] }))
+      await b.renderCards(result('skillhub_plugin_search', { items: [plugin] }))
       await b.click('Install')
       await act(async () => { reply?.({ items: [{ fullName: plugin.fullName, installed: false }] }) })
       assert.match(b.container.textContent || '', /browser.*Installed/s)
