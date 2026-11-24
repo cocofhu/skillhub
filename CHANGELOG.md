@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [0.2.17] - 2026-11-24
+
+### Changed
+
+- 侧栏底部「插件广场」改为侧栏顶部导航的「Skill 广场」（英文 Skill Plaza）：以原生主面板打开，只浏览 SkillHub 技能，可像其他导航项一样取消固定
+- 对话中 `skillhub_search` / `skillhub_list` / `skillhub_plugin_search` 的结果卡片改为展示在回复正文下方（`conversation.chat.turnTail`），不再被「已调用工具」折叠；工具组内只保留一行提示
+- Skill 广场入口改用线性拼图图标，与侧栏原生图标风格一致
+
+### Removed
+
+- 插件广场中的「插件」标签页（DSH 插件市场浏览 / 安装界面）；对话内搜索与直装 DSH 插件不受影响
+
 ### Fixed
 
 - 插件广场、已安装徽章、安装 / 卸载和自更新跟随当前宿主 profile，修复 Desktop 与自定义 profile 被静默指向 `web` 的问题；设置中可查看和覆盖目标 profile（#36）

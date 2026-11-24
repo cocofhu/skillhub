@@ -8,7 +8,7 @@
 
 DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索技能、查看详情并安装到 Harness 可发现的 skills 目录。
 
-最新正式版：[v0.2.16](https://github.com/cocofhu/skillhub/releases/tag/v0.2.16) · [npm](https://www.npmjs.com/package/skillhub-plugin) · [更新日志](CHANGELOG.md)
+最新正式版：[v0.2.17](https://github.com/cocofhu/skillhub/releases/tag/v0.2.17) · [npm](https://www.npmjs.com/package/skillhub-plugin) · [更新日志](CHANGELOG.md)
 
 ## 目录
 
@@ -27,13 +27,13 @@ DeepSeek Harness 的 [SkillHub](https://skillhub.cn) 插件。在对话中搜索
 ## 功能
 
 - 用公开接口搜索或按分类浏览技能
-- 在对话流中展示可点击卡片（名称、分类、下载量、简介）
+- 在对话流中展示可点击卡片（名称、分类、下载量、简介），卡片展示在回复正文下方，不随「已调用工具」折叠
 - 详情页包含概述、版本历史、TRACE 评测；标题栏显示 AI 评分、认证发布者与安全标记
 - 通过 zip 下载安装到本机，可指定版本；支持列出与卸载
 - 设置页可查看已安装技能，并一键更新到 GitHub 最新 release
-- 侧栏底部 **插件广场**：在聊天区打开独立面板，浏览 SkillHub 技能与 DSH 插件
+- 侧栏顶部导航 **Skill 广场**：在主区域打开独立面板，按分类浏览、搜索 SkillHub 技能
 - 对话中直接搜索 DSH 插件并展示插件卡片，支持卡片一键直装（就地进度条）、装完提示并一键重启
-- 插件广场支持「全部 / 已安装」切换：本地只读预览已安装插件（来源 spec、版本、README）与已安装技能的 Meta 卡片（文件数、体积、更新时间）
+- Skill 广场支持「全部 / 已安装」切换：已安装视图以 Meta 卡片本地只读预览已装技能（文件数、体积、更新时间）
 - 对话中的已装技能工具卡片升级为与广场一致的 Meta 卡片
 - 界面跟随 Harness 中英文
 
@@ -92,18 +92,15 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 
 搜索完成后对话中会显示可点击卡片；点开详情后再安装。插件卡片同样出现在对话流里，可直接点 **安装** 就地看进度，装完按横幅提示 **立即重启**。不要让 Agent 打印安装命令或 curl。
 
-### 插件广场
+### Skill 广场
 
-侧栏底部 **插件广场** 在聊天区域打开独立面板（可切换 **插件** / **技能**），不会出现在「对话 / 轨迹」标签里，也不再注入设置页。面板盖在会话列上，关掉后直接回到对话。
+侧栏顶部导航（与「插件」「自动化任务」同列）的 **Skill 广场** 会在主区域打开独立面板，可按分类浏览、关键词搜索 SkillHub 技能，点卡片查看详情并安装。入口可像其他导航项一样取消固定（收进「更多」）。
 
-点插件的 **安装** 会读取 SkillHub 的 install-plan，校验仓库与 pinned commit 后，由本插件在宿主进程里执行 `dsh plugin --profile <当前 profile> add github:owner/repo#sha`（与 dsh-market 相同，不走 Agent 沙箱）。安装过程显示进度条；若 pnpm 拦截 git 源的 `prepare`，会写入当前 profile 的 `dangerouslyAllowAllBuilds` 并自动重试。已装进当前 profile 的插件会显示「已安装」。Web 装完可点 **立即重启**（支持同源反向代理；systemd 托管时走 `systemctl restart`）；Desktop 请使用应用菜单重启。对话里的技能搜索 / zip 安装不受影响。
+面板顶部有 **全部 / 已安装** 切换器（带已安装计数）。切到「已安装」后完全不请求远端，以 Meta 卡片展示本机已安装技能（名称 + 已装徽章 + 版本、slug、两行描述、文件数 / 体积 / 更新时间统计行），点开为本地概览抽屉，并明确标注不浏览技能文件内容。切回「全部」恢复原有搜索状态。
 
-#### 已安装视图（本地只读预览）
+### 对话卡片
 
-广场两个分类页顶部都有 **全部 / 已安装** 切换器（带已安装计数与「本机数据 · 只读预览」旁注）。切到「已安装」后完全不请求远端，数据全部来自本机文件系统的只读接口：
-
-- **插件页**：枚举当前 profile `package.json` 依赖，展示本机已安装插件的卡片（包名、来源 spec、版本、描述、已安装徽章）。`github:` / `npm` / `link:` 三类来源都能识别；点卡片打开抽屉，含 **概览** 与 **README**（Markdown 渲染，超过 64 KB 自动截断并提示），底部可卸载。非 dsh 依赖不会混入列表，只以「另有 N 个非 dsh 依赖」计数折叠提示。
-- **技能页**：以 Meta 卡片展示本机已安装技能（名称 + 已装徽章 + 版本、slug、两行描述、文件数 / 体积 / 更新时间统计行），点开为本地概览抽屉，并明确标注不浏览技能文件内容。切回「全部」恢复原有搜索状态。
+`skillhub_search`、`skillhub_list`、`skillhub_plugin_search` 的结果卡片在一轮回复结束后展示在回复正文下方（`conversation.chat.turnTail`），不随「已完成 / 已调用工具」折叠；工具组里只保留一行「N 张卡片已展示在回复下方」提示。回复进行中卡片暂时显示在工具组内。
 
 对话中的 `skillhub_list` 工具卡片同步升级为同款 Meta 卡片，保留 **详情 / 卸载** 操作。
 
@@ -160,7 +157,7 @@ dsh plugin --profile web add /absolute/path/to/skillhub
 | DSH 插件目录 | `GET /api/v1/plugins` |
 | 插件安装计划 | `GET /api/v1/plugins/{owner}/{name}/install-plan` |
 
-上游请求有超时；技能 zip 安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。广场安装 DSH 插件会在本机执行 `dsh plugin add`，写入当前目标 profile。
+上游请求有超时；技能 zip 安装会拒绝路径穿越，并要求解压结果含 `SKILL.md`。技能包来自第三方，插件不执行其中的代码。对话内插件卡片安装 DSH 插件会在本机执行 `dsh plugin add`，写入当前目标 profile。
 
 ## 开发
 
@@ -180,7 +177,7 @@ pnpm build
 | --- | --- |
 | `src/host.ts` | Cordis 入口：工具注册、systemPrompt、settings |
 | `src/local-api.ts` | 本机 `/skillhub` HTTP（搜索、安装、广场、详情、更新） |
-| `src/client.js` | 搜索卡片、详情弹窗、设置页、插件广场、已安装视图 |
+| `src/client.js` | 搜索卡片、回复下方卡片、详情弹窗、设置页、Skill 广场、已安装视图 |
 | `src/api.ts` | 搜索与技能卡片映射 |
 | `src/plugin-market.ts` | DSH 插件目录查询与 install-plan 安装 |
 | `src/installed-plugins.ts` | 当前 profile 的已安装插件枚举与 README 只读预览 |
@@ -208,14 +205,14 @@ pnpm build
 | 搜索卡片未出现 | 升级到含桌面兼容修复的版本并重启 Harness；工具区域会显示加载、空结果或错误，可据此排查。Desktop 请求使用应用内的鉴权转发 |
 | 安装失败 / `unexpected end of file` | 确认能访问 download 接口；本插件按中央目录解压 zip |
 | 装了但 Agent 看不见 | 确认装到 `$DSH_HOME/skills` 或项目 `.dsh/skills`，并新开对话 |
-| 找不到插件市场 | 点侧栏底部 **插件广场**；重启 `dsh web` 并强制刷新 |
-| 广场点安装失败 | 确认设置显示的目标 profile 正确且目录可写；Desktop 会复用应用自带的 CLI，无需将 `dsh` 加入 PATH。旧桌面版缺少内置 CLI 入口时请升级 |
+| 找不到 Skill 广场 | 看侧栏顶部导航或「更多」菜单；重启 `dsh web` 并强制刷新 |
+| 插件卡片点安装失败 | 确认设置显示的目标 profile 正确且目录可写；Desktop 会复用应用自带的 CLI，无需将 `dsh` 加入 PATH。旧桌面版缺少内置 CLI 入口时请升级 |
 | 设置里点更新失败 | 确认能访问 `api.github.com`，且当前目标 profile 可执行 `dsh plugin add` |
-| pnpm 拒绝 `prepare` | 广场安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add skillhub-plugin`，不要从 git 安装 |
+| pnpm 拒绝 `prepare` | 插件卡片安装会自动写入 `dangerouslyAllowAllBuilds`；自装 SkillHub 请用 `dsh plugin add skillhub-plugin`，不要从 git 安装 |
 
 ## 安全
 
-安装第三方技能等于在本机落下可被 Agent 读取的文件。广场安装 DSH 插件会把第三方代码装进当前目标 profile。请只安装已验证且你信任的来源。
+安装第三方技能等于在本机落下可被 Agent 读取的文件。对话内安装 DSH 插件会把第三方代码装进当前目标 profile。请只安装已验证且你信任的来源。
 
 漏洞请按 [SECURITY.md](SECURITY.md) 私下报告，不要发公开 Issue。
 
