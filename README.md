@@ -1,5 +1,10 @@
 # skillhub
 
+> [!IMPORTANT]
+> 本仓库已迁移到 [Tencent/skillhub](https://github.com/Tencent/skillhub/tree/main/dsh-plugin)（`dsh-plugin/` 目录），这里不再更新。npm 包名不变，仍为 [`skillhub-plugin`](https://www.npmjs.com/package/skillhub-plugin)，`@cocofhu/skillhub` 已停止发布。
+>
+> 从 0.2.17 及更早版本升级：执行一次 `dsh plugin --profile web add skillhub-plugin`（Desktop 用 `--profile desktop`），重启后即可在设置页继续自动更新。
+
 [![CI](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cocofhu/skillhub/actions/workflows/ci.yml?query=branch%3Amain)
 [![npm](https://img.shields.io/npm/v/skillhub-plugin.svg)](https://www.npmjs.com/package/skillhub-plugin)
 [![Release](https://img.shields.io/github/v/release/cocofhu/skillhub?display_name=tag)](https://github.com/cocofhu/skillhub/releases/latest)
